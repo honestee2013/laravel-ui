@@ -1,0 +1,24 @@
+{
+    "name": "quicker-faster/laravel-ui",
+    "description": "A reusable package for your Laravel project layouts and UIX Components to speed up your development.",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "QuickerFaster\\LaravelUI\\": "src/"
+        }
+    },
+    "require": {
+        "livewire/livewire": "^3.0"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+
+    "extra": {
+    "laravel": {
+        "providers": [
+            "QuickerFaster\\LaravelUI\\Providers\\QuickerFasterLaravelUIServiceProvider"
+        ]
+    }
+}
+}
