@@ -1,0 +1,218 @@
+models:
+  RawMaterial:
+    module: inventory
+    fields:
+      name:
+        type: string
+        validation:
+          - required
+      sku:
+        type: string
+        validation:
+          - required|unique:raw_materials,sku
+      category_id:
+        type: select
+        foreign:
+          table: categories
+          column: id
+      unit_id:  # Changed to unit_id
+        type: select
+        foreign:
+          table: units # Changed to units
+          column: id
+      description:
+        type: textarea
+      is_active:
+        type: checkbox
+        default: true
+      supplier_profile_id:  # Foreign key to the suppliers table
+        type: select
+        foreign:
+          table: supplier_profiles
+          column: id
+      chemical_composition:
+        type: textarea # Or string if it's short
+        nullable: true
+      # Add other raw material-specific fields here as needed (e.g., density, purity, etc.)
+
+    hiddenFields:
+      onTable: []
+      onNewForm: []
+      onEditForm: []
+      onQuery: []
+
+    tab:
+      label: Raw Materials
+      group: raw-materials-management
+      id: raw-materials
+      parentPageTitle: Raw Materials Management
+      pageTitle: Raw Materials Overview
+      view: raw-materials
+      url: inventory/raw-materials
+
+    fieldGroups:
+      - title: Raw Material Information
+        groupType: hr
+        fields:
+          - name
+          - sku
+          - category_id
+          - unit_of_measure_id
+          - description
+          - is_active
+
+      - title: Supplier & Composition
+        groupType: hr
+        fields:
+          - supplier_id
+          - chemical_composition
+
+    relations:
+      category:
+        type: belongsTo
+        model: App\Modules\Item\Models\Category
+        foreignKey: category_id
+        displayField: name
+
+      unitOfMeasure:
+        type: belongsTo
+        model: App\Modules\Item\Models\UnitOfMeasure
+        foreignKey: unit_of_measure_id
+        displayField: name
+
+      supplier:  # Relationship to the supplier
+        type: belongsTo
+        model: App\Models\User\Models\SupplierProfile # Replace with the correct namespace
+        foreignKey: supplier_profile_id
+        displayField: user.name # Or whatever field you want to display
+
+      unit: # Changed to unit
+        type: belongsTo
+        model: App\Modules\Item\Models\Unit # Correct namespace
+        foreignKey: unit_id
+        displayField: name
+
+      tags:  # Many-to-many relationship to tags
+        type: belongsToMany
+        model: App\Modules\Item\Models\Tag
+        pivotTable: raw_material_tag # Name of the pivot table
+        foreignKey: raw_material_id # Foreign key in the pivot table
+        localKey: tag_id # Foreign key in the tags table
+        using: App\Modules\Inventory\Models\RawMaterialTag # Pivot Model
+
+
+    sidebar:
+      add: true
+      title: Raw Materials
+      iconClasses: fas fa-industry # Or a more suitable icon
+
+    iconClasses: fas fa-cubes # Or a more suitable icon
+    includeHeader: true
+    includeFooter: true
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']
+
+
+  RawMaterialMovement:
+    module: inventory
+    fields:
+      raw_material_id:
+        type: select
+        validation:
+          - required
+        foreign:
+          table: raw_materials
+          column: id
+          onDelete: cascade
+      quantity:
+        type: integer
+        validation:
+          - required
+      transaction_type:
+        type: select
+        options: purchase, usage, return, adjustment, transfer
+        validation:
+          - required
+      supplier_invoice_number:
+        type: string
+        nullable: true
+      quality_inspection_date:
+        type: datepicker
+        nullable: true
+      # Add other raw material movement-specific fields here as needed
+
+    hiddenFields:
+      onTable: []
+      onNewForm: []
+      onEditForm: []
+      onQuery: []
+
+    tab:
+      label: Raw Material Movements
+      group: raw-materials-management
+      id: raw-material-movements
+      parentPageTitle: Raw Materials Management
+      pageTitle: Raw Material Movements Overview
+      view: raw-material-movements
+      url: inventory/raw-material-movements
+
+    fieldGroups:
+      - title: Movement Information
+        groupType: hr
+        fields:
+          - raw_material_id
+          - quantity
+          - transaction_type
+
+      - title: Supplier & Quality
+        groupType: hr
+        fields:
+          - supplier_invoice_number
+          - quality_inspection_date
+
+    relations:
+      rawMaterial:
+        type: belongsTo
+        model: App\Modules\Inventory\Models\RawMaterial
+        foreignKey: raw_material_id
+        displayField: name
+
+
+
+    sidebar:
+      add: false
+    iconClasses: fas fa-dolly-flatbed # Or a more suitable icon
+    includeHeader: true
+    includeFooter: true
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']
+
+
+
+
+  RawMaterialTag: # Pivot Model for RawMaterial and Tag
+      module: inventory
+      fields:
+        raw_material_id:
+          type: select
+          foreign:
+            table: raw_materials
+            column: id
+            onDelete: cascade
+        tag_id:
+          type: select
+          foreign:
+            table: tags
+            column: id
+            onDelete: cascade
+      relations:
+        rawMaterial:
+          type: belongsTo
+          model: App\Modules\Inventory\Models\RawMaterial
+          foreignKey: raw_material_id
+        tag:
+          type: belongsTo
+          model: App\Modules\Item\Models\Tag
+          foreignKey: tag_id

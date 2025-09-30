@@ -1,0 +1,309 @@
+models:
+  Employee:
+    module: hr
+    fields:
+      employee_number:
+        type: string
+        label: Employee Number
+        validation:
+          - required|unique:employees,employee_number
+      first_name:
+        type: string
+        validation:
+          - required|string|max:255
+      last_name:
+        type: string
+        validation:
+          - required|string|max:255
+      email:
+        type: string
+        validation:
+          - required|email|unique:employees,email
+      phone:
+        type: string
+        modifiers:
+          nullable: true
+      hire_date:
+        type: datepicker
+        validation:
+          - required
+      department_id:
+        type: select
+        foreign:
+          table: departments
+          column: id
+          onDelete: restrict
+        validation:
+          - required|integer
+      status:
+        type: select
+        options: Active,Inactive,Terminated
+        validation:
+          - required
+    hiddenFields:
+      onTable: []
+      onNewForm: []
+      onEditForm: []
+      onQuery: []
+    tab:
+      label: Employees
+      group: employee-management
+      id: employees
+      parentPageTitle: Employee Management
+      pageTitle: Employees
+      view: employees
+      url: hr/employees
+    fieldGroups:
+      - title: Personal Information
+        groupType: hr
+        fields:
+          - first_name
+          - last_name
+          - email
+          - phone
+      - title: Employment Details
+        groupType: hr
+        fields:
+          - employee_number
+          - hire_date
+          - department_id
+          - status
+    relations:
+      department:
+        type: belongsTo
+        model: App\Modules\Hr\Models\Department
+        foreignKey: department_id
+        displayField: name
+      documents:
+        type: hasMany
+        model: App\Modules\Hr\Models\Document
+        foreignKey: employee_id
+        displayField: document_name
+    sidebar:
+      add: true
+      groupTitle: Employee Management
+      title: Employees
+      iconClasses: fas fa-users
+      url: employees
+    iconClasses: fas fa-user-tie
+    includeHeader: false
+    includeFooter: false
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']
+
+  EmployeeProfile:
+    module: hr
+    fields:
+      employee_id:
+        type: select
+        foreign:
+          table: employees
+          column: id
+          onDelete: cascade
+        validation:
+          - required|unique:employee_profiles,employee_id
+      address:
+        type: text
+        modifiers:
+          nullable: true
+      city:
+        type: string
+        modifiers:
+          nullable: true
+      state:
+        type: string
+        modifiers:
+          nullable: true
+      zip_code:
+        type: string
+        modifiers:
+          nullable: true
+      emergency_contact:
+        type: string
+        modifiers:
+          nullable: true
+      emergency_phone:
+        type: string
+        modifiers:
+          nullable: true
+    hiddenFields:
+      onTable: []
+      onNewForm: []
+      onEditForm: []
+      onQuery: []
+    tab:
+      label: Employee Profiles
+      group: employee-management
+      id: employee-profiles
+      parentPageTitle: Employee Management
+      pageTitle: Employee Profiles
+      view: employee-profiles
+      url: hr/employee-profiles
+    fieldGroups:
+      - title: Contact Information
+        groupType: hr
+        fields:
+          - address
+          - city
+          - state
+          - zip_code
+      - title: Emergency Contact
+        groupType: hr
+        fields:
+          - emergency_contact
+          - emergency_phone
+    relations:
+      employee:
+        type: belongsTo
+        model: App\Modules\Hr\Models\Employee
+        foreignKey: employee_id
+        displayField: first_name
+    sidebar:
+      add: false
+      title: Employee Profiles
+      iconClasses: fas fa-address-card
+      url: employee-profiles
+    iconClasses: fas fa-id-card
+    includeHeader: false
+    includeFooter: false
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']
+
+  JobTitle:
+    module: hr
+    fields:
+      title:
+        type: string
+        validation:
+          - required|string|max:255
+      description:
+        type: text
+        modifiers:
+          nullable: true
+      department_id:
+        type: select
+        foreign:
+          table: departments
+          column: id
+          onDelete: restrict
+        validation:
+          - required|integer
+      salary_range:
+        type: string
+        modifiers:
+          nullable: true
+    hiddenFields:
+      onTable: []
+      onNewForm: []
+      onEditForm: []
+      onQuery: []
+    tab:
+      label: Job Titles
+      group: employee-management
+      id: job-titles
+      parentPageTitle: Employee Management
+      pageTitle: Job Titles
+      view: job-titles
+      url: hr/job-titles
+    fieldGroups:
+      - title: Job Information
+        groupType: hr
+        fields:
+          - title
+          - description
+          - department_id
+          - salary_range
+    relations:
+      department:
+        type: belongsTo
+        model: App\Modules\Hr\Models\Department
+        foreignKey: department_id
+        displayField: name
+    sidebar:
+      add: true
+      title: Job Titles
+      iconClasses: fas fa-briefcase
+      url: job-titles
+    iconClasses: fas fa-user-md
+    includeHeader: false
+    includeFooter: false
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']
+
+  Document:
+    module: hr
+    fields:
+      employee_id:
+        type: select
+        foreign:
+          table: employees
+          column: id
+          onDelete: cascade
+        validation:
+          - required|integer
+      document_name:
+        type: string
+        validation:
+          - required|string|max:255
+      document_type:
+        type: select
+        options: Contract,ID,Certificate,Other
+        validation:
+          - required
+      file_path:
+        type: string
+        validation:
+          - required
+      upload_date:
+        type: datepicker
+        validation:
+          - required
+      expiry_date:
+        type: datepicker
+        modifiers:
+          nullable: true
+    hiddenFields:
+      onTable: []
+      onNewForm: []
+      onEditForm: []
+      onQuery: []
+    tab:
+      label: Documents
+      group: employee-management
+      id: documents
+      parentPageTitle: Employee Management
+      pageTitle: Documents
+      view: documents
+      url: hr/documents
+    fieldGroups:
+      - title: Document Information
+        groupType: hr
+        fields:
+          - document_name
+          - document_type
+          - upload_date
+          - expiry_date
+      - title: File Storage
+        groupType: hr
+        fields:
+          - file_path
+    relations:
+      employee:
+        type: belongsTo
+        model: App\Modules\Hr\Models\Employee
+        foreignKey: employee_id
+        displayField: first_name
+    sidebar:
+      add: true
+      title: Documents
+      iconClasses: fas fa-file
+      url: documents
+    iconClasses: fas fa-file-alt
+    includeHeader: false
+    includeFooter: false
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']

@@ -1,0 +1,65 @@
+models:
+  Department:
+    module: hr
+    fields:
+      name:
+        type: string
+        validation:
+          - required|string|max:255
+        label: Department
+
+      company_id:
+        type: select
+        foreign:
+          table: companies
+          column: id
+          onDelete: cascade
+        validation:
+          - required|int
+
+      description:
+        type: textarea
+        modifiers:
+          nullable: true
+
+    hiddenFields:
+      onTable: []
+      onNewForm: []
+      onEditForm: []
+      onQuery: []
+
+    #tab:
+    #  label: Departments
+    #  group: departments-management
+    #  id: departments
+    #  parentPageTitle: Departments Management
+    #  pageTitle: Departments Overview
+    #  view: departments
+    #  url: enterprise/departments
+
+    fieldGroups:
+      - title: Department Information
+        groupType: hr
+        fields:
+          - name
+          - company_id
+          - description
+
+    relations:
+      company:
+        type: belongsTo
+        model: App\Modules\Organization\Models\Company # Updated model namespace
+        foreignKey: company_id
+        displayField: name
+
+    #sidebar:
+    #  add: true
+    #  title: Departments
+    #  iconClasses: fas fa-sitemap # Or a more suitable icon
+
+    iconClasses: fas fa-users-cog # Or a more suitable icon
+    includeHeader: false
+    includeFooter: false
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']

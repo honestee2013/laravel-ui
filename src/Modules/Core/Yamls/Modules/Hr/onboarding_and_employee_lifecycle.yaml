@@ -1,0 +1,154 @@
+models:
+  OnboardingTask:
+    module: hr
+    fields:
+      name:
+        type: string
+        validation:
+          - required
+      description:
+        type: textarea
+        modifiers:
+          nullable: true
+      editable:
+        type: string
+        default: Yes
+
+
+    hiddenFields:
+      onTable: []
+      onNewForm: ['editable']
+      onEditForm: ['editable']
+      onQuery: []
+
+    tab:
+      label: Onboarding Tasks
+      group: onboarding-management
+      id: onboarding-tasks
+      parentPageTitle: Onboarding Management
+      pageTitle: Onboarding Tasks Overview
+      view: onboarding-tasks
+      url: hr/onboarding-tasks
+
+    fieldGroups:
+      - title: Task Details
+        groupType: hr
+        fields:
+          - name
+          - description
+
+    #relations:
+    #  userOnboardingStatuses:
+    #    type: hasMany
+    #    model: App\Modules\Hr\Models\UserOnboardingStatus
+    #    foreignKey: user_onboarding_status_id
+
+    sidebar:
+      add: true
+      title: Onboarding 
+      iconClasses: fas fa-user-plus # Or a more suitable icon
+      submenu:
+        - title: Onboarding Tasks
+          url: onboarding-tasks
+        - title: Onboarding Status
+          url: user-onboarding-statuses
+
+    iconClasses: fas fa-clipboard-check # Or a more suitable icon
+    includeHeader: true
+    includeFooter: true
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']
+
+
+
+
+
+  UserOnboardingStatus:
+    module: hr
+    fields:
+      employee_profile_id:
+        type: select
+        label: Employee ID
+        foreign:
+          table: employee_profiles
+          column: id
+          onDelete: cascade
+        validation:
+          - required
+
+      onboarding_task_id:
+        type: select
+        foreign:
+          table: onboarding_tasks
+          column: id
+          onDelete: cascade
+        validation:
+          - required
+      status:
+        type: select
+        options: to_do, in_progress, completed
+        default: to_do
+      due_date:
+        type: datepicker
+        modifiers:
+          nullable: true
+      completed_at:
+        type: datetimepicker
+        modifiers:
+          nullable: true
+
+    hiddenFields:
+      onTable: []
+      onNewForm: []
+      onEditForm: []
+      onQuery: []
+
+    tab:
+      label: User Onboarding Status
+      group: onboarding-management
+      id: user-onboarding-status
+      parentPageTitle: Onboarding Management
+      pageTitle: User Onboarding Status
+      view: user-onboarding-statuses
+      url: hr/user-onboarding-statuses
+
+    fieldGroups:
+      - title: Assignment
+        groupType: hr
+        fields:
+          - employee_profile_id
+          - onboarding_task_id
+
+      - title: Status
+        groupType: hr
+        fields:
+          - status
+          - due_date
+          - completed_at
+
+    relations:
+      employeeProfile:
+        type: belongsTo
+        model: App\Modules\Hr\Models\EmployeeProfile # Adjust namespace if needed
+        foreignKey: employee_profile_id
+        displayField: employee_id # Or appropriate display field
+
+
+      onboardingTask:
+        type: belongsTo
+        model: App\Modules\Hr\Models\OnboardingTask
+        foreignKey: onboarding_task_id
+        displayField: name
+
+    sidebar:
+      add: false
+      title: User Onboarding Status
+      iconClasses: fas fa-user-plus # Or a more suitable icon
+
+    iconClasses: fas fa-check-square # Or a more suitable icon
+    includeHeader: true
+    includeFooter: true
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']

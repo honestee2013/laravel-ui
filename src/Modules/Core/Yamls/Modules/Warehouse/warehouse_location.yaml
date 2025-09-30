@@ -1,0 +1,174 @@
+models:
+  WarehouseLocation:
+    module: warehouse
+    fields:
+      warehouse_zone_id:
+        type: select
+        foreign:
+          table: warehouse_zones
+          column: id
+          onDelete: cascade
+        nullable: true
+      name:
+        type: string
+        validation:
+          - required
+      code:
+        type: string
+        validation:
+          - required|unique:warehouse_locations,code
+      description:
+        type: textarea
+        nullable: true
+      status_id:
+        type: select
+        foreign:
+          table: statuses
+          column: id
+          onDelete: set null
+        nullable: true
+      max_weight:
+        type: decimal
+        modifiers:
+          - precision: 10,2
+        nullable: true
+      max_weight_unit_id:
+        type: select
+        foreign:
+          table: units
+          column: id
+          onDelete: set null
+        nullable: true
+      max_volume:
+        type: decimal
+        modifiers:
+          - precision: 10,2
+        nullable: true
+      max_volume_unit_id:
+        type: select
+        foreign:
+          table: units
+          column: id
+          onDelete: set null
+        nullable: true
+      storage_type_id:
+        type: select
+        foreign:
+          table: storage_types
+          column: id
+          onDelete: set null
+        nullable: true
+      is_active:
+        type: checkbox
+        default: true
+
+    hiddenFields:
+      onTable: []
+      onNewForm: []
+      onEditForm: []
+      onQuery: []
+
+    tab:
+      label: Warehouse Locations
+      group: warehouse-locations-management
+      id: warehouse-locations
+      parentPageTitle: Warehouse Locations Management
+      pageTitle: Warehouse Locations Overview
+      view: warehouse-locations
+      url: warehouse/warehouse-locations
+
+    fieldGroups:
+      - title: Location Information
+        groupType: hr
+        fields:
+          - warehouse_zone_id
+          - name
+          - code
+          - description
+
+      - title: Capacity & Limits
+        groupType: hr
+        fields:
+          - max_weight
+          - max_weight_unit_id
+          - max_volume
+          - max_volume_unit_id
+
+      - title: Status & Storage
+        groupType: hr
+        fields:
+          - status_id
+          - storage_type_id
+          - is_active
+
+    relations:
+      warehouseZone:
+        type: belongsTo
+        model: App\Modules\Warehouse\Models\WarehouseZone # Adjust namespace
+        foreignKey: warehouse_zone_id
+        displayField: name
+      maxWeightUnit:
+        type: belongsTo
+        model: App\Modules\Item\Models\Unit
+        foreignKey: max_weight_unit_id
+        displayField: name
+      maxVolumeUnit:
+        type: belongsTo
+        model: App\Modules\Item\Models\Unit
+        foreignKey: max_volume_unit_id
+        displayField: name
+      status:
+        type: belongsTo
+        model: App\Modules\Status # Adjust namespace
+        foreignKey: status_id
+        displayField: name
+      storageType:
+        type: belongsTo
+        model: App\Modules\StorageType # Adjust namespace
+        foreignKey: storage_type_id
+        displayField: name
+      environmentalConditions:
+        type: belongsToMany
+        model: App\Modules\Warehouse\Models\EnvironmentalCondition # Adjust Namespace
+        pivotTable: env_condition_location
+        foreignKey: warehouse_location_id
+        relatedKey: environmental_condition_id
+        using: App\Modules\Warehouse\Models\EnvConditionLocation # Pivot Model
+
+
+    sidebar:
+      add: true
+      title: Warehouse Locations
+      iconClasses: fas fa-map-marker # Or a more suitable icon
+
+    iconClasses: fas fa-location-arrow # Or a more suitable icon
+    includeHeader: true
+    includeFooter: true
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']
+
+  EnvConditionLocation: # Pivot Model for WarehouseLocation and EnvironmentalCondition
+      module: warehouse
+      fields:
+        warehouse_location_id:
+          type: select
+          foreign:
+            table: warehouse_locations
+            column: id
+            onDelete: cascade
+        environmental_condition_id:
+          type: select
+          foreign:
+            table: environmental_conditions
+            column: id
+            onDelete: cascade
+      relations:
+        warehouseLocation:
+          type: belongsTo
+          model: App\Modules\Warehouse\Models\WarehouseLocation
+          foreignKey: warehouse_location_id
+        environmentalCondition:
+          type: belongsTo
+          model: App\Modules\Warehouse\Models\EnvironmentalCondition
+          foreignKey: environmental_condition_id

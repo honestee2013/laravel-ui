@@ -1,0 +1,234 @@
+models:
+  Product:
+    module: inventory
+    fields:
+      name:
+        type: string
+        validation:
+          - required
+
+      sku:
+        type: string
+        validation:
+          - required|unique:products,sku
+
+      category_id:
+        type: select
+        modifiers:
+          nullable: true # Allow weight to be nullable
+        foreign:
+          table: categories
+          column: id
+
+      unit_id:
+        type: select
+        foreign:
+          table: units
+          column: id
+
+      description:
+        type: textarea
+
+      is_active:
+        type: checkbox
+        default: true
+
+      weight:
+        type: decimal
+        modifiers:
+          precision: 10,2
+          nullable: true # Allow weight to be nullable
+
+      dimensions:
+        type: string
+        nullable: true # Allow dimensions to be nullable
+
+      images:
+        type: file
+        nullable: true # Allow images to be nullable
+      # Add other product-specific fields here as needed
+
+    hiddenFields:
+      onTable: []
+      onNewForm: [] # Customize as needed
+      onEditForm: [] # Customize as needed
+      onQuery: []
+
+
+    tab:
+      label: Products
+      group: products-management
+      id: products
+      parentPageTitle: Products Management
+      pageTitle: Products Overview
+      view: products
+      url: inventory/products
+
+    fieldGroups:
+      - title: Product Information
+        groupType: hr
+        fields:
+          - name
+          - sku
+          - category_id
+          - unit_id
+          - description
+          - is_active
+
+      - title: Physical Attributes
+        groupType: hr
+        fields:
+          - weight
+          - dimensions
+          - images
+
+
+    relations:
+      category:
+        type: belongsTo
+        model: App\Modules\Item\Models\Category
+        foreignKey: category_id
+        displayField: name # Or appropriate display field
+
+      unit:
+        type: belongsTo
+        model: App\Modules\Item\Models\Unit
+        foreignKey: unit_id
+        displayField: name # Or appropriate display field
+
+      tags:  # Many-to-many relationship to tags
+        type: belongsToMany
+        model: App\Modules\Item\Models\Tag
+        pivotTable: product_tag # Name of the pivot table
+        foreignKey: product_id # Foreign key in the pivot table
+        localKey: tag_id # Foreign key in the tags table
+        using: App\Modules\Inventory\Models\ProductTag # Pivot Model
+
+
+    sidebar:
+      add: true
+      title: Products
+      iconClasses: fas fa-boxes # Or a more suitable icon
+
+    iconClasses: fas fa-box
+    includeHeader: true
+    includeFooter: true
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']
+
+
+
+  ProductMovement:
+    module: inventory
+    fields:
+      product_id:
+        type: select
+        validation:
+          - required
+        foreign:
+          table: products
+          column: id
+          onDelete: cascade
+
+      quantity:
+        type: integer
+        validation:
+          - required
+
+      transaction_type:
+        type: select
+        options: sale, return, adjustment, transfer # Add other options
+        validation:
+          - required
+
+      shipping_carrier:
+        type: string
+        nullable: true
+
+      tracking_number:
+        type: string
+        nullable: true
+
+      transaction_date:
+        type: datepicker
+        validation:
+          - required
+       # Add other product movement-specific fields here as needed
+
+    hiddenFields:
+      onTable: []
+      onNewForm: [] # Customize as needed
+      onEditForm: [] # Customize as needed
+      onQuery: []
+
+    tab:
+      label: Product Movements
+      group: products-management
+      id: product-movements
+      parentPageTitle: Products Management
+      pageTitle: Product Movements Overview
+      view: product-movements
+      url: inventory/product-movements
+
+    fieldGroups:
+      - title: Movement Information
+        groupType: hr
+        fields:
+          - product_id
+          - quantity
+          - transaction_type
+          - transaction_date
+
+      - title: Shipping Details
+        groupType: hr
+        fields:
+          - shipping_carrier
+          - tracking_number
+
+    relations:
+      product:
+        type: belongsTo
+        model: App\Modules\Inventory\Models\Product
+        foreignKey: product_id
+        displayField: name # Or appropriate display field
+
+    sidebar:
+      add: false
+    iconClasses: fas fa-dolly # Or a more suitable icon
+    includeHeader: true
+    includeFooter: true
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']
+
+
+
+
+    ProductTag: # Pivot Model for Product and Tag
+      module: inventory
+      fields:
+        product_id:
+          type: select
+          foreign:
+            table: products
+            column: id
+            onDelete: cascade
+
+        tag_id:
+          type: select
+          foreign:
+            table: tags
+            column: id
+            onDelete: cascade
+
+      relations:
+        product:
+          type: belongsTo
+          model: App\Modules\Inventory\Models\Product
+          foreignKey: product_id
+          
+        tag:
+          type: belongsTo
+          model: App\Modules\Item\Models\Tag
+          foreignKey: tag_id

@@ -1,0 +1,147 @@
+models:
+  UserSchedule:
+    module: hr
+    fields:
+      employee_profile_id:
+        type: select
+        label: Employee ID
+        foreign:
+          table: employee_profiles
+          column: id
+          onDelete: cascade
+        validation:
+          - required
+      start_time:
+        type: timepicker
+        modifiers:
+          nullable: true
+      end_time:
+        type: timepicker
+        modifiers:
+          nullable: true
+
+    hiddenFields:
+      onTable: []
+      onNewForm: []
+      onEditForm: []
+      onQuery: []
+
+    tab:
+      label: User Schedules
+      group: user-schedule-management
+      id: user-schedules
+      parentPageTitle: User Schedule Management
+      pageTitle: User Schedules Overview
+      view: user-schedules
+      url: hr/user-schedules
+
+    fieldGroups:
+      - title: User Schedule Override
+        groupType: hr
+        fields:
+          - employee_profile_id
+          - start_time
+          - end_time
+
+    relations:
+      employeeProfile:
+        type: belongsTo
+        model: App\Modules\Hr\Models\EmployeeProfile # Adjust namespace if needed
+        foreignKey: employee_profile_id
+        displayField: employee_id # Or appropriate display field
+
+
+    sidebar:
+      add: true
+      title: Manage User Schedules 
+      iconClasses: fas fa-user-clock # Or a more suitable icon
+      submenu:
+        - title: User Schedules
+          url: user-schedules
+        - title: User Work Days
+          url: user-work-days
+
+
+
+
+
+
+    iconClasses: fas fa-user-cog # Or a more suitable icon
+    includeHeader: true
+    includeFooter: true
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']
+
+
+
+
+  UserWorkDay:
+    module: hr
+    fields:
+      employee_profile_id:
+        type: select
+        label: Employee ID
+        foreign:
+          table: employee_profiles
+          column: id
+          onDelete: cascade
+        validation:
+          - required
+      work_day_id:
+        type: select
+        foreign:
+          table: work_days
+          column: id
+          onDelete: cascade
+        validation:
+          - required
+
+    hiddenFields:
+      onTable: []
+      onNewForm: []
+      onEditForm: []
+      onQuery: []
+
+    tab:
+      label: User Work Days
+      group: user-schedule-management
+      id: user-work-days
+      parentPageTitle: User Schedule Management
+      pageTitle: User Work Days
+      view: user-work-days
+      url: hr/user-work-days
+
+    fieldGroups:
+      - title: User Specific Work Days
+        groupType: hr
+        fields:
+          - employee_profile_id
+          - work_day_id
+
+    relations:
+      employeeProfile:
+        type: belongsTo
+        model: App\Modules\Hr\Models\EmployeeProfile # Adjust namespace if needed
+        foreignKey: employee_profile_id
+        displayField: employee_id # Or appropriate display field
+      workDay:
+        type: belongsTo
+        model: App\Modules\Hr\Models\WorkDay
+        foreignKey: work_day_id
+        displayField: day_name
+
+    sidebar:
+      add: false
+      title: User Work Days
+      iconClasses: fas fa-user-check # Or a more suitable icon
+
+    iconClasses: fas fa-calendar-plus # Or a more suitable icon
+    includeHeader: true
+    includeFooter: true
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']
+
+
+

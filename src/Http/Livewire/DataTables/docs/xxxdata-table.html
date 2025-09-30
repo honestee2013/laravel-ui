@@ -1,0 +1,123 @@
+
+---
+
+### HTML (for `help.html`)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Livewire DataTable Help</title>
+</head>
+<body>
+
+<h1>Livewire DataTable Component</h1>
+<p>This is a reusable DataTable component built with Livewire for Laravel applications. It allows for customizable table fields, actions, and validation rules, supporting features like file uploads, select inputs, and text fields.</p>
+
+<h2>Features</h2>
+<ul>
+    <li><strong>Dynamic Fields</strong>: Add and configure different field types (text, select, textarea, file).</li>
+    <li><strong>Custom Validation</strong>: Define validation rules for each field.</li>
+    <li><strong>File Uploads</strong>: Supports file and image uploads with custom validation.</li>
+    <li><strong>Actions</strong>: Simple and advanced actions for each row, such as <code>edit</code>, <code>show</code>, <code>delete</code>, etc.</li>
+    <li><strong>Hidden Fields</strong>: Control visibility of fields on the table, form, and detail views.</li>
+</ul>
+
+<h2>Usage</h2>
+
+<h3>Basic Example</h3>
+<pre><code>&lt;livewire:data-table
+    model="App\Models\User"
+    :fieldDefinitions="[        'photo' => [            'field_type' => 'file',            'validation' => 'nullable|image|max:1024|mimes:jpg,png,jpeg',        ],
+        'name' => ['field_type' => 'text', 'validation' => 'required|string|min:10'],
+        'email' => ['field_type' => 'email', 'validation' => 'required|email'],
+        'password' => 'password',
+        'about_me' => 'textarea',
+        'location' => [            'field_type' => 'select',            'options' => ['Kano' => 'Kano', 'Kaduna' => 'Kaduna', 'Abuja' => 'Abuja'],
+            'multiSelect' => true,
+            'validation' => 'required|min:2'
+        ]
+    ]"
+    :simpleActions="['edit', 'delete']"
+    :moreActions="[        'show' => [            'title' => 'View Details',            'icon' => 'fas fa-eye text-primary',            'route' => 'users.show',        ]
+    ]"
+    :hiddenFields="[        'onTable' => ['password', 'password_confirmation'],
+        'onEditForm' => ['password_confirmation'],
+    ]"
+/&gt;</code></pre>
+
+<h3>Parameters</h3>
+
+<h4><code>model</code> (required)</h4>
+<p>The model to be used for data fetching and manipulation.</p>
+
+<h4><code>fieldDefinitions</code> (required)</h4>
+<p>An array that defines fields, their types, options, and validation rules.</p>
+<ul>
+    <li><strong>field_type</strong>: The type of field (<code>text</code>, <code>email</code>, <code>password</code>, <code>file</code>, <code>select</code>, <code>textarea</code>).</li>
+    <li><strong>validation</strong>: Laravel validation rules for the field.</li>
+    <li><strong>options</strong> (for select fields): Available options for select dropdowns.</li>
+    <li><strong>multiSelect</strong> (for select fields): Allows multiple selections if set to <code>true</code>.</li>
+    <li><strong>selected</strong> (for select fields): Preselect options.</li>
+</ul>
+
+<h3>Example:</h3>
+<pre><code>'location' => [    'field_type' => 'select',    'options' => ['Kano' => 'Kano', 'Kaduna' => 'Kaduna', 'Abuja' => 'Abuja'],
+    'selected' => ['Abuja'],
+    'multiSelect' => true,
+    'validation' => 'required|min:2'
+]</code></pre>
+
+<h4><code>simpleActions</code> (optional)</h4>
+<p>Array of actions (e.g., <code>show</code>, <code>edit</code>, <code>delete</code>) that are commonly used.</p>
+
+<h4><code>moreActions</code> (optional)</h4>
+<p>Custom actions that require additional customization like icons, routes, etc.</p>
+<pre><code>'moreActions' => [    'edit' => [        'title' => 'Edit User',        'icon' => 'fas fa-edit',        'route' => 'users.edit',    ],
+    'show' => [        'title' => 'View User',        'icon' => 'fas fa-eye',        'route' => 'users.show',    ]
+]</code></pre>
+
+<h4><code>hiddenFields</code> (optional)</h4>
+<p>An array to hide specific fields in different contexts like the table, form, or detail views.</p>
+<pre><code>'hiddenFields' => [    'onTable' => ['password', 'password_confirmation'],
+    'onDetail' => ['password'],
+    'onEditForm' => ['password_confirmation']
+]</code></pre>
+
+<h3>Example of Defining Fields</h3>
+<pre><code>'photo' => [    'field_type' => 'file',    'validation' => 'nullable|image|max:1024|mimes:jpg,png,jpeg'],
+'about_me' => [    'field_type' => 'textarea',    'validation' => 'required|string|max:500'],
+'location' => [    'field_type' => 'select',    'options' => ['Kano' => 'Kano', 'Kaduna' => 'Kaduna'],
+    'multiSelect' => true,
+    'validation' => 'required'
+]</code></pre>
+
+<h2>Methods</h2>
+
+<h3>Field Customization</h3>
+<p>You can fully customize the fields through the <code>fieldDefinitions</code> parameter. This allows you to specify validation rules, field types, and options for fields like select inputs.</p>
+
+<h3>Action Customization</h3>
+<p>Both simple and custom actions are supported. Custom actions can include routes, icons, and labels. Actions can trigger redirects or modal popups.</p>
+
+<h2>Validation</h2>
+<p>Validation is based on the Laravel validation rules you define in the <code>fieldDefinitions</code>.</p>
+<pre><code>'photo' => [    'field_type' => 'file',    'validation' => 'nullable|image|max:1024|mimes:jpg,png,jpeg']</code></pre>
+
+<h2>Notes</h2>
+<ul>
+    <li>Ensure that the <code>fieldDefinitions</code> match the fields in your model.</li>
+    <li>The <code>hiddenFields</code> array allows you to manage field visibility across different parts of the component.</li>
+</ul>
+
+<h2>Future Enhancements</h2>
+<ul>
+    <li>Custom filters.</li>
+    <li>Export to CSV/Excel.</li>
+    <li>Bulk actions.</li>
+</ul>
+
+</body>
+</html>

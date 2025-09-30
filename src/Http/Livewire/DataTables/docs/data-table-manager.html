@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Livewire DataTableManager Component Guide</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+        }
+        h1, h2, h3, h4 {
+            color: #333;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border: 1px solid #ddd;
+            overflow-x: auto;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 15px;
+        }
+        .keyword {
+            color: #d35400;
+            font-weight: bold;
+        }
+        .variable {
+            color: #2980b9;
+            font-weight: bold;
+        }
+        .comment {
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        ul {
+            margin: 10px 0;
+            padding: 0;
+        }
+        ul li {
+            margin: 5px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        table th, table td {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Livewire DataTableManager Component Guide</h1>
+<p>This guide provides a step-by-step breakdown of the <strong>DataTableManager</strong> component in your Laravel application. We’ll go over all parameters, field definitions, validation rules, and more, explaining everything in detail.</p>
+
+<h2>Modular Structure Overview</h2>
+<p>The DataTableManager follows a modular structure where each module (e.g., Inventory, Core) houses its own resources such as models, migrations, and configuration files:</p>
+
+<pre><code class="keyword">App\Modules\Core\Models\
+App\Modules\Core\Config\
+App\Modules\Inventory\Models\
+App\Modules\Inventory\Config\
+...</code></pre>
+
+<h2>Key Features</h2>
+<ul>
+    <li><strong>Modular Design</strong>: Allows for better scalability by organizing code into separate modules.</li>
+    <li><strong>Dynamic Fields</strong>: Supports multiple field types including text, email, file, select, checkbox, and textarea.</li>
+    <li><strong>Validation Rules</strong>: Use Laravel’s validation system to define validation for each field.</li>
+    <li><strong>Custom Actions</strong>: Add actions such as edit, delete, show, with customizable titles, icons, and routes.</li>
+    <li><strong>Sorting and Pagination</strong>: Built-in support for table sorting and pagination of large datasets.</li>
+    <li><strong>Export Options</strong>: Export table data to CSV, Excel, or PDF.</li>
+</ul>
+
+<h2>Usage Overview</h2>
+
+<h3>Basic Example</h3>
+<p>To use the DataTableManager component in a Livewire view, add the following code:</p>
+
+<pre><code>&lt;<span class="keyword">livewire</span>:core.data-tables.data-table-manager
+    <span class="variable">model</span>=<span class="keyword">"App\Models\User"</span>
+    <span class="variable">moduleName</span>=<span class="keyword">"Core"</span>
+/&gt;</code></pre>
+
+<p>If the model is located within the module (e.g., <code>App\Modules\Inventory\Models\Product</code>), you can omit the <code>moduleName</code> parameter:</p>
+
+<pre><code>&lt;<span class="keyword">livewire</span>:inventory.livewire.data-tables.data-table-manager
+    <span class="variable">model</span>=<span class="keyword">"App\Modules\Inventory\Models\Product"</span>
+/&gt;</code></pre>
+
+<h2>Configuration File</h2>
+<p>Each module uses a configuration file to define fields, validation, and actions. This file is located in <code>app/Modules/[ModuleName]/Config/[configFile].php</code>. Below is the complete <code>user.php</code> configuration file:</p>
+
+<pre><code><span class="comment">// user.php Configuration</span>
+<span class="keyword">return</span> [
+
+    <span class="variable">"model"</span> => <span class="keyword">"App\Models\User"</span>,
+
+    <span class="variable">"fieldDefinitions"</span> => [
+        <span class="variable">'name'</span> => [
+            <span class="variable">'field_type'</span> => <span class="keyword">'text'</span>,
+            <span class="variable">'validation'</span> => <span class="keyword">'required|string|min:10'</span>,
+        ],
+        <span class="variable">'photo'</span> => [
+            <span class="variable">'field_type'</span> => <span class="keyword">'file'</span>,
+            <span class="variable">'validation'</span> => <span class="keyword">'nullable|image|max:1024|mimes:jpg,png,jpeg'</span>,
+        ],
+        <span class="variable">'email'</span> => [
+            <span class="variable">'field_type'</span> => <span class="keyword">'email'</span>,
+            <span class="variable">'validation'</span> => <span class="keyword">'required|email'</span>,
+        ],
+        <span class="variable">'password'</span> => [
+            <span class="variable">'field_type'</span> => <span class="keyword">'password'</span>,
+            <span class="variable">'validation'</span> => <span class="keyword">'required|min:6'</span>,
+        ],
+        <span class="variable">'password_confirmation'</span> => [
+            <span class="variable">'field_type'</span> => <span class="keyword">'password'</span>,
+            <span class="variable">'validation'</span> => <span class="keyword">'required|min:6|same:password'</span>,
+        ],
+        <span class="variable">'about_me'</span> => [
+            <span class="variable">'field_type'</span> => <span class="keyword">'textarea'</span>,
+            <span class="variable">'validation'</span> => <span class="keyword">'nullable|max:500'</span>,
+        ],
+        <span class="variable">'location'</span> => [
+            <span class="variable">'field_type'</span> => <span class="keyword">'checkbox'</span>,
+            <span class="variable">'options'</span> => <span class="keyword">['Kano' => 'Kano', 'Kaduna' => 'Kaduna', 'Abuja' => 'Abuja']</span>,
+            <span class="variable">'selected'</span> => <span class="keyword">['Abuja']</span>,
+            <span class="variable">'multiSelect'</span> => <span class="keyword">true</span>,
+            <span class="variable">'validation'</span> => <span class="keyword">'required|min:2'</span>,
+        ],
+    ],
+
+    <span class="variable">"simpleActions"</span> => [<span class="keyword">'show'</span>, <span class="keyword">'edit'</span>, <span class="keyword">'delete'</span>],
+
+    <span class="variable">"controls"</span> => [
+        <span class="keyword">'addButton'</span>,
+        <span class="variable">'files'</span> => [
+            <span class="variable">'export'</span> => [<span class="keyword">'xls'</span>, <span class="keyword">'csv'</span>, <span class="keyword">'pdf'</span>],
+            <span class="variable">'import'</span> => [<span class="keyword">'xls'</span>, <span class="keyword">'csv'</span>],
+        ],
+        <span class="variable">'bulkActions'</span> => [
+            <span class="variable">'export'</span> => [<span class="keyword">'xls'</span>, <span class="keyword">'csv'</span>, <span class="keyword">'pdf'</span>],
+            <span class="keyword">'delete'</span>,
+        ],
+        <span class="variable">'search'</span>,
+        <span class="variable">'showHideColumns'</span>,
+    ],
+];</code></pre>
+
+<h2>Explanation of Parameters</h2>
+
+<ul>
+    <li><strong>model</strong>: Defines the Eloquent model that the DataTable will use to fetch and manipulate data.</li>
+
+    <li><strong>fieldDefinitions</strong>: Defines the fields, input types, and validation rules.
+        <ul>
+            <li><strong>field_type</strong>: The type of input for the field (e.g., text, email, file, checkbox).</li>
+            <li><strong>validation</strong>: Validation rules for each field based on Laravel's validation system.</li>
+            <li><strong>options</strong>: Available options for select or checkbox fields, passed as an associative array.</li>
+            <li><strong>multiSelect</strong>: Boolean value that enables multiple selections for fields like checkboxes.</li>
+        </ul>
+    </li>
+
+    <li><strong>simpleActions</strong>: Basic actions such as 'show', 'edit', and 'delete' that can be applied to each row.</li>
+
+    <li><strong>controls</strong>: Defines various controls like export/import, search, bulk actions, and column visibility toggle.</li>
+</ul>
+
+
+
+<h3>Parameters Explained</h3>
+<p>Here are the main parameters you can pass to the Livewire DataTable component:</p>
+
+<h4><code>model</code> (required)</h4>
+<p>The Eloquent model from which data is fetched and manipulated.</p>
+
+<h4><code>fieldDefinitions</code> (required)</h4>
+<p>An array that defines the fields, their types, validation rules, options, and behaviors.</p>
+
+<ul>
+    <li><strong>field_type</strong>: The type of the input field (<code>text</code>, <code>email</code>, <code>password</code>, <code>file</code>, <code>select</code>, <code>textarea</code>).</li>
+    <li><strong>validation</strong>: Validation rules for the field using Laravel's validation system.</li>
+    <li><strong>options</strong>: Available options for <code>select</code> fields, passed as an associative array.</li>
+    <li><strong>multiSelect</strong>: Boolean flag to allow multiple selections for <code>select</code> fields.</li>
+    <li><strong>selected</strong>: Pre-selected options for <code>select</code> fields.</li>
+</ul>
+
+<pre><code>'location' => [
+    'field_type' => 'select',
+    'options' => ['Lagos' => 'Lagos', 'Abuja' => 'Abuja'],
+    'selected' => ['Abuja'],
+    'multiSelect' => true,
+    'validation' => 'required|min:1'
+]</code></pre>
+
+<h4><code>simpleActions</code> (optional)</h4>
+<p>A list of basic actions (e.g., <code>edit</code>, <code>delete</code>) that are commonly used in the table rows.</p>
+
+<h4><code>moreActions</code> (optional)</h4>
+<p>Allows for custom actions with more configuration, like assigning routes, titles, and icons.</p>
+<pre><code>'moreActions' => [
+    'edit' => ['title' => 'Edit User', 'icon' => 'fas fa-edit', 'route' => 'users.edit'],
+    'show' => ['title' => 'View User', 'icon' => 'fas fa-eye', 'route' => 'users.show']
+]</code></pre>
+
+<h4><code>hiddenFields</code> (optional)</h4>
+<p>Array to hide specific fields in the table, form, or detail views. For example, hiding passwords from the table but showing them in forms.</p>
+<pre><code>'hiddenFields' => [
+    'onTable' => ['password'],
+    'onEditForm' => ['password_confirmation']
+]</code></pre>
+
+<h2>Advanced Features</h2>
+
+<h3>Searchable Columns</h3>
+<p>Enable search functionality for specific fields to allow users to search data efficiently. You can specify which fields are searchable by adding them in the component setup.</p>
+
+<h3>Sorting and Pagination</h3>
+<p>Sorting and pagination are automatically handled. Users can click on column headers to sort the data. Pagination is built-in and customizable, allowing you to set the number of rows displayed per page.</p>
+
+<h3>Export Functionality</h3>
+<p>Support for exporting table data to CSV, Excel, and PDF formats. You can configure this through methods in the component to allow easy data extraction.</p>
+
+<h2>Methods</h2>
+
+<h3>Field Customization</h3>
+<p>Each field is highly customizable through the <code>fieldDefinitions</code> array. You can specify field types, validation, options for select fields, and file upload handling.</p>
+
+<h3>Action Customization</h3>
+<p>Both <code>simpleActions</code> and <code>moreActions</code> allow you to define the behavior of actions. Actions like edit, delete, or show can be configured to open modals, trigger redirects, or perform inline edits.</p>
+
+<h2>Validation</h2>
+<p>Validation rules are passed using Laravel’s validation system. This ensures that the data is checked for correctness before being saved to the database. Each field can have specific validation rules.</p>
+
+<pre><code>'photo' => ['field_type' => 'file', 'validation' => 'nullable|image|max:1024|mimes:jpg,png,jpeg']</code></pre>
+
+<h2>Customization Tips</h2>
+<ul>
+    <li><strong>Model Relationships</strong>: You can display related model data by defining relationships in your <code>fieldDefinitions</code>.</li>
+    <li><strong>Custom Filters</strong>: Create dynamic filters for specific columns to filter data based on user input.</li>
+    <li><strong>Multi-Select Fields</strong>: Configure select fields to allow multiple selections and store them as arrays in your database.</li>
+</ul>
+
+<h2>Known Limitations</h2>
+<ul>
+    <li>Ensure that the <code>fieldDefinitions</code> array is consistent with the model's database schema to prevent errors.</li>
+    <li>Custom actions require careful routing setup to ensure the correct behavior when performing actions like edit, delete, or show.</li>
+</ul>
+
+
+
+<h2>Conclusion</h2>
+<p>The DataTableManager component provides a powerful and flexible way to manage data in a modular Laravel application. With support for dynamic field definitions, validation, actions, and export functionality, it offers a comprehensive solution for managing complex datasets.</p>
+
+</body>
+</html>

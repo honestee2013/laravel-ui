@@ -1,0 +1,243 @@
+models:
+  User:
+    module: user
+    fields:
+      name:
+        type: string
+        validation:
+          - required
+      email:
+        type: email
+        validation:
+          - required|email|unique:users,email
+      email_verified_at:
+        type: datetime
+        modifiers:
+          nullable: true
+        onTable: false
+        onNewForm: false
+        onEditForm: false
+      password:
+        type: password
+        validation:
+          - required|min:8|confirmed
+        onTable: false
+        onEditForm: true # Allow changing password
+      password_confirmation:
+        type: password
+        label: Confirm Password
+        onTable: false
+        onNewForm: true
+        onEditForm: true
+      remember_token:
+        type: string
+        modifiers:
+          nullable: true
+        onTable: false
+        onNewForm: false
+        onEditForm: false
+        onQuery: false
+      user_type:
+        type: select
+        options: staff, customer, supplier # Add other user types as needed
+        validation:
+          - required|string:max:255
+
+    hiddenFields:
+      onTable:
+        - password
+        - remember_token
+        - email_verified_at
+        - password_confirmation
+      onNewForm:
+        - email_verified_at
+        - remember_token
+      onEditForm:
+        - email_verified_at
+        - remember_token
+      onQuery:
+        - password
+        - remember_token
+        - password_confirmation
+
+    tab:
+      label: User Overview
+      group: users-management
+      id: users
+      parentPageTitle: Users Management
+      pageTitle: User Overview
+      view: users
+      url: user/users
+
+    fieldGroups:
+      - title: Basic Information
+        groupType: hr
+        fields:
+          - name
+          - email
+          - user_type
+
+      - title: Password
+        groupType: hr
+        fields:
+          - password
+          - password_confirmation
+
+
+    relations:
+      employeeProfile:
+        type: belongsTo
+        model: App\Modules\Hr\Models\EmployeeProfile # Adjust namespace if needed
+        foreignKey: employee_profile_id
+        displayField: employee_id # Or appropriate display field
+
+
+
+    sidebar:
+      add: true
+      title: Manage Users
+      groupTitle: Users Management
+      iconClasses: fas fa-users # Or a more suitable icon
+      submenu:
+        - title: User Overview
+          url: users
+        - title: Basic Info
+          url: basic-infos
+
+
+    iconClasses: fas fa-user # Or a more suitable icon
+    includeHeader: true
+    includeFooter: true
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']
+
+
+
+
+  BasicInfo:
+    module: user
+    fields:
+      profile_picture: # <--- ADDED THIS FIELD
+        type: file    # Or 'string' if you just store a URL/path and don't want a file upload input
+        modifiers:
+          nullable: true
+        # You might want to hide it from the table or query if it's just a path
+        # onTable: false
+        # onQuery: false
+
+      user_id:
+        type: select
+        foreign:
+          table: users
+          column: id
+          onDelete: cascade
+        validation:
+          - required
+          - unique:basic_infos,user_id # Ensures one basic info record per user
+      about_me:
+        type: textarea
+        modifiers:
+          nullable: true
+
+      phone_number:
+        type: string
+        modifiers:
+          nullable: true
+      email:
+        type: email
+        modifiers:
+          nullable: true
+      address_line_1:
+        type: string
+        modifiers:
+          nullable: true
+      address_line_2:
+        type: string
+        modifiers:
+          nullable: true
+      city:
+        type: string
+        modifiers:
+          nullable: true
+      state:
+        type: string
+        modifiers:
+          nullable: true
+      postal_code:
+        type: string
+        modifiers:
+          nullable: true
+      country:
+        type: string
+        modifiers:
+          nullable: true
+      date_of_birth:
+        type: datepicker
+        modifiers:
+          nullable: true
+      gender:
+        type: select
+        options: male, female, other # Add other options as needed
+        modifiers:
+          nullable: true
+
+    hiddenFields:
+      onTable: []
+      onNewForm: []
+      onEditForm: []
+      onQuery: []
+
+    tab:
+      label: Basic Info
+      group: users-management
+      id: basic-infos
+      parentPageTitle: Users Management
+      pageTitle: Basic Info
+      view: basic-infos
+      url: user/basic-infos
+
+    fieldGroups:
+      - title: Personal Details
+        groupType: hr
+        fields:
+          - profile_picture # <--- ADDED TO FIELD GROUP
+          - user_id
+          - about_me
+          - date_of_birth
+          - gender
+
+      - title: Contact Information
+        groupType: hr
+        fields:
+          - phone_number
+          - email
+
+      - title: Address
+        groupType: hr
+        fields:
+          - address_line_1
+          - address_line_2
+          - city
+          - state
+          - postal_code
+          - country
+
+    relations:
+      user:
+        type: belongsTo
+        model: App\Models\User # Assuming your User model is in App\Models
+        foreignKey: user_id
+        displayField: name # Or an appropriate display field like 'email'
+
+    sidebar:
+      add: false # Allows adding new basic info records (linked to a user)
+      title: Basic Info
+      iconClasses: fas fa-info-circle # Or a more suitable icon
+
+    iconClasses: fas fa-address-card # Or a more suitable icon
+    includeHeader: true
+    includeFooter: true
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']

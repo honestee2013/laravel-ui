@@ -1,0 +1,478 @@
+models:
+  RoleAllowance:
+    module: hr
+    fields:
+      payroll_run_id:
+        type: select
+        label: Payroll Number
+        foreign:
+          table: payroll_runs
+          column: id
+          onDelete: cascade
+        validation:
+          - required
+      role_id:
+        type: select
+        label: Role
+        foreign:
+          table: roles
+          column: id
+          onDelete: cascade
+        validation:
+          - required
+      allowance_type_id:
+        type: select
+        foreign:
+          table: allowance_types
+          column: id
+          onDelete: restrict
+        validation:
+          - required
+      amount:
+        type: decimal
+        label: Fixed Amount (or %)
+        modifiers:
+          precision: 10,2
+        validation:
+          - required|numeric|min:0
+
+
+      addition_type:
+        type: select
+        label: Addition Type
+        options: fixed_amount,  percentage_of_basic_salary, percentage_of_gross_pay
+        validation:
+          - required
+
+
+      notes:
+        type: textarea
+        label: Notes  
+        modifiers:
+          nullable: true
+        validation:
+          - nullable
+
+
+
+    hiddenFields:
+      onTable: []
+      onNewForm: []
+      onEditForm: []
+      onQuery: []
+
+    tab:
+      label: Role Allowances
+      group: allowances-and-bonuses
+      id: role-allowances
+      parentPageTitle: Allowances & Bonuses
+      pageTitle: Role Allowances Overview
+      view: role-allowances
+      url: hr/role-allowances
+
+    fieldGroups:
+      - title: Allowance Details
+        groupType: hr
+        fields:
+          - payroll_run_id
+          - role_id
+          - allowance_type_id
+          - addition_type
+          - amount
+          - notes
+
+    relations:
+      payrollRun:
+        type: belongsTo
+        model: App\Modules\Hr\Models\PayrollRun
+        foreignKey: payroll_run_id
+        displayField: payroll_number # Or appropriate display field
+        
+      role:
+        type: belongsTo
+        model: App\Modules\Access\Models\Role # Adjust namespace if needed
+        foreignKey: role_id
+        displayField: name # Or appropriate display field
+        
+      allowanceType:
+        type: belongsTo
+        model: App\Modules\Hr\Models\AllowanceType
+        foreignKey: allowance_type_id
+        displayField: name
+
+    sidebar:
+      add: false # Allow adding new role allowances from the sidebar menu.
+      title: Allowances & Deductions # Title for the sidebar menu.
+      iconClasses: fas fa-money-bill-alt # Icon for the sidebar menu.
+
+    iconClasses: fas fa-users # Represents groups/roles, implying allowances applied at a group level
+    includeHeader: true 
+    includeFooter: true
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']
+
+
+
+  RoleBonus:
+    module: hr
+    fields:
+      payroll_run_id:
+        type: select
+        label: Payroll Number
+        foreign:
+          table: payroll_runs
+          column: id
+          onDelete: cascade
+        validation:
+          - required
+      role_id:
+        type: select
+        label: Role
+        foreign:
+          table: roles
+          column: id
+          onDelete: cascade
+        validation:
+          - required
+      bonus_type_id:
+        type: select
+        foreign:
+          table: bonus_types
+          column: id
+          onDelete: restrict
+        validation:
+          - required
+      amount:
+        type: decimal
+        label: Fixed Amount (or %)
+        modifiers:
+          precision: 10,2
+        validation:
+          - required|numeric|min:0
+
+
+      addition_type:
+        type: select
+        label: Addition Type
+        options: fixed_amount,  percentage_of_basic_salary, percentage_of_gross_pay
+        validation:
+          - required
+
+
+      notes:
+        type: textarea
+        label: Notes  
+        modifiers:
+          nullable: true
+        validation:
+          - nullable
+
+
+    hiddenFields:
+      onTable: []
+      onNewForm: []
+      onEditForm: []
+      onQuery: []
+
+    tab:
+      label: Role Bonuses
+      group: allowances-and-bonuses
+      id: role-bonuses
+      parentPageTitle: Allowances & Bonuses
+      pageTitle: Role Bonuses Overview
+      view: role-bonuses
+      url: hr/role-bonuses
+
+    fieldGroups:
+      - title: Bonus Details
+        groupType: hr
+        fields:
+          - payroll_run_id
+          - role_id
+          - bonus_type_id
+          - addition_type
+          - amount
+          - notes
+
+    relations:
+      payrollRun:
+        type: belongsTo
+        model: App\Modules\Hr\Models\PayrollRun
+        foreignKey: payroll_run_id
+        displayField: payroll_number # Or appropriate display field
+        
+      role:
+        type: belongsTo
+        model: App\Modules\Access\Models\Role # Adjust namespace if needed
+        foreignKey: role_id
+        displayField: name # Or appropriate display field
+        
+      bonusType:
+        type: belongsTo
+        model: App\Modules\Hr\Models\BonusType
+        foreignKey: bonus_type_id
+        displayField: name
+
+    sidebar:
+      add: false # Allow adding new role bonuses from the sidebar menu.
+      title: Role Allowances & Bonuses # Title for the sidebar menu.
+      iconClasses: fas fa-award # Icon for the sidebar menu.
+
+
+    iconClasses: fas fa-people-arrows # Can signify policy/distribution across groups for bonuses, or "team" reward
+    includeHeader: true
+    includeFooter: true
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']
+
+
+
+  EmployeeAllowance:
+    module: hr
+    fields:
+      payroll_run_id:
+        type: select
+        label: Payroll Number
+        foreign:
+          table: payroll_runs
+          column: id
+          onDelete: cascade
+        validation:
+          - required
+      employee_profile_id:
+        type: select
+        label: Employee ID
+        foreign:
+          table: employee_profiles
+          column: id  
+          onDelete: cascade
+        validation:
+          - required
+      allowance_type_id:
+        type: select
+        foreign:
+          table: allowance_types
+          column: id
+          onDelete: restrict
+        validation: 
+          - required
+      amount:
+        type: decimal
+        label: Fixed Amount (or %)
+        modifiers:
+          precision: 10,2
+        validation:
+          - required|numeric|min:0
+
+      addition_type:
+        type: select
+        label: Addition Type
+        options: fixed_amount,  percentage_of_basic_salary, percentage_of_gross_pay
+        validation:
+          - required
+
+
+      notes:
+        type: textarea
+        label: Notes  
+        modifiers:
+          nullable: true
+        validation:
+          - nullable
+
+
+    hiddenFields:
+      onTable: []
+      onNewForm: []
+      onEditForm: []
+      onQuery: []
+
+    tab:
+      label: Employee Allowances
+      group: allowances-and-bonuses
+      id: employee-allowances
+      parentPageTitle: Allowances & Bonuses
+      pageTitle: Employee Allowances
+      view: employee-allowances
+      url: hr/employee-allowances
+
+    fieldGroups:
+      - title: Allowance Details
+        groupType: hr
+        fields:
+          - payroll_run_id
+          - employee_profile_id
+          - allowance_type_id
+          - addition_type
+          - amount  
+          - notes
+
+    relations:  
+      payrollRun:
+        type: belongsTo
+        model: App\Modules\Hr\Models\PayrollRun
+        foreignKey: payroll_run_id
+        displayField: payroll_number # Or appropriate display field
+        
+      employeeProfile:
+        type: belongsTo
+        model: App\Modules\Hr\Models\EmployeeProfile # Adjust namespace if needed
+        foreignKey: employee_profile_id
+        displayField: employee_id # Or appropriate display field
+        
+      allowanceType:
+        type: belongsTo
+        model: App\Modules\Hr\Models\AllowanceType
+        foreignKey: allowance_type_id
+        displayField: name
+
+
+    sidebar:
+      add: false
+
+
+
+    iconClasses: fas fa-user-tag # Represents an individual employee with a 'tag' for allowance categorization/assignment
+    includeHeader: true
+    includeFooter: true
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']
+
+
+
+  EmployeeBonus:
+    module: hr
+    fields:
+      payroll_run_id:
+        type: select
+        label: Payroll Number
+        foreign:
+          table: payroll_runs
+          column: id
+          onDelete: cascade
+        validation:
+          - required
+      employee_profile_id:
+        type: select
+        label: Employee ID
+        foreign:
+          table: employee_profiles
+          column: id
+          onDelete: cascade
+        validation:
+          - required
+      bonus_type_id:
+        type: select
+        foreign:
+          table: bonus_types
+          column: id
+          onDelete: restrict
+        validation:
+          - required
+
+      amount:
+        type: decimal
+        label: Fixed Amount (or %)
+        modifiers:
+          precision: 10,2
+        validation:
+          - required|numeric|min:0
+
+
+      addition_type:
+        type: select
+        label: Addition Type
+        options: fixed_amount,  percentage_of_basic_salary, percentage_of_gross_pay
+        validation:
+          - required
+
+
+      notes:
+        type: textarea
+        label: Notes  
+        modifiers:
+          nullable: true
+        validation:
+          - nullable
+
+
+
+    hiddenFields:
+      onTable: []
+      onNewForm: []
+      onEditForm: []
+      onQuery: []
+
+    tab:
+      label: Employee Bonuses
+      group: allowances-and-bonuses
+      id: employee-bonuses
+      parentPageTitle: Allowances & Bonuses
+      pageTitle: Employee Bonuses
+      view: employee-bonuses
+      url: hr/employee-bonuses
+
+    fieldGroups:
+      - title: Bonus Details
+        groupType: hr
+        fields:
+          - payroll_run_id
+          - employee_profile_id
+          - bonus_type_id
+          - addition_type
+          - amount
+          - notes
+
+    relations:
+      payrollRun:
+        type: belongsTo
+        model: App\Modules\Hr\Models\PayrollRun
+        foreignKey: payroll_run_id
+        displayField: payroll_number # Or appropriate display field
+
+      employeeProfile:
+        type: belongsTo
+        model: App\Modules\Hr\Models\EmployeeProfile # Adjust namespace if needed
+        foreignKey: employee_profile_id
+        displayField: employee_id # Or appropriate display field
+
+      bonusType:
+        type: belongsTo
+        model: App\Modules\Hr\Models\BonusType
+        foreignKey: bonus_type_id
+        displayField: name
+
+
+    sidebar:
+      add: true
+      title: Allowances & Bonuses
+      iconClasses: fas fa-hand-holding-usd # More general and encompassing icon for money related to compensation
+
+      submenu:
+        - title: Role Allowances
+          url: role-allowances
+          iconClasses: fas fa-users # Represents groups/roles, implying allowances applied at a group level
+        - title: Role Bonuses
+          url: role-bonuses
+          iconClasses: fas fa-people-arrows # Can signify policy/distribution across groups for bonuses, or "team" reward
+        - title: Employee Allowances
+          url: employee-allowances
+          iconClasses: fas fa-user-tag # Represents an individual employee with a 'tag' for allowance categorization/assignment
+        - title: Employee Bonuses
+          url: employee-bonuses
+          iconClasses: fas fa-trophy # Strong visual for achievement, reward, or bonus for an individual
+
+
+    iconClasses: fas fa-trophy # Strong visual for achievement, reward, or bonus for an individual
+    includeHeader: true
+    includeFooter: true
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']
+
+
+
+

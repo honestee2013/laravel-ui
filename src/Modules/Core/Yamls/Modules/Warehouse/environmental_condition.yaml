@@ -1,0 +1,54 @@
+models:
+  EnvironmentalCondition:
+    module: warehouse
+    fields:
+      name:
+        type: string
+        validation:
+          - required|unique:environmental_conditions,name
+
+      description:
+        type: textarea
+        modifiers:
+          nullable: true
+
+      is_seeded:
+        type: boolean
+        modifiers:
+          default: false
+
+    hiddenFields:
+      onTable: ['is_seeded']
+      onNewForm: ['is_seeded']
+      onEditForm: ['is_seeded']
+      onDetail: ['is_seeded']
+      onQuery: ['is_seeded']
+
+    #tab:
+    #  label: Environmental Conditions
+    #  group: environmental-conditions-management
+    #  id: environmental-conditions
+    #  parentPageTitle: Environmental Conditions Management
+    #  pageTitle: Environmental Conditions Overview
+    #  view: environmental-conditions
+    #  url: warehouse/environmental-conditions
+
+    fieldGroups:
+      - title: Environmental Condition Information
+        groupType: hr
+        fields:
+          - name
+          - description
+         # - is_seeded
+
+    sidebar:
+      add: true
+      title: Environmental Conditions
+      iconClasses: fas fa-thermometer-half # Or a more suitable icon
+
+    iconClasses: fas fa-leaf # Or a more suitable icon
+    includeHeader: false
+    includeFooter: false
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']

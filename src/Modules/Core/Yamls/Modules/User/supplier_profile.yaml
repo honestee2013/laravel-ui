@@ -1,0 +1,91 @@
+models:
+  SupplierProfile:
+    module: user
+    fields:
+      user_id:
+        type: select
+        foreign:
+          table: users
+          column: id
+          onDelete: cascade
+        validation:
+          - required
+      supplier_id:
+        type: string
+        nullable: true
+        validation:
+          - unique:supplier_profiles,supplier_id
+      company_name:
+        type: string
+        nullable: true
+      industry:
+        type: string
+        nullable: true
+      website:
+        type: string
+        validation:
+          - nullable|url
+      contact_person:
+        type: string
+        nullable: true
+      supply_category:
+        type: string
+        nullable: true
+      payment_terms:
+        type: string
+        nullable: true
+      shipping_address:
+        type: textarea
+        nullable: true
+
+    hiddenFields:
+      onTable: []
+      onNewForm: []
+      onEditForm: []
+      onQuery: []
+
+    tab:
+      label: Supplier Profile
+      group: users-management
+      id: supplier-profile
+      parentPageTitle: Users Management
+      pageTitle: Supplier Profile
+      view: supplier-profiles
+      url: user/supplier-profiles
+
+    fieldGroups:
+      - title: Basic Supplier Information
+        groupType: hr
+        fields:
+          - user_id
+          - supplier_id
+          - company_name
+          - industry
+
+      - title: Contact & Supply Details
+        groupType: hr
+        fields:
+          - website
+          - contact_person
+          - supply_category
+          - payment_terms
+          - shipping_address
+
+    relations:
+      user:
+        type: belongsTo
+        model: App\Models\User # Adjust namespace if needed
+        foreignKey: user_id
+        displayField: name
+
+    sidebar:
+      add: true
+      title: Supplier Profiles
+      iconClasses: fas fa-truck # Or a more suitable icon
+
+    iconClasses: fas fa-handshake # Or a more suitable icon
+    includeHeader: true
+    includeFooter: true
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']

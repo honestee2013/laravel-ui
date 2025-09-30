@@ -1,0 +1,140 @@
+models:
+  PayGrade:
+    module: hr
+    fields:
+      name:
+        type: string
+        validation:
+          - required|unique:pay_grades,name
+      min_salary:
+        type: decimal
+        modifiers:
+          precision: 12,2
+          nullable: true
+        validation:
+          - nullable|numeric|min:0
+      max_salary:
+        type: decimal
+        modifiers:
+          precision: 12,2
+          nullable: true
+        validation:
+          - nullable|numeric|min:0
+      currency:
+        type: string
+        default: USD
+      description:
+        type: textarea
+        modifiers:
+          nullable: true
+
+    hiddenFields:
+      onTable: []
+      onNewForm: []
+      onEditForm: []
+      onQuery: []
+
+    tab:
+      label: Pay Grades
+      group: payment-structure
+      id: pay-grades
+      parentPageTitle: Payment Structure
+      pageTitle: Pay Grades Overview
+      view: pay-grades
+      url: hr/pay-grades
+
+    fieldGroups:
+      - title: Pay Grade Information
+        groupType: hr
+        fields:
+          - name
+          - min_salary
+          - max_salary
+          - currency
+          - description
+
+
+    sidebar:
+      add: true
+      groupTitle: Salaries & Payment Structure
+      title: Payment Structure
+      iconClasses: fas fa-layer-group # Or a more suitable icon
+      submenu:
+        - title: Pay Grades
+          url: pay-grades
+        - title: Role Salaries
+          url: role-salaries
+
+
+    iconClasses: fas fa- সিঁড়ি # Or a more suitable icon (representing levels/grades)
+    includeHeader: true
+    includeFooter: true
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']
+
+
+
+
+  RoleSalary:
+    module: hr
+    fields:
+      role_id:
+        type: select
+        foreign:
+          table: roles
+          column: id
+          onDelete: cascade
+        validation:
+          - required|unique:role_salaries,role_id
+      salary:
+        type: decimal
+        modifiers:
+          precision: 12,2
+        default: 0.00
+        validation:
+          - required|numeric|min:0
+      currency:
+        type: string
+        default: USD
+
+    hiddenFields:
+      onTable: []
+      onNewForm: []
+      onEditForm: []
+      onQuery: []
+
+    tab:
+      label: Role Salaries
+      group: payment-structure
+      id: role-salaries
+      parentPageTitle: Payment Structure
+      pageTitle: Role Salaries Overview
+      view: role-salaries
+      url: hr/role-salaries
+
+    fieldGroups:
+      - title: Role Salary Information
+        groupType: hr
+        fields:
+          - role_id
+          - salary
+          - currency
+
+    relations:
+      role:
+        type: belongsTo
+        model: App\Modules\Access\Models\Role # Adjust namespace if needed
+        foreignKey: role_id
+        displayField: name # Or appropriate display field
+
+    sidebar:
+      add: false
+
+
+    iconClasses: fas fa-coins # Or a more suitable icon
+    includeHeader: true
+    includeFooter: true
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']

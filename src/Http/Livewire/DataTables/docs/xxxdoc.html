@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Livewire DataTable Component Help</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+        }
+        h1, h2, h3, h4 {
+            color: #333;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border: 1px solid #ddd;
+            overflow-x: auto;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        ul {
+            margin: 10px 0;
+            padding: 0;
+        }
+        ul li {
+            margin: 5px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        table th, table td {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Livewire DataTable Component Guide</h1>
+<p>This guide covers the usage, features, parameters, and customization options for the reusable Livewire DataTable component. It provides powerful data-handling capabilities in Laravel applications with flexible field definitions, actions, validation, and more.</p>
+
+<h2>Key Features</h2>
+<ul>
+    <li><strong>Dynamic Fields</strong>: Support for multiple field types like text, email, password, file, select, and textarea.</li>
+    <li><strong>Custom Validation</strong>: Define validation rules for each field according to Laravel’s validation system.</li>
+    <li><strong>File Uploads</strong>: Manage image and file uploads with custom validation for formats, size, and other constraints.</li>
+    <li><strong>Actions</strong>: Configure actions (edit, delete, show) for each row, with customizable titles, icons, and routing.</li>
+    <li><strong>Hidden Fields</strong>: Control visibility of fields in tables, forms, and detail views.</li>
+    <li><strong>Sorting and Pagination</strong>: Built-in table sorting and pagination for large datasets.</li>
+    <li><strong>Searchable Columns</strong>: Search across table fields with automatic query updates.</li>
+    <li><strong>Export Options</strong>: Export table data in CSV, Excel, or PDF format.</li>
+    <li><strong>Bulk Actions</strong>: Apply actions to multiple selected rows (delete, export, etc.).</li>
+</ul>
+
+<h2>Usage Overview</h2>
+
+<h3>Basic Example</h3>
+<p>Below is a basic example of how to implement the DataTable component in your Livewire view:</p>
+
+<pre><code>&lt;livewire:data-table
+    model="App\Models\User"
+    :fieldDefinitions="[
+        'photo' => ['field_type' => 'file', 'validation' => 'nullable|image|max:1024|mimes:jpg,png,jpeg'],
+        'name' => ['field_type' => 'text', 'validation' => 'required|string|min:3'],
+        'email' => ['field_type' => 'email', 'validation' => 'required|email'],
+        'password' => ['field_type' => 'password', 'validation' => 'required|min:6'],
+        'about_me' => ['field_type' => 'textarea', 'validation' => 'nullable|max:500'],
+        'location' => ['field_type' => 'select', 'options' => ['Lagos' => 'Lagos', 'Abuja' => 'Abuja'], 'validation' => 'required']
+    ]"
+    :simpleActions="['edit', 'delete']"
+    :moreActions="[
+        'show' => ['title' => 'View Details', 'icon' => 'fas fa-eye', 'route' => 'users.show']
+    ]"
+    :hiddenFields="[
+        'onTable' => ['password', 'password_confirmation'],
+        'onEditForm' => ['password_confirmation']
+    ]"
+/&gt;</code></pre>
+
+<h3>Parameters Explained</h3>
+<p>Here are the main parameters you can pass to the Livewire DataTable component:</p>
+
+<h4><code>model</code> (required)</h4>
+<p>The Eloquent model from which data is fetched and manipulated.</p>
+
+<h4><code>fieldDefinitions</code> (required)</h4>
+<p>An array that defines the fields, their types, validation rules, options, and behaviors.</p>
+
+<ul>
+    <li><strong>field_type</strong>: The type of the input field (<code>text</code>, <code>email</code>, <code>password</code>, <code>file</code>, <code>select</code>, <code>textarea</code>).</li>
+    <li><strong>validation</strong>: Validation rules for the field using Laravel's validation system.</li>
+    <li><strong>options</strong>: Available options for <code>select</code> fields, passed as an associative array.</li>
+    <li><strong>multiSelect</strong>: Boolean flag to allow multiple selections for <code>select</code> fields.</li>
+    <li><strong>selected</strong>: Pre-selected options for <code>select</code> fields.</li>
+</ul>
+
+<pre><code>'location' => [
+    'field_type' => 'select',
+    'options' => ['Lagos' => 'Lagos', 'Abuja' => 'Abuja'],
+    'selected' => ['Abuja'],
+    'multiSelect' => true,
+    'validation' => 'required|min:1'
+]</code></pre>
+
+<h4><code>simpleActions</code> (optional)</h4>
+<p>A list of basic actions (e.g., <code>edit</code>, <code>delete</code>) that are commonly used in the table rows.</p>
+
+<h4><code>moreActions</code> (optional)</h4>
+<p>Allows for custom actions with more configuration, like assigning routes, titles, and icons.</p>
+<pre><code>'moreActions' => [
+    'edit' => ['title' => 'Edit User', 'icon' => 'fas fa-edit', 'route' => 'users.edit'],
+    'show' => ['title' => 'View User', 'icon' => 'fas fa-eye', 'route' => 'users.show']
+]</code></pre>
+
+<h4><code>hiddenFields</code> (optional)</h4>
+<p>Array to hide specific fields in the table, form, or detail views. For example, hiding passwords from the table but showing them in forms.</p>
+<pre><code>'hiddenFields' => [
+    'onTable' => ['password'],
+    'onEditForm' => ['password_confirmation']
+]</code></pre>
+
+<h2>Advanced Features</h2>
+
+<h3>Searchable Columns</h3>
+<p>Enable search functionality for specific fields to allow users to search data efficiently. You can specify which fields are searchable by adding them in the component setup.</p>
+
+<h3>Sorting and Pagination</h3>
+<p>Sorting and pagination are automatically handled. Users can click on column headers to sort the data. Pagination is built-in and customizable, allowing you to set the number of rows displayed per page.</p>
+
+<h3>Export Functionality</h3>
+<p>Support for exporting table data to CSV, Excel, and PDF formats. You can configure this through methods in the component to allow easy data extraction.</p>
+
+<h2>Methods</h2>
+
+<h3>Field Customization</h3>
+<p>Each field is highly customizable through the <code>fieldDefinitions</code> array. You can specify field types, validation, options for select fields, and file upload handling.</p>
+
+<h3>Action Customization</h3>
+<p>Both <code>simpleActions</code> and <code>moreActions</code> allow you to define the behavior of actions. Actions like edit, delete, or show can be configured to open modals, trigger redirects, or perform inline edits.</p>
+
+<h2>Validation</h2>
+<p>Validation rules are passed using Laravel’s validation system. This ensures that the data is checked for correctness before being saved to the database. Each field can have specific validation rules.</p>
+
+<pre><code>'photo' => ['field_type' => 'file', 'validation' => 'nullable|image|max:1024|mimes:jpg,png,jpeg']</code></pre>
+
+<h2>Customization Tips</h2>
+<ul>
+    <li><strong>Model Relationships</strong>: You can display related model data by defining relationships in your <code>fieldDefinitions</code>.</li>
+    <li><strong>Custom Filters</strong>: Create dynamic filters for specific columns to filter data based on user input.</li>
+    <li><strong>Multi-Select Fields</strong>: Configure select fields to allow multiple selections and store them as arrays in your database.</li>
+</ul>
+
+<h2>Known Limitations</h2>
+<ul>
+    <li>Ensure that the <code>fieldDefinitions</code> array is consistent with the model's database schema to prevent errors.</li>
+    <li>Custom actions require careful routing setup to ensure the correct behavior when performing actions like edit, delete, or show.</li>
+</ul>
+
+<h2>Conclusion</h2>
+<p>This DataTable component is designed to be a comprehensive, flexible tool for managing data in a Laravel application. You can easily configure fields, actions, validations, and export options to suit your needs.</p>
+
+</body>
+</html>

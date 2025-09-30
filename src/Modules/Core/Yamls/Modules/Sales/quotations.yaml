@@ -1,0 +1,246 @@
+models:
+  Quotation:
+    module: sales  # Or a more appropriate module name
+    fields:
+      quote_number:
+        autoGenerate: true
+        type: string
+        validation:
+          - required|unique:quotations,quote_number
+
+      customer_profile_id:
+        type: select
+        validation:
+          - required
+        foreign:
+          table: customer_profiles
+          column: id
+          onDelete: cascade
+        label: Customer Id
+
+      quote_date:
+        type: datepicker
+        validation:
+          - required
+
+      status:
+        type: select
+        options: Draft, Sent, Pending Approval, Approved, Rejected, Negotiation, Accepted, Converted, Expired, Canceled, Closed, Completed
+        default: Draft
+        validation:
+          - required|string|max:255
+
+      created_by:
+        type: select
+        modifiers:
+          nullable: true
+        foreign:
+          table: users
+          column: id
+          onDelete: cascade
+
+      updated_by:
+        type: select
+        modifiers:
+          nullable: true
+        foreign:
+          table: users
+          column: id
+          onDelete: cascade
+
+      approved_by:
+        type: select
+        modifiers:
+          nullable: true
+        foreign:
+          table: users
+          column: id
+          onDelete: set null
+
+      approved_at:
+        type: datetime
+        modifiers:
+          nullable: true
+
+
+    hiddenFields:
+      onTable: [approved_at, created_at, updated_at]
+      onNewForm: [created_by, updated_by, approved_by, approved_at, created_at, updated_at, items]
+      onEditForm: [created_by, updated_by, approved_by, approved_at, created_at, updated_at,  items]
+      onQuery: []
+
+    auditTrail:
+      - approved
+      - created
+      - updated
+
+    tab:
+      label: Quotations
+      group: quotations-management
+      id: quotations
+      parentPageTitle: Quotations Management
+      pageTitle: Quotations Overview
+      view: quotations
+      url: sales/quotations # Adjust URL as needed
+
+    fieldGroups:
+      - title: Quotation Info
+        groupType: hr
+        fields:
+          - quote_number
+          - quote_date
+          - status
+          - customer_profile_id
+
+      - title: Audit Trait
+        groupType: hr
+        fields:
+          - created_by
+          - updated_by
+          - approved_by
+
+          - created_at
+          - updated_at
+          - approved_at
+
+    relations:
+      customerProfile:
+        type: belongsTo
+        model: App\Modules\Profile\Models\CustomerProfile # Correct namespace
+        foreignKey: customer_profile_id
+        displayField: customer_id # Or appropriate display field
+
+      createdBy:
+        type: belongsTo
+        model: App\Models\User
+        foreignKey: created_by
+
+      updatedBy:
+        type: belongsTo
+        model: App\Models\User
+        foreignKey: updated_by
+
+      approvedBy:
+        type: belongsTo
+        model: App\Models\User
+        foreignKey: approved_by
+
+      items:  # Polymorphic relationship
+        type: morphToMany
+        morphType: item_type # Name of the column storing the model type
+        model: App\Modules\Inventory\Models\Product # Default model for the relationship
+        pivotTable: quotation_items
+        foreignKey: quotation_id
+        relatedPivotKey: item_id # Name of the polymorphic ID column in the pivot table
+
+    sidebar:
+      add: true
+      title: Quotations
+      iconClasses: fas fa-file-alt # Or a more suitable icon
+
+    iconClasses: fas fa-file-alt # Or a more suitable icon
+    includeHeader: true
+    includeFooter: true
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']
+
+  QuotationItem:
+    module: sales
+    fields:
+      quotation_id:
+        type: select
+        validation:
+          - required
+        foreign:
+          table: quotations
+          column: id
+          onDelete: cascade
+
+      item_type: # Add a field to store the type of item (product, spare_part, etc.)
+        type: select
+        reactivity: lazy
+        options:
+          App\Modules\Inventory\Models\Product: Products
+          App\Modules\Inventory\Models\SparePart: Spare Parts
+          App\Modules\Inventory\Models\RawMaterial: Raw Materials
+
+        validation:
+          - required
+
+
+      item_id:
+        type: select # or hidden if you manage it programmatically
+        validation:
+          - required
+        # No foreign key here - handled by the polymorphic relationship
+
+
+      quantity:
+        type: decimal
+        validation:
+          - required
+
+      unit_price:
+        type: decimal
+        validation:
+          - required
+
+      total_price:
+        type: decimal
+        validation:
+          - required
+
+    hiddenFields:
+      onTable: []
+      onNewForm: [] # Hide the item_id field on forms
+      onEditForm: []
+      onQuery: []
+
+    tab:
+      label: Quotation Items
+      group: quotations-management
+      id: quotation-items
+      parentPageTitle: Quotations Management
+      pageTitle: Quotation Items Overview
+      view: quotation-items
+      url: sales/quotation-items # Adjust URL as needed
+
+    fieldGroups:
+      - title: Quotation Info
+        groupType: hr
+        fields:
+          - quotation_id
+
+      - title: Item Details
+        groupType: hr
+        fields:
+          - item_id
+          - quantity
+          - unit_price
+          - total_price
+
+    relations:
+      quotation:
+        type: belongsTo
+        model: App\Modules\Sales\Models\Quotation  # Correct namespace
+        foreignKey: quotation_id
+        displayField: quote_number
+
+      item_id: # Polymorphic relationship
+        type: morphTo
+        model: App\Modules\Inventory\Models\Product  # Default model for the relationship
+        pivotTable: quotation_items
+        foreignKey: item_type # Name of the column storing the model type
+        localKey: item_id    # Name of the polymorphic ID column in the table
+
+
+
+    iconClasses: fas fa-list-alt # Or a more suitable icon
+    sidebar:
+      add: false
+    includeHeader: true
+    includeFooter: true
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']

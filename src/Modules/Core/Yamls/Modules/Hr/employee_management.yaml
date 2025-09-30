@@ -1,0 +1,468 @@
+models:
+  EmployeeProfile:
+    module: hr
+    fields:
+
+      employee_id:
+        type: string
+        label: Employee ID
+        autoGenerate: true
+        modifiers:
+          nullable: true
+        validation:
+          - required|unique:employee_profiles,employee_id
+
+      full_name:
+        type: string
+        validation:
+          - required|string|max:255
+
+
+      user_id:
+        type: select
+        label: Login Name
+        fillable: true
+        foreign:
+          table: users
+          column: id
+          onDelete: cascade
+        validation:
+          - nullable|unique:basic_infos,user_id
+        modifiers:
+          nullable: true
+
+      department:
+        type: string
+        modifiers:
+          nullable: true
+
+      designation:
+        type: string
+        modifiers:
+          nullable: true
+
+      shift_id:
+        type: select
+        fillable: true
+        foreign:
+          table: shifts
+          column: id
+          onDelete: set null
+        validation:
+          - required|int
+
+
+      employee_profile_id:
+        type: select
+        fillable: true
+        label: Reporting Manager ID
+        foreign:
+          table: employee_profiles
+          column: id
+          onDelete: set null
+        modifiers:
+          nullable: true
+
+
+      job_title_id:
+        type: select
+        fillable: true
+        foreign:
+          table: job_titles
+          column: id
+          onDelete: set null
+        modifiers:
+          nullable: true
+        validation:
+          - required
+
+
+      role_id:
+        type: select
+        label: Primary Role
+        fillable: true
+        foreign:
+          table: roles
+          column: id
+          onDelete: cascade
+        validation:
+          - required
+
+
+
+
+      employment_type:
+        type: select
+        options: Full-time, Part-time, Contract # Add other types as needed
+        modifiers:
+          nullable: true
+        validation:
+          - required
+
+
+      hourly_rate:
+        type: decimal
+        modifiers:
+          precision: 5,2
+          default: 0.00
+          nullable: true
+        validation:
+          - required
+
+
+      work_location:
+        type: string
+        modifiers:
+          nullable: true
+
+      joining_date:
+        type: datepicker
+        modifiers:
+          nullable: true
+        validation:
+          - required|string|max:255
+
+      termination_date:
+        type: datepicker
+        modifiers:
+          nullable: true
+
+
+      notes:
+        type: textarea
+        label: Notes
+        modifiers:
+          nullable: true
+        validation:
+          - nullable
+
+
+
+    hiddenFields:
+      onTable: []
+      onNewForm: []
+      onEditForm: []
+      onQuery: []
+
+    tab:
+       label: Employee Profile
+       group: employees-management
+       id: employee-profile
+       parentPageTitle: Employees Management
+       pageTitle: Employee Profile
+       view: employee-profiles
+       url: hr/employee-profiles
+
+    fieldGroups:
+      - title: Basic Employee Information
+        groupType: hr
+        fields:
+          - employee_id
+          - full_name
+          - user_id
+          - job_title_id
+          - role_id
+          - shift_id
+          - employment_type
+          - hourly_rate
+          - joining_date
+          - termination_date
+
+      - title: Job Details
+        groupType: hr
+        fields:
+          - department
+          - designation
+          - employee_profile_id
+          - work_location
+          - notes
+
+    relations:
+      user:
+        type: belongsTo
+        model: App\Models\User # Assuming User model is in app/Models
+        foreignKey: user_id
+        displayField: name
+
+      jobTitle:
+        type: belongsTo
+        model: App\Modules\Hr\Models\JobTitle # Adjust namespace if needed
+        foreignKey: job_title_id
+        displayField: title
+
+      role:
+        type: belongsTo
+        model: App\Modules\Access\Models\Role # Adjust namespace if needed
+        foreignKey: role_id
+        displayField: name # Or appropriate display field
+
+
+      employeeProfile:
+        type: belongsTo
+        model: App\Modules\Hr\Models\EmployeeProfile # Adjust namespace if needed
+        foreignKey: employee_profile_id
+        displayField: employee_id # Or appropriate display field
+
+
+      shift:
+        type: belongsTo
+        model: App\Modules\Hr\Models\Shift # Adjust namespace if needed
+        foreignKey: shift_id
+        displayField: name
+
+    sidebar:
+      add: true
+      # groupTitle: Employee Management
+      # title: Employee Details
+      title: Employee Profiles
+      iconClasses: fas fa-id-card-alt # Or a more suitable icon
+      url: employee-profiles
+      # submenu:
+      #   - title: Employee Profiles
+      #     url: employee-profiles
+      #   - title: Employee Documents
+      #     url: employee-documents
+      #   - title: Job Titles
+      #     url: job-titles
+
+    iconClasses: fas fa-briefcase # Or a more suitable icon
+    includeHeader: false
+    includeFooter: false
+    includeSidebar: true
+    controls: all
+
+    simpleActions: ['show', 'edit', 'delete']
+
+    moreActions:
+      - title: Show ID Card
+        icon: fas fa-id-card
+        route: show.employee.id.card
+      - title: Download ID Card (PDF)
+        icon: fas fa-file-pdf
+        route: download.employee.id.card
+
+      #more action group 1:
+      #  - title: G1 Item 1
+      #    icon: fas fa-list-alt
+      #    route: my.id.card
+      #more action group 2:
+      #  - title: G2 Item 2
+      #    icon: fas fa-list-alt
+      #    route: my.id.card
+
+
+
+  EmployeeDocument:
+    module: hr
+    fields:
+      employee_id:
+        type: select
+        label: Employee ID
+        foreign:
+          table: employee_profiles
+          column: id
+          onDelete: cascade
+        validation:
+          - required
+
+      document_type:
+        type: string
+        validation:
+          - required
+      file_path:
+        type: file
+        validation:
+          - required
+      original_name:
+        type: string
+        modifiers:
+          nullable: true
+      mime_type:
+        type: string
+        modifiers:
+          nullable: true
+
+      notes:
+        type: textarea
+        label: Notes
+        modifiers:
+          nullable: true
+        validation:
+          - nullable
+
+    hiddenFields:
+      onTable:
+        - file_path # Might not want to display the path directly
+      onNewForm: []
+      onEditForm: []
+      onQuery: []
+
+    tab:
+      label: Employee Documents
+      group: employees-management
+      id: employee-documents
+      parentPageTitle: Employees Management
+      pageTitle: Employee Documents
+      view: employee-documents
+      url: hr/employee-documents
+
+
+    fieldGroups:
+      - title: Document Information
+        groupType: hr
+        fields:
+          - employee_id
+          - document_type
+          - file_path # Consider displaying a link instead of the path in forms/tables
+          - original_name
+          - mime_type
+          - notes
+
+    relations:
+      employee:
+        type: belongsTo
+        model: App\Modules\Hr\Models\EmployeeProfile # Adjust namespace if needed
+        foreignKey: employee_id
+        displayField: name # Or appropriate display field
+
+    sidebar:
+      add: false
+      title: Employee Documents
+      iconClasses: fas fa-file # Or a more suitable icon
+
+    iconClasses: fas fa-paperclip # Or a more suitable icon
+    includeHeader: true
+    includeFooter: true
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']
+
+
+
+
+  JobTitle:
+    module: hr
+    fields:
+      title:
+        type: string
+        validation:
+          - required|unique:job_titles,title
+      description:
+        type: textarea
+        modifiers:
+          nullable: true
+
+      editable:
+        type: string
+        modifiers:
+          default: Yes
+
+    hiddenFields:
+      onTable: []
+      onNewForm: []
+      onEditForm: []
+      onQuery: []
+
+    tab:
+      label: Job Titles
+      group: employees-management
+      id: job-titles
+      parentPageTitle: Employees Management
+      pageTitle: Job Titles Overview
+      view: job-titles
+      url: hr/job-titles
+
+    fieldGroups:
+      - title: Job Title Information
+        groupType: hr
+        fields:
+          - title
+          - description
+
+    sidebar:
+      add: false
+      title: Job Titles
+      iconClasses: fas fa-briefcase # Or a more suitable icon
+      url: job-titles
+
+    iconClasses: fas fa-heading # Or a more suitable icon
+    includeHeader: false
+    includeFooter: false
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']
+
+
+
+
+  Department:
+    module: hr
+    fields:
+      name:
+        type: string
+        validation:
+          - required|string|max:255
+        label: Department
+
+      company_id:
+        type: select
+        foreign:
+          table: companies
+          column: id
+          onDelete: cascade
+        validation:
+          - required|int
+
+      description:
+        type: textarea
+        modifiers:
+          nullable: true
+
+    hiddenFields:
+      onTable: []
+      onNewForm: []
+      onEditForm: []
+      onQuery: []
+
+    #tab:
+    #  label: Departments
+    #  group: departments-management
+    #  id: departments
+    #  parentPageTitle: Departments Management
+    #  pageTitle: Departments Overview
+    #  view: departments
+    #  url: enterprise/departments
+
+    fieldGroups:
+      - title: Department Information
+        groupType: hr
+        fields:
+          - name
+          - company_id
+          - description
+
+    relations:
+      company:
+        type: belongsTo
+        model: App\Modules\Organization\Models\Company # Updated model namespace
+        foreignKey: company_id
+        displayField: name
+
+    sidebar:
+      add: false
+      title: Departments
+      iconClasses: fas fa-sitemap # Or a more suitable icon
+
+    iconClasses: fas fa-users-cog # Or a more suitable icon
+    includeHeader: false
+    includeFooter: false
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']
+
+
+
+
+
+
+

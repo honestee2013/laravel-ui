@@ -1,0 +1,173 @@
+models:
+  WarehouseSection:
+    module: warehouse
+    fields:
+      warehouse_id:
+        type: select
+        foreign:
+          table: warehouses
+          column: id
+          onDelete: cascade
+        nullable: true
+      name:
+        type: string
+        validation:
+          - required
+      code:
+        type: string
+        validation:
+          - required|unique:warehouse_sections,code
+      description:
+        type: textarea
+        nullable: true
+      max_weight:
+        type: decimal
+        modifiers:
+          - precision: 10,2
+        nullable: true
+      max_weight_unit_id:
+        type: select
+        foreign:
+          table: units
+          column: id
+          onDelete: set null
+        nullable: true
+      max_volume:
+        type: decimal
+        modifiers:
+          - precision: 10,2
+        nullable: true
+      max_volume_unit_id:
+        type: select
+        foreign:
+          table: units
+          column: id
+          onDelete: set null
+        nullable: true
+      status_id:
+        type: select
+        foreign:
+          table: statuses
+          column: id
+          onDelete: set null
+        nullable: true
+      storage_type_id:
+        type: select
+        foreign:
+          table: storage_types
+          column: id
+          onDelete: set null
+        nullable: true
+      is_active:
+        type: checkbox
+        default: true
+
+    hiddenFields:
+      onTable: []
+      onNewForm: []
+      onEditForm: []
+      onQuery: []
+
+    tab:
+      label: Warehouse Sections
+      group: warehouse-sections-management
+      id: warehouse-sections
+      parentPageTitle: Warehouse Sections Management
+      pageTitle: Warehouse Sections Overview
+      view: warehouse-sections
+      url: warehouse/warehouse-sections
+
+    fieldGroups:
+      - title: Section Information
+        groupType: hr
+        fields:
+          - warehouse_id
+          - name
+          - code
+          - description
+
+      - title: Capacity & Limits
+        groupType: hr
+        fields:
+          - max_weight
+          - max_weight_unit_id
+          - max_volume
+          - max_volume_unit_id
+
+      - title: Status & Storage
+        groupType: hr
+        fields:
+          - status_id
+          - storage_type_id
+          - is_active
+
+    relations:
+      warehouse:
+        type: belongsTo
+        model: App\Modules\Warehouse\Models\Warehouse # Adjust namespace
+        foreignKey: warehouse_id
+        displayField: name
+      maxWeightUnit:
+        type: belongsTo
+        model: App\Modules\Item\Models\Unit
+        foreignKey: max_weight_unit_id
+        displayField: name
+      maxVolumeUnit:
+        type: belongsTo
+        model: App\Modules\Item\Models\Unit
+        foreignKey: max_volume_unit_id
+        displayField: name
+      status:
+        type: belongsTo
+        model: App\Models\Status # Adjust namespace
+        foreignKey: status_id
+        displayField: name
+      storageType:
+        type: belongsTo
+        model: App\Modules\StorageType # Adjust namespace
+        foreignKey: storage_type_id
+        displayField: name
+      environmentalConditions:
+        type: belongsToMany
+        model: App\Modules\Warehouse\Models\EnvironmentalCondition # Adjust Namespace
+        pivotTable: env_condition_section
+        foreignKey: warehouse_section_id
+        relatedKey: environmental_condition_id
+        using: App\Modules\Warehouse\Models\EnvConditionSection # Pivot Model
+
+    sidebar:
+      add: true
+      title: Warehouse Sections
+      iconClasses: fas fa-th-large # Or a more suitable icon
+
+    iconClasses: fas fa-th # Or a more suitable icon
+    includeHeader: true
+    includeFooter: true
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']
+
+  EnvConditionSection: # Pivot Model for WarehouseSection and EnvironmentalCondition
+      module: warehouse
+      fields:
+        warehouse_section_id:
+          type: select
+          foreign:
+            table: warehouse_sections
+            column: id
+            onDelete: cascade
+        environmental_condition_id:
+          type: select
+          foreign:
+            table: environmental_conditions
+            column: id
+            onDelete: cascade
+      relations:
+        warehouseSection:
+          type: belongsTo
+          model: App\Modules\Warehouse\Models\WarehouseSection
+          foreignKey: warehouse_section_id
+        environmentalCondition:
+          type: belongsTo
+          model: App\Modules\Warehouse\Models\EnvironmentalCondition
+          foreignKey: environmental_condition_id

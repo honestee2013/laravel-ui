@@ -1,0 +1,51 @@
+models:
+  JobTitle:
+    module: hr
+    fields:
+      title:
+        type: string
+        validation:
+          - required|unique:job_titles,title
+      description:
+        type: textarea
+        modifiers:
+          nullable: true
+
+      editable:
+        type: string
+        modifiers:
+          default: Yes
+
+    hiddenFields:
+      onTable: []
+      onNewForm: []
+      onEditForm: []
+      onQuery: []
+
+    #tab:
+    #  label: Job Titles
+    #  group: job-titles-management
+    #  id: job-titles
+    #  parentPageTitle: Job Titles Management
+    #  pageTitle: Job Titles Overview
+    #  view: job-titles
+    #  url: hr/job-titles
+
+    fieldGroups:
+      - title: Job Title Information
+        groupType: hr
+        fields:
+          - title
+          - description
+
+    #sidebar:
+    #  add: true
+    #  title: Job Titles
+    #  iconClasses: fas fa-briefcase # Or a more suitable icon
+
+    iconClasses: fas fa-heading # Or a more suitable icon
+    includeHeader: false
+    includeFooter: false
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']

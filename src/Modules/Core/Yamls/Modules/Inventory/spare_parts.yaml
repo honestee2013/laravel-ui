@@ -1,0 +1,207 @@
+models:
+  SparePart:
+    module: inventory
+    fields:
+      name:
+        type: string
+        validation:
+          - required
+      sku:
+        type: string
+        validation:
+          - required|unique:spare_parts,sku
+      category_id:
+        type: select
+        foreign:
+          table: categories
+          column: id
+      unit_id:
+        type: select
+        foreign:
+          table: units
+          column: id
+      description:
+        type: textarea
+      is_active:
+        type: checkbox
+        default: true
+      part_number:
+        type: string
+        nullable: true
+      manufacturer:
+        type: string
+        nullable: true
+      warranty_period:
+        type: string  # Could also be integer if storing months/years
+        nullable: true
+      # Add other spare part-specific fields as needed (e.g., compatible models, dimensions, etc.)
+
+    hiddenFields:
+      onTable: []
+      onNewForm: []
+      onEditForm: []
+      onQuery: []
+
+    tab:
+      label: Spare Parts
+      group: spare-parts-management
+      id: spare-parts
+      parentPageTitle: Spare Parts Management
+      pageTitle: Spare Parts Overview
+      view: spare-parts
+      url: inventory/spare-parts
+
+    fieldGroups:
+      - title: Spare Part Information
+        groupType: hr
+        fields:
+          - name
+          - sku
+          - category_id
+          - unit_id
+          - description
+          - is_active
+
+      - title: Manufacturing & Warranty
+        groupType: hr
+        fields:
+          - part_number
+          - manufacturer
+          - warranty_period
+
+    relations:
+      category:
+        type: belongsTo
+        model: App\Modules\Item\Models\Category
+        foreignKey: category_id
+        displayField: name
+
+      unit:
+        type: belongsTo
+        model: App\Modules\Item\Models\Unit
+        foreignKey: unit_id
+        displayField: name
+
+      tags:  # Many-to-many relationship to tags
+        type: belongsToMany
+        model: App\Modules\Item\Models\Tag
+        pivotTable: spare_part_tag # Name of the pivot table
+        foreignKey: spare_part_id # Foreign key in the pivot table
+        localKey: tag_id # Foreign key in the tags table
+        using: App\Modules\Inventory\Models\SparePartTag # Pivot Model
+
+
+    sidebar:
+      add: true
+      title: Spare Parts
+      iconClasses: fas fa-cogs  # Or a more suitable icon
+
+    iconClasses: fas fa-wrench  # Or a more suitable icon
+    includeHeader: true
+    includeFooter: true
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']
+
+  SparePartTag: # Pivot Model for SparePart and Tag
+      module: inventory
+      fields:
+        spare_part_id:
+          type: select
+          foreign:
+            table: spare_parts
+            column: id
+            onDelete: cascade
+        tag_id:
+          type: select
+          foreign:
+            table: tags
+            column: id
+            onDelete: cascade
+      relations:
+        sparePart:
+          type: belongsTo
+          model: App\Modules\Inventory\Models\SparePart
+          foreignKey: spare_part_id
+        tag:
+          type: belongsTo
+          model: App\Modules\Item\Models\Tag
+          foreignKey: tag_id
+
+
+
+  SparePartMovement:
+    module: inventory
+    fields:
+      spare_part_id:
+        type: select
+        validation:
+          - required
+        foreign:
+          table: spare_parts
+          column: id
+          onDelete: cascade
+      quantity:
+        type: integer
+        validation:
+          - required
+      transaction_type:
+        type: select
+        options: installation, repair, return, adjustment, transfer  # Add relevant options
+        validation:
+          - required
+      # Add other spare part movement-specific fields here as needed (e.g., installation date, warranty claim ID)
+      installation_date:
+        type: datepicker
+        nullable: true
+      warranty_claim_id:
+        type: string
+        nullable: true
+
+    hiddenFields: # ... (same as before)
+
+    tab:
+      label: Spare Parts Movement
+      group: spare-parts-management
+      id: spare-parts-movement
+      parentPageTitle: Spare Parts Management
+      pageTitle: Spare Parts Movement
+      view: spare-parts-movement
+      url: inventory/spare-parts-movement
+
+    fieldGroups:
+      - title: Spare Part Information
+        groupType: hr
+        fields:
+          - name
+          - sku
+          - category_id
+          - unit_id
+          - description
+          - is_active
+
+      - title: Manufacturing & Warranty
+        groupType: hr
+        fields:
+          - part_number
+          - manufacturer
+          - warranty_period
+
+    relations:
+      sparePart:
+        type: belongsTo
+        model: App\Modules\Inventory\Models\SparePart
+        foreignKey: spare_part_id
+        displayField: name
+
+    sidebar:
+      add: true
+      title: Spare Parts
+      iconClasses: fas fa-cogs  # Or a more suitable icon
+
+    iconClasses: fas fa-wrench  # Or a more suitable icon
+    includeHeader: true
+    includeFooter: true
+    includeSidebar: true
+    controls: all
+    simpleActions: ['show', 'edit', 'delete']
