@@ -9,16 +9,23 @@
         }
     },
     "require": {
-        "livewire/livewire": "^3.0"
+        "livewire/livewire": "^3.0",
+        "spatie/laravel-permission": "^6.21",
+        "maatwebsite/excel": "^3.1",
+        "barryvdh/laravel-dompdf": "^3.1",
+        "simplesoftwareio/simple-qrcode": "^4.2"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
 
     "extra": {
-    "laravel": {
-        "providers": [
-            "QuickerFaster\\LaravelUI\\Providers\\QuickerFasterLaravelUIServiceProvider"
-        ]
+        "laravel": {
+            "providers": [
+                "QuickerFaster\\LaravelUI\\Providers\\QuickerFasterLaravelUIServiceProvider"
+            ]
+        }
     }
-}
+
+
+
 }
