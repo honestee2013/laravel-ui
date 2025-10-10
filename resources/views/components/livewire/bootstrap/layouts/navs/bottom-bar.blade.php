@@ -1,5 +1,7 @@
-<div class="d-md-none position-fixed bottom-0 start-0 end-0 bg-white border-top shadow-sm" style="z-index:1030;">
-    <div class="d-flex px-2 py-1" style="gap:.5rem; overflow-x:auto; overflow-y:visible;">
+
+<nav class="navbar navbar-light bg-white shadow-sm d-md-none fixed-bottom" style="z-index: 1030;">
+  <div class="d-flex px-2 py-1" style="gap:.5rem; overflow-x:auto; overflow-y:visible;">
+
         @php
             $visibleItems = array_slice($items, 0, $maxVisible);
             $overflowItems = array_slice($items, $maxVisible);

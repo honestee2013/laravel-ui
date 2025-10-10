@@ -1,4 +1,4 @@
-<div class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
+<nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm fixed-top" style="z-index: 1030;">
     <div class="container-fluid">
         {{-- Brand --}}
         {{--<a class="navbar-brand d-flex align-items-center" href="{{ route('dashboard') }}" wire:navigate>--}}
@@ -136,4 +136,4 @@
             </div>
         </div>
     </div>
-</div>
+</nav>

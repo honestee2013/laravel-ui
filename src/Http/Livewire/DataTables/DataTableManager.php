@@ -32,6 +32,7 @@ class DataTableManager extends Component
     public $readOnlyFields;
     public $isEditMode = false;
     public $selectedItem;
+    public $selectedItemId;
     public $sortField = 'id';
     public $sortDirection = 'asc';
     public $perPage = 10;
@@ -43,6 +44,8 @@ class DataTableManager extends Component
     public $pageTitle;
     public $queryFilters = [];
     public $modalId = 'addEditModal';
+
+    public $viewType;
 
     protected $listeners = [
         "setFeedbackMessageEvent" => "setFeedbackMessage",
@@ -63,8 +66,10 @@ class DataTableManager extends Component
 
     public function mount()
     {
+
         Log::info("DataTableManager->mount(): " . $this->getId());
         $this->initializeComponent();
+        
     }
 
     protected function initializeComponent()
@@ -92,9 +97,27 @@ class DataTableManager extends Component
         if (empty($this->readOnlyFields)) {
             $this->readOnlyFields = [];
         }
-        
+
+        // Set default view from config, fallback to 'table'****** NEED TO BE FIXED *********
+        $defaultView = $this->config['views']['list'] ?? 'table';
+        $this->viewType = session("view_preference.{$this->moduleName}.{$this->modelName}", $defaultView);
+        if ($this->selectedItemId) { // Route that passes id should show the detail view
+            $this->viewType = "detail";
+        }
+
+
         Log::info($this->dataTableManagerService->getInlinableModels($this->fieldDefinitions));
     }
+
+
+    public function updatedViewType($value)
+    {
+        // Persist user preference
+        session(["view_preference.{$this->moduleName}.{$this->modelName}" => $value]);
+        $this->dispatch("updatedViewTypeEvent", $value);
+        $this->dispatch('$refresh');
+    }
+
 
     public function addModalFormComponentStack($data)
     {
@@ -127,7 +150,10 @@ class DataTableManager extends Component
 
     public function changeSelectedItem($id)
     {
-        $this->selectedItem = $this->model::findOrFail($id);
+     
+        if ($id !== null && is_numeric($id))
+            $this->selectedItem = $this->model::findOrFail($id);
+        
     }
 
     public function openAddRelationshipItemModal($model, $moduleName = "", $recordId = null)
@@ -157,6 +183,46 @@ class DataTableManager extends Component
             $this->dispatch('confirm-page-refresh');
         }
     }
+
+
+
+
+
+/// BELOW SHOULD BE MOVED TO TRAIT EXIST IN BOTH DATA TABLE AND DATA TABLE MANAGER
+// Format field value (dates, booleans, etc.)
+public function formatFieldValue($record, $field)
+{
+    
+    
+    $value = $record?->{$field};
+    if (is_null($value)) return 'N/A';
+    
+
+    $fieldType = $this->fieldDefinitions[$field]["field_type"];
+
+
+    // Handle dates
+    if ($fieldType === 'datepicker') {
+        return $value ? $value->format('M d, Y') : 'N/A';
+    }
+    
+    // Handle selects
+    if (isset($this->fieldDefinitions[$field]['options'])) {
+        $options = $this->fieldDefinitions[$field]['options'];
+        if (is_array($options) && isset($options[$value])) {
+            return $options[$value];
+        }
+    }
+    
+    return $value;
+}
+/// ABOVE SHOULD BE MOVED TO TRAIT EXIST IN BOTH DATA TABLE AND DATA TABLE MANAGER
+
+
+
+
+
+
 
     
 

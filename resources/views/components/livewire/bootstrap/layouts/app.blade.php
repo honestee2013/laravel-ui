@@ -24,36 +24,27 @@
                 font-family: 'Nunito', sans-serif;
             }
         </style>
+        
         @stack('head-scripts')
     </head>
 
-<body class="g-sidenav-show  bg-gray-100">
+<body class="g-sidenav-show bg-gray-100" style="padding-top: 56px; padding-bottom: 56px;">
 
-        
 
-{{-- Top Bar Slot --}}
 {{ $topNav ?? '' }}
 
 <div class="d-flex">
-    {{-- Sidebar + Toggle --}}
-    <div class="sidebar-container flex-shrink-0">
-        {{ $sidebar ?? '' }}
-    </div>
-
-    {{-- Main Content --}}
-    <div class="flex-grow-1 col-8">
-        <main class="p-4">
-            {{ $slot }}
-        </main>
-    </div>
+  <div class="sidebar-container flex-shrink-0">
+    {{ $sidebar ?? '' }}
+  </div>
+  <div class="flex-grow-1 col-8 ">
+    <main class="px-4 pt-0 mt-0">
+      {{ $slot }}
+    </main>
+  </div>
 </div>
 
-
-
-{{-- Bottom bar --}}
-{{ $bottomBar ?? '' }}
-
-
+  {{ $bottomBar ?? '' }}
 
 
    
@@ -95,6 +86,9 @@
         ///document.title = data.page.charAt(0).toUpperCase() + data.page.slice(1) + ' - ' + 'Your App Name';
     });
 </script>
+
+        @stack('script')
+
 
     </body>
 </html>

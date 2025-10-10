@@ -35,7 +35,7 @@
     <div class="d-flex align-items-center justify-content-center toggle-handle bg-light border-end"
         style="cursor:pointer; width:20px;" wire:click="toggleState">
         <i
-            class="fa fa-chevron-left toggle-icon
+            class="fa fa-chevron-left toggle-icon text-primary
             @if ($state === 'full' || $state === 'icon') rotated-left
             @else rotated-right @endif">
         </i>

@@ -26,11 +26,16 @@
     <div class="card p-4">
         {{-- Header --}}
         <x-qf::livewire.bootstrap.data-tables.partials.table-header
-            
+            :config="$config"
             :pageTitle="$pageTitle"
             :modelName="$modelName"
             :config="$config"
             :controls="$controls"
+            :viewType="$viewType" 
+            :selectedItemId="$selectedItemId"
+            :model="$model"
+            :moduleName="$moduleName"
+
         />
 
         
@@ -51,6 +56,9 @@
                 :moduleName="$moduleName"
                 :modelName="$modelName"
                 :recordName="$recordName"
+                :config="$config"
+
+                :viewType="$viewType" 
             />
         </div>
 
@@ -72,6 +80,11 @@
             :modelName="$modelName"
             :recordName="$recordName"
             :moreActions="$moreActions"
+            :config="$config"
+            :viewType="$viewType"
+
+            :selectedItemId="$selectedItemId"
+
         />
 
         {{-- Show Detail Modal --}}

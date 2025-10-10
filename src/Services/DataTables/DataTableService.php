@@ -7,7 +7,7 @@ use App\Modules\Core\Contracts\DataTable\CellFormatterInterface;
 
 class DataTableService
 {
-    public function buildQuery($model, $columns, $fieldDefinitions, $search, $queryFilters, $sortField, $sortDirection, $hiddenFields)
+    public function buildQuery($model, $columns, $fieldDefinitions, $search, $queryFilters, $sortField, $sortDirection, $hiddenFields,)
     {
         $modelClass = '\\' . ltrim($model, '\\');
         $query = (new $modelClass)->newQuery();

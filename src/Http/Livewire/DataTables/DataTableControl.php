@@ -48,12 +48,16 @@ class DataTableControl extends Component
     public array $filters = [];
 
 
+    public $viewType;
+
 
     protected $listeners = [
         "toggleRowsSelectedEvent" => "toggleRowsSelected",
         "sortColumnEvent" => "updateSortParameters",
         "changeSearchEvent" => "changeSearch",
         "changePerPageEvent" => "changePerPage",
+        'updatedViewTypeEvent' => 'updatedViewType',
+
     ];
 
 
@@ -75,6 +79,10 @@ class DataTableControl extends Component
 
     }
 
+public function updatedViewType($viewType) {
+    $this->viewType = $viewType;
+    $this->dispatch('$refresh');
+}
 
 
     // Update visibleColumns with the selectedColumns
