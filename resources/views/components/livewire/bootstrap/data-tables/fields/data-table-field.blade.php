@@ -10,7 +10,10 @@
     'model',
     'modelName',
     'reactivity' => 'defer',
-    'autoGenerate' => false
+    'autoGenerate' => false,
+        
+    'fieldBindingPath' => null, // e.g., 'formData.employee.name'
+
 ])
 
 @php
@@ -33,10 +36,14 @@
     $label = $fieldDefinitions[$field]['label'] ?? ucwords(str_replace('_', ' ', $field));
     $wraperCssClasses = $fieldDefinitions[$field]['wraperCssClasses'] ?? 'col-12';
     $hasInlineAdd = isset($fieldDefinitions[$field]['relationship']['inlineAdd']) &&
-                    $fieldDefinitions[$field]['relationship']['inlineAdd'];
+    $fieldDefinitions[$field]['relationship']['inlineAdd'];
                     
-                    
+
+    $binding = $fieldBindingPath ?? 'fields.' . $field;
+
+        
 @endphp
+
 
 <div class="{{ $wraperCssClasses }}">
     <div class="form-group">
@@ -52,7 +59,7 @@
 
         @switch($type)
             @case('textarea')
-                <textarea wire:model.{{ $reactivity }}="fields.{{ $field }}" id="{{ $field }}"
+                <textarea wire:model.{{ $reactivity }}="{{ $binding }}" id="{{ $field }}"
                     class="form-control" name="{{ $field }}" rows="3"
                     @if(in_array($field, $readOnlyFields)) disabled @endif>{{ $fields[$field] ?? '' }}</textarea>
                 @break
@@ -66,6 +73,7 @@
                     :singleSelectFormFields="$singleSelectFormFields"
                     :readOnlyFields="$readOnlyFields"
                     :label="$label"
+                    :binding="$binding"
                 />
                 @break
 
@@ -78,6 +86,7 @@
                     :multiSelectFormFields="$multiSelectFormFields"
                     :readOnlyFields="$readOnlyFields"
                     :fields="$fields"
+                    :binding="$binding"
                 />
                 @break
 
@@ -89,6 +98,8 @@
                     :reactivity="$reactivity"
                     :singleSelectFormFields="$singleSelectFormFields"
                     :readOnlyFields="$readOnlyFields"
+                    :binding="$binding"
+
                 />
                 @break
 
@@ -101,9 +112,11 @@
                         :readOnlyFields="$readOnlyFields"
                         :fields="$fields"
                         :fieldDefinitions="$fieldDefinitions"
+                        :binding="$binding"
+
                     />
                 @else
-                    <input type="{{ $type }}" wire:model.{{ $reactivity }}="fields.{{ $field }}"
+                    <input type="{{ $type }}" wire:model.{{ $reactivity }}="{{ $binding }}"
                         id="{{ $field }}" class="form-control" value="{{ $fields[$field] ?? '' }}"
                         name="{{ $field }}"
                         accept="{{ implode(',', array_map(fn($ext) => '.' . $ext, DataTableConfig::getSupportedDocumentExtensions())) }}"
@@ -115,7 +128,7 @@
             @case('time')
             @case('datetime')
             @case('datetime-local')
-                <input type="{{ $type }}" wire:model.{{ $reactivity }}="fields.{{ $field }}"
+                <input type="{{ $type }}" wire:model.{{ $reactivity }}="{{ $binding }}"
                     id="{{ $field }}" class="form-control rounded-pill {{ $type }}"
                     value="{{ $fields[$field] ?? '' }}" name="{{ $field }}"
                     placeholder="Please provide the {{ strtolower(str_replace('_', ' ', $field)) }}..."
@@ -125,7 +138,7 @@
             @default
                 {{-- Handle date and time types specifically --}}
                 @if (str_contains($type, "date") || str_contains($type, "time"))
-                    <input type="{{ $type }}" wire:model.{{ $reactivity }}="fields.{{ $field }}"
+                    <input type="{{ $type }}" wire:model.{{ $reactivity }}="{{ $binding }}"
                         id="{{ $field }}" class="form-control rounded-pill {{ $type }}"
                         value="{{ $fields[$field] ?? '' }}" name="{{ $field }}"
                         placeholder="Please provide the {{ strtolower(str_replace('_', ' ', $field)) }}..."
@@ -137,18 +150,19 @@
                 {{-- Default to text input --}}
                 <div class="input-group">
                     
-                    <input type="{{ $type }}" wire:model.{{ $reactivity }}="fields.{{ $field }}"
+                    <input type="{{ $type }}" wire:model.{{ $reactivity }}="{{ $binding }}"
                         id="{{ $field }}" class="form-control" value="{{ $fields[$field] ?? '' }}"
                         name="{{ $field }}"
                         placeholder="Please provide the {{ strtolower(str_replace('_', ' ', $field)) }}..."
                         @if($autoGenerate)
-                            wire:focus="generateOrderNumber('{{ addslashes($model) }}', '{{ $modelName }}', '{{ $field }}')"
+                            wire:click="generateCodeForField('{{ addslashes($model) }}', '{{ $modelName }}', '{{ $field }}')"
                         @endif
                         @if(in_array($field, $readOnlyFields)) disabled @endif>
 
                     @if($autoGenerate)
                         <button class="btn btn-outline-primary mb-0" type="button" id="button-addon2"
-                            wire:click="generateOrderNumber('{{ addslashes($model) }}', '{{ $modelName }}', '{{ $field }}')">
+                            wire:click="generateCodeForField('{{ addslashes($model) }}', '{{ $modelName }}', '{{ $field }}')"
+                            >
                             <i class="fas fa-sync-alt me-1"></i> Auto
                         </button>
                     @endif
@@ -157,9 +171,10 @@
 
 
         @endswitch
+        
 
         {{-- Validation Errors --}}
-        @error('fields.' . $field)
+        @error($binding)
             <span class="text-danger text-sm mb-0">
                 {{ str_replace(['characters.', 'id', 'fields.'], ['', '', ''], $message) }}
             </span>
@@ -176,5 +191,6 @@
                 {{ str_replace(['characters.', 'id', 'single select form fields.'], ['', '', ''], $message) }}
             </span>
         @enderror
+
     </div>
 </div>

@@ -1,0 +1,5 @@
+﻿Type,Example,Description
+Required Step,required: true,All fields in groups are required
+Granular Fields,"`fields: { first_name: ""required","string"" }`"
+Document Count,minDocuments: 2", "maxDocuments: 10,For document upload steps
+Conditional,"required_if: employment_type,Full-time",Laravel validation rules

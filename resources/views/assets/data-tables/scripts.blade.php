@@ -1,4 +1,6 @@
+
 @script
+
     <script>
         document.addEventListener('livewire:initialized', function() {
 
@@ -239,6 +241,18 @@
             });
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         });
     </script>
 @endscript
@@ -262,31 +276,6 @@
 
 
 <script src="/assets/js/plugins/flatpickr.min.js"></script>
-<script>
-    // Date picker initialiser
-    if (document.querySelector('.datepicker')) {
-        flatpickr('.datepicker', {
-            dateFormat: "Y-m-d",  
-        });
-    }
 
-    // Datetime picker initialiser
-    if (document.querySelector('.datetimepicker')) {
-        flatpickr('.datetimepicker', {
-            enableTime: true,
-            dateFormat: "Y-m-d H:i",
-        });
-    }
-
-    // Time picker initialiser
-    if (document.querySelector('.timepicker')) {
-        flatpickr('.timepicker', {
-            enableTime: true,
-            noCalendar: true,
-            dateFormat: "H:i",
-            time_24hr: true,
-        });
-    }
-</script>
 
 

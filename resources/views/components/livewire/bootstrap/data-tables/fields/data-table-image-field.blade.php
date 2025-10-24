@@ -4,7 +4,9 @@
     'reactivity' => 'defer',
     'readOnlyFields',
     'fields',
-    'fieldDefinitions'
+    'fieldDefinitions',
+    'binding', 
+
 ])
 
 
@@ -13,7 +15,7 @@
     <div class="col-9">
         <input 
             type="file" 
-            wire:model.{{ $reactivity }}="fields.{{ $field }}" 
+            wire:model.{{ $reactivity }}="{{ $binding }}" 
             accept="{{ implode(',', array_map(fn($ext) => '.' . $ext, $fieldDefinitions[$field]['fileTypes'] ?? [])) }}"
             id="{{ $field }}" 
             class="form-control rounded-pill"
@@ -51,4 +53,5 @@
             </span>
         @endif
     </div>
+    
 </div>

@@ -5,7 +5,9 @@
     'display',
     'reactivity' => 'defer',
     'singleSelectFormFields',
-    'readOnlyFields'
+    'readOnlyFields',
+    'binding', 
+
 ])
 
 @php

@@ -1,0 +1,4 @@
+﻿Option,Type,Description
+redirect,string,URL to redirect after completion (supports placeholders like {employee_id})
+successMessage,string,Success message with dynamic placeholders ({{ employee.first_name }})
+actions,array,"Post-completion actions (email, tasks, webhooks)"

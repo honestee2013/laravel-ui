@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use QuickerFaster\LaravelUI\Services\CodeGenerators\CodeGeneratorService;
 use QuickerFaster\LaravelUI\Services\GUI\SweetAlertService;
 
 
@@ -18,11 +17,12 @@ use QuickerFaster\LaravelUI\Services\DataTables\DataTableValidationService;
 use QuickerFaster\LaravelUI\Services\DataTables\DataTableRelationshipService;
 
 use QuickerFaster\LaravelUI\Traits\DataTable\DataTableImageHandlerTrait;
+use QuickerFaster\LaravelUI\Traits\GUI\HasAutoGenerateFieldTrait;
 
 
 class DataTableForm extends Component
 {
-    use WithFileUploads, DataTableImageHandlerTrait;
+    use WithFileUploads, DataTableImageHandlerTrait, HasAutoGenerateFieldTrait;
     
     // Services
     protected $formService;
@@ -87,6 +87,9 @@ class DataTableForm extends Component
         }
 
     }
+
+
+    
     
     public function saveRecord($modalId)
     {
@@ -415,12 +418,7 @@ class DataTableForm extends Component
 
 
 
-   public function generateOrderNumber($model, $modelName, $field)
-    {
-        $code = CodeGeneratorService::generateCode($model, $modelName, $field);
-        $this->fields[$field] = $this->fields[$field]?: $code;
 
-    }
 
     
     public function refreshFields()

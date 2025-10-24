@@ -1,0 +1,6 @@
+﻿Operator,Description,Example
+equals,Field equals value,operator: equals", ""value: ""Full-time"""
+not_equals,Field not equals value,operator: not_equals", ""value: ""US Citizen"""
+in,Field value in array,operator: in", ""value: [""Full-time"", ""Part-time""]"
+not_in,Field value not in array,operator: not_in", ""value: [""Contractor""]"
+greater_than,Numeric comparison,operator: greater_than", "value: 18

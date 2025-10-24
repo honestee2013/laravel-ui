@@ -1,0 +1,9 @@
+﻿Option,Type,Description,Required
+title,string,Step title,✅
+description,string,Step description,❌
+model,string,FQCN of model (or null for review steps),✅
+groups,array,References to field groups from model config,❌
+fields,array,Wizard-specific fields (inline definitions),❌
+validation,object,Step-level validation rules,❌
+requiredEntry,integer,"0=optional, 1=required, >1=multiple entries",❌
+condition,object,Conditional logic to show/hide step,❌

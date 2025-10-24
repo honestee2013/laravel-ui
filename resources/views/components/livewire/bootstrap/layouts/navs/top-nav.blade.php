@@ -118,17 +118,21 @@
                         <i class="fas fa-user me-1"></i> 
                         <span class="d-none d-md-inline">{{ auth()->user()?->name ?: __('qf::nav.account') }}</span>
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
+                    <ul class="dropdown-menu me-sm-n4 dropdown-menu-end p-3 pt-4">
                         <li>
-                            <a class="dropdown-item" href="{{ route('profile') }}" wire:navigate>
-                                {{ __('qf::nav.profile') }}
+                            <a class="dropdown-item border-radius-md" href="{{ route('profile') }}" wire:navigate>
+                                 <i class="fas fa-user me-2"></i>
+                                {{ __('qf::nav.profile') }} 
                             </a>
+                           
                         </li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
-                            <button class="dropdown-item text-danger" type="button" wire:click="logout">
+                            <button class="dropdown-item text-danger border-radius-md" type="button" wire:click="logout">
+                                <i class="fas fa-sign-out-alt me-2"></i>
                                 {{ __('qf::nav.logout') }}
                             </button>
+                            
                         </li>
                     </ul>
                 </div>

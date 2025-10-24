@@ -22,6 +22,7 @@ trait DataTableControlsTrait
 
     public function getDataTableAllControls()
     {
+        
         return [
             'addButton' => true,
             'files' => [

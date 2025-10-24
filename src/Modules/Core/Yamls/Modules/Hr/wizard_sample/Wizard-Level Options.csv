@@ -1,0 +1,7 @@
+﻿Option,Type,Description,Required
+module,string,Target module for config file,❌ (auto-resolved)
+title,string,Wizard display title,✅
+description,string,Wizard description,❌
+icon,string,Font Awesome icon class,❌
+permissions,array,Required permissions to access wizard,❌
+completion,object,Post-completion configuration,❌

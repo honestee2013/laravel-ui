@@ -6,7 +6,8 @@
     'reactivity' => 'defer',
     'multiSelectFormFields',
     'readOnlyFields',
-    'fields'
+    'fields',
+    'binding', 
 ])
 
 @php
@@ -25,7 +26,7 @@
                 @if(in_array($field, $readOnlyFields)) disabled @endif>
         @else
             <input wire:key="check-{{ $key }}" class="form-check-input" type="checkbox"
-                id="{{ $key }}" wire:model.{{ $reactivity }}="fields.{{ $field }}"
+                id="{{ $key }}" wire:model.{{ $reactivity }}="{{ $binding }}"
                 value="{{ $key }}"
                 @if (in_array($key, $fields[$field] ?? [])) checked @endif
                 name="{{ $field }}">

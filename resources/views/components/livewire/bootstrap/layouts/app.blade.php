@@ -50,12 +50,39 @@
    
 
 
-        @livewireScripts
+ <!-- 1. Load Livewire -->
+    @livewireScripts
 
-        <!-- Bootstrap JS Bundle with Popper -->
+    <!-- 2. Load Flatpickr library -->
+    <script src="/assets/js/plugins/flatpickr.min.js"></script>
 
-        @stack('footer-scripts')
+    <!-- 3. Register hook in global scope -->
+    <script>
+document.addEventListener('livewire:init', () => {
+   
+    
+    function initFlatpickr() {
+        if (typeof flatpickr === 'undefined') return;
+        
+        document.querySelectorAll('.datepicker').forEach(el => {
+            if (el._flatpickr) el._flatpickr.destroy();
+        });
+        
+        flatpickr('.datepicker', { dateFormat: "Y-m-d" });
+        flatpickr('.datetimepicker', { enableTime: true, dateFormat: "Y-m-d H:i" });
+        flatpickr('.timepicker', { enableTime: true, noCalendar: true, dateFormat: "H:i", time_24hr: true });
+    }
 
+    // Initialize on first load
+    initFlatpickr();
+
+    // ✅ CORRECT LIVEMIRE 3 HOOK
+    Livewire.hook('morphed', ({ el, component }) => {
+       
+        initFlatpickr();
+    });
+});
+    </script>
 
 
         @foreach(config('qf_laravel_ui.assets.js') as $jsFile)
@@ -87,7 +114,9 @@
     });
 </script>
 
-        @stack('script')
+@stack('script')
+
+
 
 
     </body>

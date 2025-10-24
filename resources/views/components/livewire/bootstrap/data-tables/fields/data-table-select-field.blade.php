@@ -6,7 +6,9 @@
     'multiSelectFormFields',
     'singleSelectFormFields',
     'readOnlyFields',
-    'label'
+    'label',
+    'binding', 
+
 ])
 
 @php
@@ -23,7 +25,7 @@
         wire:model.{{ $reactivity }}="singleSelectFormFields.{{ $field }}"
     @else
         wire:key="select-{{ $field }}"
-        wire:model.{{ $reactivity }}="fields.{{ $field }}"
+        wire:model.{{ $reactivity }}="{{ $binding }}"
     @endif
     name="{{ $field }}" id="{{ $field }}" class="form-control"
     @if(in_array($field, $readOnlyFields)) disabled @endif
@@ -36,3 +38,4 @@
         <option value="{{ $key }}">{{ $value }}</option>
     @endforeach
 </select>
+
