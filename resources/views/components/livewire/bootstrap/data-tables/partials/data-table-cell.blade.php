@@ -4,9 +4,14 @@
 @php
     use QuickerFaster\LaravelUI\Services\DataTables\DataTableService;
     use QuickerFaster\LaravelUI\Facades\DataTables\DataTableConfig;
+    use QuickerFaster\LaravelUI\Services\Formatting\FieldFormattingService;
 
-    $dataTableService = app(DataTableService::class);
-    $value = $dataTableService->formatCellValue($row, $column, $fieldDefinitions);
+    $dataFormatter = app(FieldFormattingService::class);
+    $value = $dataFormatter->format($column, $row->$column, $fieldDefinitions, $row);
+    
+    // Cell formatter to be implemented later
+    // $dataTableService = app(DataTableService::class);
+    // $value = $dataTableService->formatCellValue($row, $column, $fieldDefinitions);
    
     // Check if this is a name column (adjust based on your fields)
     $isNameColumn = in_array($column, ['first_name', 'last_name', 'name']);

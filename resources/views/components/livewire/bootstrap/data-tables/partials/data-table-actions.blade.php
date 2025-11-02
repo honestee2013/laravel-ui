@@ -35,9 +35,9 @@
 @endif
 
 @if ($moreActions)
-    <span class="btn-group dropdown" data-bs-toggle="tooltip" data-bs-original-title="More">
+    <span class="btn-group dropdown" data-bs-toggle="tooltip" data-bs-original-title="More" style="margin-right: 1.8em">
         <span class="px-2" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class=fas fa-ellipsis-vertical text-secondary" style="cursor: pointer"></i>
+            <i class="fas fa-ellipsis-vertical text-secondary" style="cursor: pointer"></i>
         </span>
         <ul class="dropdown-menu dropdown-menu-end me-sm-n4 px-2 py-3" aria-labelledby="dropdownMenuButton">
             @foreach ($moreActions as $key => $value)
@@ -52,11 +52,23 @@
                 @endif
 
                 @foreach ($actions as $action)
+                    @php
+                        // replace {id} in $action['params']
+                        $action['params'] = array_map(function($param) use ($row) {
+                            return $param === '{id}' ? $row->id : $param;
+                        }, $action['params'] ?? []);
+                    @endphp
+
                     <li class="mb-2">
                         @if(isset($action['route']))
-                           <a class="dropdown-item border-radius-md" wire:click="openLink('{{ $action['route'] }}', {{ json_encode(array_merge($action['params'] ?? [], ['id' => $row->id])) }})">
+                           {{-- <a class="dropdown-item border-radius-md" wire:click="openLink('{{ $action['route'] }}', {{ json_encode(array_merge($action['params'] ?? [], ['id' => $row->id])) }})"> --}}
+                           <a class="dropdown-item border-radius-md" wire:click="openLink('{{ $action['route'] }}', {{ json_encode($action['params'] ?? []) }})">
                         @elseif(isset($action['updateModelField']) && isset($action['fieldName']) && isset($action['fieldValue']) && isset($action['actionName']))
-                            <a class="dropdown-item border-radius-md" onclick="Livewire.dispatch('updateModelFieldEvent',['{{$row->id}}', '{{$action['fieldName']}}', '{{$action['fieldValue']}}', '{{$action['actionName']}}', '{{$action['handleByEventHandlerOnly']}}'])">
+                            <a class="dropdown-item border-radius-md" onclick="Livewire.dispatch('updateModelFieldEvent',['{{$row->id}}', '{{$action['fieldName']}}', '{{$action['fieldValue']}}', '{{$action['actionName']}}', '{{$action['handleByEventHandlerOnly']?? false}}'])">
+                        @elseif(isset($action['dispatchEvent']) && isset($action['eventName']) && isset($action['params']))
+
+                            <a class="dropdown-item border-radius-md" onclick="Livewire.dispatch('{{$action['eventName']}}', [{{ json_encode($action['params']) }}] )">
+                        
                         @else
                             <a class="dropdown-item border-radius-md" href="javascript:void(0)">
                         @endif

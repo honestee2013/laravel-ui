@@ -69,8 +69,29 @@ class DataTableManager extends Component
 
         Log::info("DataTableManager->mount(): " . $this->getId());
         $this->initializeComponent();
+
+        if (request()->has('edit')) {
+            // Use setTimeout to ensure DOM is ready
+            $this->js('$wire.openEditModalFromUrl(' . request('edit') . ')');
+        }
         
     }
+
+
+
+// In DataTableManager.php
+public function openEditModalFromUrl($id)
+{
+   $this->isEditMode = true;
+    // Find the DataTableForm child component and call its method
+    $this->dispatch('openEditModalEvent', 
+        $id,
+        $this->model,
+        'addEditModal'
+    );
+}
+
+
 
     protected function initializeComponent()
     {

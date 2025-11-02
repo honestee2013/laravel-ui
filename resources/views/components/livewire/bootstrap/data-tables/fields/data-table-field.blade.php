@@ -31,6 +31,8 @@
         }
     }
 
+
+
     $display = $fieldDefinitions[$field]['display'] ?? null;
     $selected = $fieldDefinitions[$field]['selected'] ?? null;
     $label = $fieldDefinitions[$field]['label'] ?? ucwords(str_replace('_', ' ', $field));
@@ -78,6 +80,7 @@
                 @break
 
             @case('checkbox')
+            @case('boolcheckbox')
                 <x-qf::livewire.bootstrap.data-tables.fields.data-table-checkbox-field
                     :field="$field"
                     :options="$options"
@@ -87,21 +90,29 @@
                     :readOnlyFields="$readOnlyFields"
                     :fields="$fields"
                     :binding="$binding"
+                    :type="$type"
                 />
                 @break
 
+
+
             @case('radio')
+            @case('boolradio')
                 <x-qf::livewire.bootstrap.data-tables.fields.data-table-radio-field
                     :field="$field"
                     :options="$options"
                     :display="$display"
                     :reactivity="$reactivity"
+                    :multiSelectFormFields="$multiSelectFormFields"
                     :singleSelectFormFields="$singleSelectFormFields"
                     :readOnlyFields="$readOnlyFields"
+                    :fields="$fields"
                     :binding="$binding"
+                    :type="$type"
 
                 />
                 @break
+
 
             @case('file')
             

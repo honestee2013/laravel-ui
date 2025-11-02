@@ -84,6 +84,13 @@ class DataTableForm extends Component
         // Initialize fields with default values
         foreach ($this->fieldDefinitions as $field => $definition) {
             $this->fields[$field] = $definition['default'] ?? null;
+            // Add options for boolcheckbox & boolradio 
+            if (isset($definition['field_type'])) {
+                if (!isset($this->fieldDefinitions[$field]["options"]) &&  $definition['field_type'] == 'boolradio')
+                    $this->fieldDefinitions[$field]["options"] = [1 => 'Yes', 0 => 'No'];
+                else if (!isset($this->fieldDefinitions[$field]["options"]) &&  $definition['field_type'] == 'boolcheckbox')
+                  $this->fieldDefinitions[$field]["options"] = [1 => 'Yes'];
+            }
         }
 
     }
@@ -248,6 +255,7 @@ class DataTableForm extends Component
     
     public function openEditModal($id, $model, $modalId = 'addEditModal')
     {
+        
         if ($this->model !== $model) return;
         
         ///$this->authorize('update', $model::findOrFail($id));
@@ -263,13 +271,14 @@ class DataTableForm extends Component
                 $this->fields[$field] = $record->$field;
             }
         }
-        
+
         // Populate relationship fields
         $this->populateRelationshipFields($record);
         // Populate single select fields
         $this->populateSingleSelectFields($record);
         
-        $this->dispatch('open-modal-event', ['modalId' => $modalId]); // browser event
+
+        $this->dispatch('open-modal-event', ['isEditMode' => $this->isEditMode, 'editModalTitle' => 'Newwww', 'modalId' => $modalId]); // browser event
     }
 
 
@@ -352,6 +361,8 @@ class DataTableForm extends Component
         foreach ($this->fieldDefinitions as $field => $definition) {
             $this->fields[$field] = $definition['default'] ?? null;
         }
+
+        
     }
     
     public function confirmDelete($ids)

@@ -7,6 +7,8 @@
     'singleSelectFormFields',
     'readOnlyFields',
     'binding', 
+    'type',
+    'fields',
 
 ])
 

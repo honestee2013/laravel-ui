@@ -1,4 +1,6 @@
 @php
+    use QuickerFaster\LaravelUI\Services\Formatting\FieldFormattingService;
+
     $isPasswordField = $column == 'password';
     $isRelationshipField = isset($fieldDefinitions[$column]) && isset($fieldDefinitions[$column]['relationship']);
     $isMultiSelectField = $column && isset($multiSelectFormFields) && in_array($column, array_keys($multiSelectFormFields));
@@ -78,7 +80,11 @@
                 @if($selectedItem->$column === null || $selectedItem->$column === '')
                     <span class="text-muted fst-italic">Empty</span>
                 @else
-                    <span class="text-break">{{ $selectedItem->$column }}</span>
+                    @php
+                        $dataFormatter = app(FieldFormattingService::class);
+                        $value = $dataFormatter->format($column, $selectedItem->$column, $fieldDefinitions, $selectedItem);
+                    @endphp
+                    <span class="text-break">{{ $value }}</span>
                 @endif
             </div>
         @endif

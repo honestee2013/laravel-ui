@@ -1,6 +1,7 @@
 <section class="m-0 my-md-4">
 
-    
+    <livewire:hr.payroll-run-preview />
+ 
     {{-- Main Modal for Add/Edit --}}
     <x-qf::livewire.bootstrap.data-tables.modals.add-edit-modal
         :modalId="$modalId"

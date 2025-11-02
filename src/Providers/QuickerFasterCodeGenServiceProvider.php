@@ -51,6 +51,9 @@ class QuickerFasterCodeGenServiceProvider extends ServiceProvider
 
     public function register()
     {
+
+
+        
         $this->app->singleton('user-activity-logger', function () {
             return new UserActivityLogger();
         });
@@ -300,6 +303,8 @@ class QuickerFasterCodeGenServiceProvider extends ServiceProvider
                 Route::prefix('api')
                     ->middleware('api')
                     ->group($apiRoutePath);
+
+                   
             }
 
 

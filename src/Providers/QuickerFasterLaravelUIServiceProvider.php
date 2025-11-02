@@ -16,6 +16,8 @@ use QuickerFaster\LaravelUI\Facades\DataTables\DataTableOption;
 use QuickerFaster\LaravelUI\Commands\PackageDevCommand;
 use QuickerFaster\LaravelUI\Commands\CreateSuperUserPermissions;
 
+use QuickerFaster\LaravelUI\Formatting\FieldFormattingService;
+
 
 
 
@@ -39,7 +41,8 @@ class QuickerFasterLaravelUIServiceProvider extends ServiceProvider
     public function boot()
     {
         
-        // 1. Load routes if enabled from the config file
+        
+        // 1. Load routes from the package's directory (if enabled from the config file)
         if (config('qf_laravel_ui.load_routes')) {
             $this->loadRoutesFrom(__DIR__ . '/../../routes/web.php');
         }
@@ -65,7 +68,7 @@ class QuickerFasterLaravelUIServiceProvider extends ServiceProvider
         \Route::middleware(['web', 'auth'])->group(__DIR__ . '/../../routes/web.php');
 
         // 6. Register Livewire + Blade components
-        $this->registerLivewireComponents();
+        $this->registerPackageLivewireComponents();
         //$this->registerBladeComponents();
         //Livewire::component("qf", __DIR__ . '/../Components/Livewire');
 
@@ -198,6 +201,10 @@ protected function configureVite()
 
         $this->app->singleton("DataTableDataSourceService", fn() => new DataTableDataSourceService);
 
+        $this->app->singleton(FieldFormattingService::class, function ($app) {
+            return new FieldFormattingService();
+        });
+
     }
 
 
@@ -206,7 +213,7 @@ protected function configureVite()
     /**
      * Automatically registers Livewire components from the package.
      */
-protected function registerLivewireComponents()
+protected function registerPackageLivewireComponents()
 {
     $basePath = __DIR__ . '/../Http/Livewire';
     $baseNamespace = 'QuickerFaster\\LaravelUI\\Http\\Livewire';
@@ -257,6 +264,8 @@ protected function registerLivewireComponents()
         }
     }
 }
+
+
 
 
 
@@ -336,6 +345,7 @@ protected function generateAlias($filePath) {
 
     protected function registerModuleLivewireComponents(string $moduleName, string $livewirePath)
     {
+
         $namespace = "App\\Modules\\$moduleName\\Http\\Livewire";
         $components = $this->scanLivewireComponents($livewirePath, $namespace);
 
@@ -480,19 +490,25 @@ protected function generateAlias($filePath) {
             // Load Routes
             // loads the module’s routes file (web.php), if it exists,
             //so you don’t have to manually include each route file for every module.
+            // Suspend loading the 'Core' modules's routes to avoid conflicts
             $routePath = $module . '/Routes/web.php';
             if (File::exists($routePath)) {
-                Route::middleware('web')
-                    ->group($routePath);
+                if ($moduleName != 'Core') {
+                    Route::middleware('web')
+                        ->group($routePath);
+                }
             }
 
 
             // Load API Routes
             $apiRoutePath = $module . '/Routes/api.php';
             if (File::exists($apiRoutePath)) {
-                Route::prefix('api')
-                    ->middleware('api')
-                    ->group($apiRoutePath);
+                if ($moduleName != 'Core') {
+                    Route::prefix('api')
+                        ->middleware('api')
+                        ->group($apiRoutePath);
+                }
+
             }
 
 
@@ -539,6 +555,17 @@ protected function generateAlias($filePath) {
 
 
 
+        }
+
+
+        // Now loade the 'core' module's routes
+        if (File::exists(app_path("Modules/Core/Routes/web.php"))) {
+            Route::middleware('web')->group(app_path("Modules/Core/Routes/web.php"));
+        }
+
+        // Core Api loading
+        if (File::exists(app_path("Modules/Core/Routes/api.php"))) {
+            Route::prefix('api')->middleware('api')->group(app_path("Modules/Core/Routes/api.php"));
         }
 
     }

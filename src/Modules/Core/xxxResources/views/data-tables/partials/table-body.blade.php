@@ -12,6 +12,7 @@
                     </div>
                 </th>
             @endif
+            
 
             <!--- Table Header ACS-DESC Sorting ---->
             @foreach ($columns as $column)
@@ -182,6 +183,7 @@
                     @endif
 
                     {{----------  HANDLING MORE ACTIONS (GROUPED AND UNGROUPED)  ---------}}
+                    
                     @if ($moreActions)
                         <span class="btn-group dropdown" data-bs-toggle="tooltip" data-bs-original-title="More">
                             <span class="px-2" data-bs-toggle="dropdown" aria-expanded="false">
@@ -206,6 +208,8 @@
                                                <a class="dropdown-item border-radius-md" wire:click="openLink('{{ $action['route'] }}', {{ json_encode(array_merge($action['params']?? [], ['id' => $row->id])) }})">
                                             @elseif(isset($action['updateModelField']) && isset($action['fieldName']) && isset($action['fieldValue']) && isset($action['actionName']))
                                                 <a class="dropdown-item border-radius-md" onclick="Livewire.dispatch('updateModelFieldEvent',['{{$row->id}}', '{{$action['fieldName']}}', '{{$action['fieldValue']}}', '{{$action['actionName']}}', '{{$action['handleByEventHandlerOnly']}}'])">
+                                            @elseif(isset($action['dispatchEvent']) && isset($action['eventName']) && isset($action['eventParams']))
+                                                <a class="dropdown-item border-radius-md" onclick="Livewire.dispatch('{{$action['eventName']}}', {{ json_encode($action['eventParams']) }})">
                                             @else
                                                 <a class="dropdown-item border-radius-md" href="javascript:void(0)">
                                             @endif

@@ -8,11 +8,18 @@
     'readOnlyFields',
     'fields',
     'binding', 
+    'type',
 ])
 
 @php
     $isMultiSelect = $multiSelectFormFields && in_array($field, array_keys($multiSelectFormFields));
+    $isSingleSelect = !$isMultiSelect && isset($fields) && in_array($field, array_keys($fields));   
     $inlineStyle = isset($display) && $display == 'inline' ? "display:inline-flex;" : "";
+
+
+
+
+
 @endphp
 
 @if(isset($display) && $display == 'inline')<div>@endif
@@ -23,12 +30,19 @@
             <input wire:key="multi-check-{{ $key }}" class="form-check-input" type="checkbox"
                 id="{{ $key }}" wire:model.{{ $reactivity }}="multiSelectFormFields.{{ $field }}"
                 value="{{ $key }}" name="{{ $field }}"
-                @if(in_array($field, $readOnlyFields)) disabled @endif>
+                {{-- Review posibility to remove the following line --}}
+                @if(in_array($field, $readOnlyFields)) disabled @endif
+            > 
+
+        @elseif($isSingleSelect)
+            <input wire:key="single-check-{{ $key }}" class="form-check-input" type="checkbox"
+                id="{{ $key }}" wire:model.{{ $reactivity }}="singleSelectFormFields.{{ $field }}"
+                value="{{ $key }}"
+                name="{{ $field }}">    
         @else
             <input wire:key="check-{{ $key }}" class="form-check-input" type="checkbox"
                 id="{{ $key }}" wire:model.{{ $reactivity }}="{{ $binding }}"
                 value="{{ $key }}"
-                @if (in_array($key, $fields[$field] ?? [])) checked @endif
                 name="{{ $field }}">
         @endif
 

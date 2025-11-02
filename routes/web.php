@@ -15,6 +15,9 @@ use QuickerFaster\LaravelUI\Http\Livewire\Pages\Rule;
 
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
 
+
+
+
     /*Route::get('/', Dashboard::class)->name('home');
     //Route::get('/home', Dashboard::class)->name('home');
     Route::get('/dashboard', Dashboard::class)->name('dashboard');

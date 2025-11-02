@@ -1,6 +1,6 @@
 
 
-<div class="table-responsive p-0">
+<div class="table-responsive p-0" style="min-height: 25em">
     {{---------------- SPINNER ------------------}}
     @include('qf::components.livewire.bootstrap.widgets.spinner')
     {{---------------- TABLE ------------------}}
