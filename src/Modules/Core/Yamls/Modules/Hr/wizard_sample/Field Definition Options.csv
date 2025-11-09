@@ -1,7 +1,0 @@
-﻿Field Type,Options,Description
-Standard Field,first_name,References field from model groups
-Checkbox,type: checkbox", "default: true", ""label: ""Send email""",Temporary boolean field
-Computed,type: computed", ""expression: ""{{ first_name }} {{ last_name }}""",Read-only calculated field
-Conditional,"visible_if: { field: nationality, operator: not_equals, value: ""US Citizen"" }",Shows field based on condition
-File Upload,type: file", ""fileTypes: [pdf, doc]"", "maxSizeMB: 5,File upload with validation
-Dynamic Select,options_from: App\Models\User", ""where: { department_id: ""{{ employee.department_id }}"" }",Dynamic dropdown options

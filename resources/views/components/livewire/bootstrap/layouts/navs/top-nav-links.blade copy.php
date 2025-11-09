@@ -1,7 +1,7 @@
 {{-- Top Bar Links for hr --}}
 
 @if(auth()->user()?->can('view_employee_profile'))
-    <x-core.views::layouts.navbars.top-bar-link-item
+    <system.views::layouts.navbars.top-bar-link-item
         iconClasses="fas fa-id-card-alt top-bar-icon"
         url="hr/employee-profiles"
         title="Employee Profiles"

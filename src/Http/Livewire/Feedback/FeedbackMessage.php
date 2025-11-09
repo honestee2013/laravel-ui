@@ -28,7 +28,7 @@ class FeedbackMessage extends Component
 
 
     public function render() {
-        return view('core.views::feedback.feedback-messages');
+        return view('system.views::feedback.feedback-messages');
     }
 
 

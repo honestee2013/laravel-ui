@@ -5,7 +5,7 @@ namespace QuickerFaster\LaravelUI\Http\Livewire\Widgets\Buttons;
 use App\Modules\Access\Events\ToggleButtonEvent;
 use Livewire\Component;
 use Illuminate\Support\Facades\Log;
-use App\Modules\Core\Traits\Widgets\HandlesToggleState;
+use QuickerFaster\LaravelUI\Traits\Widgets\HandlesToggleState;
 
 class ToggleButtonGroup extends Component
 {
@@ -163,7 +163,7 @@ class ToggleButtonGroup extends Component
 
     public function render()
     {
-        return view('core.views::widgets.buttons.toggle-button-group');
+        return view('system.views::widgets.buttons.toggle-button-group');
     }
 }
 

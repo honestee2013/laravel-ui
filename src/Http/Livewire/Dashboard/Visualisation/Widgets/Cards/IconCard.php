@@ -7,7 +7,7 @@ use Livewire\Component;
 
 use Illuminate\Support\Str;
 use Livewire\WithPagination;
-use App\Modules\Core\Traits\DataTable\DataTableFieldsConfigTrait;
+use App\Modules\System\Traits\DataTable\DataTableFieldsConfigTrait;
 use App\Modules\Dashboard\Livewire\Visualisation\Widgets\Charts\Chart;
 use QuickerFaster\LaravelUI\Http\Livewire\Dashboard\Visualisation\Widgets\AggregatorAbstractWidget;
 

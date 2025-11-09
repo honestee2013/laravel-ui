@@ -11,7 +11,7 @@ use App\Modules\Analytics\Data\Dataset;
 
 use App\Modules\Analytics\Data\Aggregator;
 use App\Modules\Analytics\Helpers\DataGroupingHelper;
-use App\Modules\Core\Traits\DataTable\DataTableFieldsConfigTrait;
+use App\Modules\System\Traits\DataTable\DataTableFieldsConfigTrait;
 use QuickerFaster\LaravelUI\Http\Livewire\Dashboard\Visualisation\Widgets\AggregatorAbstractWidget;
 
 class Chart extends AggregatorAbstractWidget

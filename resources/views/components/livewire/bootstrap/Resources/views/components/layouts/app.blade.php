@@ -415,7 +415,7 @@
             <div class="content" style="overflow-x: scroll" id="contentArea">
                 {{-- ---- Navbar content. The <x-slot name="navbar" /> content goes here---- --}}
                 {{-- {{ $navbar }} --}}
-                <x-core.views::layouts.navbars.auth.nav />
+                <system.views::layouts.navbars.auth.nav />
 
                 <div class="container-fluid py-4">
 
@@ -430,7 +430,7 @@
                     {{-- ---- Footer content. The <x-slot name="pageFooter" /> content goes here---- --}}
                     {{ $pageFooter ?? '' }}
 
-                    <x-core.views::layouts.footers.auth.footer />
+                    <system.views::layouts.footers.auth.footer />
                 </div>
             </div>
 
@@ -693,7 +693,7 @@
         @endif
 
         <
-        !--Core JS Files-- >
+        !--system JS Files-- >
         <
         script src = "{{ asset('assets/js/core/popper.min.js') }}" >
     </script>

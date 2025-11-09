@@ -6,7 +6,7 @@
             <a class="col-11" data-bs-toggle="collapse" href="#component-{{$componentId}}" role="button" aria-expanded="false"
                 aria-controls="collapseExample">
 
-                @include('core.views::widgets.buttons.title-icon', [
+                @include('system.views::widgets.buttons.title-icon', [
                     'title' => $title,
                     'subtitle' => $subtitle,
                     'description' => $description,
@@ -71,6 +71,6 @@
     </div>
 
 
-    {{--@include('core.views::widgets.spinner')--}}
+    {{--@include('system.views::widgets.spinner')--}}
 
 </div>

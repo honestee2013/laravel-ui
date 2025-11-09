@@ -122,7 +122,7 @@ class MigrationGenerator extends Command
         $stubPath = __DIR__ . '/../../Stubs/polymorphic_pivot_migration.stub';
         $stub = File::get($stubPath);
 
-        //$stub = File::get(app_path('Modules/Core/Stubs/polymorphic_pivot_migration.stub')); // Create this stub
+        //$stub = File::get(app_path('Modules/system/Stubs/polymorphic_pivot_migration.stub')); // Create this stub
 
         $stub = str_replace('{{pivotTableName}}', $pivotTableName, $stub);
         $stub = str_replace('{{modelName}}', strtolower($modelName), $stub);
@@ -143,7 +143,7 @@ class MigrationGenerator extends Command
         if (File::exists($moduleStubPath)) {
             $stub = File::get($moduleStubPath);
         } else {
-            //$coreStubPath = app_path('Modules/Core/Stubs/migration.stub'); // Fallback
+            //$coreStubPath = app_path('Modules/system/Stubs/migration.stub'); // Fallback
             $coreStubPath = __DIR__ . '/../../Stubs/migration.stub';
 
             if (!File::exists($coreStubPath)) {
@@ -312,7 +312,7 @@ protected function generateIndexes($modelData): string
 
     protected function getPivotMigrationStub($pivotTableName, $model1, $model2, $foreignKey1, $foreignKey2)
     {
-        //$stub = File::get(app_path('Modules/Core/Stubs/pivot_migration.stub'));
+        //$stub = File::get(app_path('Modules/system/Stubs/pivot_migration.stub'));
         $stubPath = __DIR__ . '/../../Stubs/pivot_migration.stub';
         $stub = File::get($stubPath);
 

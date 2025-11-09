@@ -63,10 +63,10 @@
 <p>This guide provides a step-by-step breakdown of the <strong>DataTableManager</strong> component in your Laravel application. We’ll go over all parameters, field definitions, validation rules, and more, explaining everything in detail.</p>
 
 <h2>Modular Structure Overview</h2>
-<p>The DataTableManager follows a modular structure where each module (e.g., Inventory, Core) houses its own resources such as models, migrations, and configuration files:</p>
+<p>The DataTableManager follows a modular structure where each module (e.g., Inventory, system) houses its own resources such as models, migrations, and configuration files:</p>
 
-<pre><code class="keyword">App\Modules\Core\Models\
-App\Modules\Core\Config\
+<pre><code class="keyword">App\Modules\System\Models\
+App\Modules\System\Config\
 App\Modules\Inventory\Models\
 App\Modules\Inventory\Config\
 ...</code></pre>
@@ -88,7 +88,7 @@ App\Modules\Inventory\Config\
 
 <pre><code>&lt;<span class="keyword">livewire</span>:core.data-tables.data-table-manager
     <span class="variable">model</span>=<span class="keyword">"App\Models\User"</span>
-    <span class="variable">moduleName</span>=<span class="keyword">"Core"</span>
+    <span class="variable">moduleName</span>=<span class="keyword">"system"</span>
 /&gt;</code></pre>
 
 <p>If the model is located within the module (e.g., <code>App\Modules\Inventory\Models\Product</code>), you can omit the <code>moduleName</code> parameter:</p>

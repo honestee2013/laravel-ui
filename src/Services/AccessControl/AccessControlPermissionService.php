@@ -5,7 +5,7 @@ namespace QuickerFaster\LaravelUI\Services\AccessControl;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-use QuickerFaster\LaravelUI\Services\Core\ApplicationInfo;
+use QuickerFaster\LaravelUI\Services\system\ApplicationInfo;
 use function Laravel\Prompts\error;
 use App\Modules\Access\Models\Permission;
 use App\Models\User;

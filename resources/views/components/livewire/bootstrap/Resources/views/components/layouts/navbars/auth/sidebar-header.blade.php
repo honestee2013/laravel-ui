@@ -11,7 +11,7 @@
 <hr class="horizontal dark mt-0" />
 
 
-<x-core.views::layouts.navbars.sidebar-link-item
+<system.views::layouts.navbars.sidebar-link-item
     iconClasses="fas fa-tachometer-alt sidebar-icon"
     url="{{strtolower($moduleName)}}/dashboard"
     title="Dashboard"

@@ -5,7 +5,7 @@
 </li>
 
 @hasanyrole('admin|super_admin')
-<x-core.views::layouts.navbars.sidebar-link-item
+<system.views::layouts.navbars.sidebar-link-item
         iconClasses="fas fa-users-cog sidebar-icon"
         url="access/user-role-management"
         title="Manage Roles"
@@ -13,7 +13,7 @@
 @endhasanyrole
 
 @hasanyrole('admin|super_admin')
-<x-core.views::layouts.navbars.sidebar-link-item
+<system.views::layouts.navbars.sidebar-link-item
         iconClasses="fas fa-user-shield sidebar-icon"
         url="access/user-role-assignment"
         title="Assign User Roles"
@@ -21,7 +21,7 @@
 @endhasanyrole
 
 @hasanyrole('admin|super_admin')
-<x-core.views::layouts.navbars.sidebar-link-item
+<system.views::layouts.navbars.sidebar-link-item
         iconClasses="fas fa-user-lock sidebar-icon"
         url="access/access-control-management"
         title="Manage Permission"
@@ -30,14 +30,14 @@
 
 
 
-{{--<x-core.views::layouts.navbars.sidebar-link-item
+{{--<system.views::layouts.navbars.sidebar-link-item
     iconClasses="fas fa-exchange-alt sidebar-icon"
     url="access/teams"
     title="Manage Teams"
 />
 
 
-<x-core.views::layouts.navbars.sidebar-link-item
+<system.views::layouts.navbars.sidebar-link-item
     iconClasses="fas fa-sync-alt sidebar-icon"
     url="access/permissions"
     title="Manage Permissions"

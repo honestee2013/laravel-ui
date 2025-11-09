@@ -3,8 +3,8 @@
 <x-dashboard.views::layouts.dashboards.default-dashboard>
 
     @php
-        $statusCompletedId = App\Modules\Core\Models\Status::where("name", "completed")->first()?->id ?? 0;
-        $statusInProgressId = App\Modules\Core\Models\Status::where("name", "in_progress")->first()?->id ?? 0;
+        $statusCompletedId = App\Modules\System\Models\Status::where("name", "completed")->first()?->id ?? 0;
+        $statusInProgressId = App\Modules\System\Models\Status::where("name", "in_progress")->first()?->id ?? 0;
         $selectedProcessId = $selectedProcessId ?? 0;
         $timeDurationLabel = ucfirst(str_replace('_', ' ', $timeDuration));
     @endphp

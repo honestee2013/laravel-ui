@@ -63,7 +63,7 @@ class MenuInitializer extends Component
             [
                 'title' => 'System Modules',
                 'icon' => 'fas fa-th fs-4 ms-2',
-                'url' => 'core/modules',
+                'url' => 'system/modules',
                 'cssClasses' => "menu-item-header menu-header",
                 'itemType' => 'header',
                 
@@ -147,7 +147,7 @@ class MenuInitializer extends Component
 
     public function render()
     {
-        return view('core.views::menus.menu-initializer');
+        return view('system.views::menus.menu-initializer');
     }
     
 

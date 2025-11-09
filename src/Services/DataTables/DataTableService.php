@@ -3,7 +3,7 @@
 namespace QuickerFaster\LaravelUI\Services\DataTables;
 
 use Illuminate\Database\Eloquent\Builder;
-use App\Modules\Core\Contracts\DataTable\CellFormatterInterface;
+use App\Modules\System\Contracts\DataTable\CellFormatterInterface;
 
 class DataTableService
 {

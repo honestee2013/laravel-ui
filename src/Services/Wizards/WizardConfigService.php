@@ -23,7 +23,7 @@ class WizardConfigService
     {
         // Extract module and model name from FQCN
         $parts = explode('\\', $fqcn);
-        $moduleName = $parts[2] ?? 'Core'; // App\Modules\Hr\Models\Employee
+        $moduleName = $parts[2] ?? 'system'; // App\Modules\Hr\Models\Employee
         $modelName = end($parts);
         
         $configPath = app_path("Modules/{$moduleName}/Data/" . Str::snake($modelName) . '.php');

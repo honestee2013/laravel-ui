@@ -8,14 +8,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 
 
-use App\Modules\Core\Traits\HasEditableTraits;
+//use QuickerFaster\LaravelUI\Modules\System\Traits\HasEditableTraits;
 use Spatie\Permission\Models\Role as SpatieRole;
 
 
 class Role extends SpatieRole
 {
 
-    use HasEditableTraits;
+    //use HasEditableTraits;
     use HasFactory;
 
     /**

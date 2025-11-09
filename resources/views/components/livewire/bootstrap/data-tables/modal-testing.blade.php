@@ -10,7 +10,7 @@
 
 
         <div class="modal-body">
-            @include('core.views::data-tables.partials.data-table-form')
+            @include('system.views::data-tables.partials.data-table-form')
         </div>
 
 

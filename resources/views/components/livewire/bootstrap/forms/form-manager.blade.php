@@ -1,7 +1,7 @@
 <section class="m-0 m-md-4">
 
     {{-- ----------------- MAIN MODAL FOR ADD-EDIT ----------------- --}}
-    @include('core.views::data-tables.modals.modal-header', [
+    @include('system.views::data-tables.modals.modal-header', [
         'modalId' => $modalId,
         'isEditMode' => true,
     ])
@@ -28,7 +28,7 @@
                 :modalId="$modalId"
                 key="addEditModal" />
         </div>
-    @include('core.views::data-tables.modals.modal-footer', [
+    @include('system.views::data-tables.modals.modal-footer', [
         'modalId' => $modalId,
         'isEditMode' => true,
     ])
@@ -39,7 +39,7 @@
 
 </section>
 
-@include('core.assets::data-tables.assets')
-@include('core.assets::data-tables.scripts')
+@include('system.assets::data-tables.assets')
+@include('system.assets::data-tables.scripts')
 
 

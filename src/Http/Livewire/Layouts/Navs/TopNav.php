@@ -14,6 +14,8 @@ class TopNav extends Component
     public int $maxDesktop = 5;
     public int $maxMobile = 3;
 
+    public $moduleName;
+
     public function mount(array $items = [])
     {
         ///$this->items = $items ?: $this->defaultNavItems();

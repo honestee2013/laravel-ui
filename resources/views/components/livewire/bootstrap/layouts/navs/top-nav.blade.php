@@ -31,7 +31,12 @@
                     </li>
                 @endforeach--}}
 
-                @include('core.views::components.layouts.navbars.auth.top-nav-links', [ ])
+                @php
+                    $view = $moduleName.".views::components.layouts.navbars.auth.top-nav-links";
+                @endphp
+                @if(view()->exists($view))
+                    @include("$view")
+                @endif
 
 
                 {{-- overflow dropdown --}}

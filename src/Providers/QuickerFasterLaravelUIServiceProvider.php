@@ -15,10 +15,12 @@ use QuickerFaster\LaravelUI\Facades\DataTables\DataTableOption;
 
 use QuickerFaster\LaravelUI\Commands\PackageDevCommand;
 use QuickerFaster\LaravelUI\Commands\CreateSuperUserPermissions;
+use QuickerFaster\LaravelUI\Commands\ReplenishTenantDatabases;
 
 use QuickerFaster\LaravelUI\Formatting\FieldFormattingService;
 
-
+use Stancl\Tenancy\DatabaseConfig;
+use QuickerFaster\LaravelUI\Tenancy\CustomDatabaseConfig;
 
 
 use Illuminate\Support\ServiceProvider;
@@ -32,7 +34,8 @@ use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Event;
-
+use Stancl\Tenancy\TenantDatabaseManagers\MySQLDatabaseManager;
+use Illuminate\Support\Facades\DB;
 
 
 class QuickerFasterLaravelUIServiceProvider extends ServiceProvider
@@ -40,6 +43,48 @@ class QuickerFasterLaravelUIServiceProvider extends ServiceProvider
 
     public function boot()
     {
+
+
+
+// In AppServiceProvider boot method
+// In AppServiceProvider boot method
+\Event::listen(\Stancl\Tenancy\Events\TenancyInitialized::class, function ($event) {
+    \Log::info('Tenancy initialized successfully', [$event]);
+});
+
+\Event::listen(\Stancl\Tenancy\Events\TenantCouldNotBeIdentified::class, function ($event) {
+    \Log::error('Tenant could not be identified', ['domain' => request()->getHost()]);
+});
+
+\Event::listen(\Stancl\Tenancy\Events\InitializingTenancy::class, function ($event) {
+   
+    \Log::info('Initializing tenancy for tenant:', [$event]);
+});
+
+
+
+
+// In AppServiceProvider boot method
+$this->app->bind(\Stancl\Tenancy\DatabaseConfig::class, function ($app, $params) {
+    $tenant = $params['tenant'];
+    
+    // Ensure driver is set
+    $config = $tenant->getDatabaseConfig();
+    if (empty($config['driver'])) {
+        $config['driver'] = 'mysql';
+    }
+    
+    config(['database.connections.tenant' => $config]);
+    
+    \Log::info('Monkey patched DatabaseConfig', [
+        'driver' => $config['driver'],
+        'database' => $config['database']
+    ]);
+    
+    return new \Stancl\Tenancy\DatabaseConfig($tenant);
+});
+
+
         
         
         // 1. Load routes from the package's directory (if enabled from the config file)
@@ -156,9 +201,19 @@ protected function configureVite()
         if ($this->app->runningInConsole()) {
             $this->commands([
                 PackageDevCommand::class,
-                CreateSuperUserPermissions::class
+                CreateSuperUserPermissions::class,
+                ReplenishTenantDatabases::class
             ]);
         }
+
+
+
+        // Override the DatabaseConfig binding
+        $this->app->bind(DatabaseConfig::class, CustomDatabaseConfig::class);
+        
+        \Log::info('TenancyConfigServiceProvider: Bound FixedDatabaseConfig');
+
+
     }
 
 
@@ -470,7 +525,7 @@ protected function generateAlias($filePath) {
                 view()->addNamespace($alias, $viewPath);
             }
 
-            // Load Components directory namespace expected in the module's main directory eg. /app/Modules/Core/Components
+            // Load Components directory namespace expected in the module's main directory eg. /app/Modules/system/Components
             $componentPath = $module . '/Components';
             if (File::exists($componentPath)) {
                 Blade::componentNamespace(strtolower($moduleName) . '.components', $componentPath);
@@ -490,20 +545,22 @@ protected function generateAlias($filePath) {
             // Load Routes
             // loads the module’s routes file (web.php), if it exists,
             //so you don’t have to manually include each route file for every module.
-            // Suspend loading the 'Core' modules's routes to avoid conflicts
+            // Suspend loading the 'system' modules's routes to avoid conflicts
             $routePath = $module . '/Routes/web.php';
             if (File::exists($routePath)) {
-                if ($moduleName != 'Core') {
+                if ($moduleName != 'System') {
                     Route::middleware('web')
                         ->group($routePath);
+                                           
                 }
+                
             }
 
 
             // Load API Routes
             $apiRoutePath = $module . '/Routes/api.php';
             if (File::exists($apiRoutePath)) {
-                if ($moduleName != 'Core') {
+                if ($moduleName != 'System') {
                     Route::prefix('api')
                         ->middleware('api')
                         ->group($apiRoutePath);
@@ -558,14 +615,14 @@ protected function generateAlias($filePath) {
         }
 
 
-        // Now loade the 'core' module's routes
-        if (File::exists(app_path("Modules/Core/Routes/web.php"))) {
-            Route::middleware('web')->group(app_path("Modules/Core/Routes/web.php"));
+        // Now loade the 'system' module's routes
+        if (File::exists(app_path("Modules/System/Routes/web.php"))) {
+            Route::middleware('web')->group(app_path("Modules/System/Routes/web.php"));
         }
 
-        // Core Api loading
-        if (File::exists(app_path("Modules/Core/Routes/api.php"))) {
-            Route::prefix('api')->middleware('api')->group(app_path("Modules/Core/Routes/api.php"));
+        // system Api loading
+        if (File::exists(app_path("Modules/System/Routes/api.php"))) {
+            Route::prefix('api')->middleware('api')->group(app_path("Modules/System/Routes/api.php"));
         }
 
     }

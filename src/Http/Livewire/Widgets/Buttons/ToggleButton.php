@@ -5,7 +5,7 @@ namespace QuickerFaster\LaravelUI\Http\Livewire\Widgets\Buttons;
 use Livewire\Component;
 use Illuminate\Support\Facades\Schema;
 use App\Modules\Access\Events\ToggleButtonEvent;
-use App\Modules\Core\Traits\Widgets\HandlesToggleState;
+use QuickerFaster\LaravelUI\Traits\Widgets\HandlesToggleState;
 
 
 
@@ -120,7 +120,7 @@ class ToggleButton extends Component
 
     public function render()
     {
-        return view(view: 'core.views::widgets.buttons.toggle-button');
+        return view(view: 'system.views::widgets.buttons.toggle-button');
     }
 }
 

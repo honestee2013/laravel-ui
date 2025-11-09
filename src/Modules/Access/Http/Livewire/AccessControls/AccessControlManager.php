@@ -10,7 +10,7 @@ use App\Modules\Access\Models\Role;
 use Illuminate\Support\Facades\File;
 use App\Modules\Access\Models\Permission;
 use QuickerFaster\CodeGen\Services\AccessControl\AccessControlPermissionService;
-use QuickerFaster\CodeGen\Services\Core\ApplicationInfo;
+use QuickerFaster\CodeGen\Services\system\ApplicationInfo;
 
 class AccessControlManager extends Component
 {

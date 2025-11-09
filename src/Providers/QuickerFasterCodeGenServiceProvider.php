@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Foundation\AliasLoader;
 
 
-use App\Modules\Core\Repositories\DataTables\FieldRepository;
+use App\Modules\System\Repositories\DataTables\FieldRepository;
 
 use QuickerFaster\CodeGen\Commands\GenerateAllSchemas;
 use QuickerFaster\CodeGen\Commands\GenerateFromSchema;
@@ -270,7 +270,7 @@ class QuickerFasterCodeGenServiceProvider extends ServiceProvider
             }
 
 
-            // Load Components directory namespace expected in the module's main directory eg. /app/Modules/Core/Components
+            // Load Components directory namespace expected in the module's main directory eg. /app/Modules/system/Components
             $componentPath = $module . '/Components';
             if (File::exists($componentPath)) {
                 Blade::componentNamespace(strtolower($moduleName) . '.components', $componentPath);

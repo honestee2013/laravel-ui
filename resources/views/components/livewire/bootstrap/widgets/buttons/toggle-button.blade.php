@@ -6,7 +6,7 @@
             <div class="row align-items-center">
 
                 <div class="col">
-                    @include('core.views::widgets.buttons.title-icon')
+                    @include('system.views::widgets.buttons.title-icon')
                 </div>
 
                 <div class="col-auto">

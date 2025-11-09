@@ -1,6 +1,6 @@
 <?php
 
-namespace QuickerFaster\LaravelUI\Services\Core;
+namespace QuickerFaster\LaravelUI\Services\system;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;

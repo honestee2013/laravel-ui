@@ -42,8 +42,8 @@ class DataTableImageHandler extends Component
             "id" => $id,
         ];
 
-        //@include('core.views::data-tables.modals.crop-image-modal')
-        $modalHtml = view('core.views::data-tables.modals.crop-image-modal', $data)->render();
+        //@include('system.views::data-tables.modals.crop-image-modal')
+        $modalHtml = view('system.views::data-tables.modals.crop-image-modal', $data)->render();
         //$this->dispatch("open-add-relationship-modal", ['modalHtml' => $modalHtml, "modalId" => $modalId]);
         $data["modalHtml"] = $modalHtml;
 

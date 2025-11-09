@@ -22,12 +22,12 @@ class FormManager extends DataTableManager
 
 
    /* public function render() {
-        return view('core.views::forms.form-manager');
+        return view('system.views::forms.form-manager');
     }*/
 
     public function render()
     {
-        return view('core.views::forms.form-manager', []);
+        return view('system.views::forms.form-manager', []);
     }
 
 

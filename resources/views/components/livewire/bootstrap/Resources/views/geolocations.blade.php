@@ -1,7 +1,7 @@
-<x-core.views::layouts.app>
+<system.views::layouts.app>
     <x-slot name="sidebar">
-    <x-core.views::layouts.navbars.auth.sidebar moduleName="core">
-    </x-core.views::layouts.navbars.auth.sidebar>
+    <system.views::layouts.navbars.auth.sidebar moduleName="core">
+    </x-system.views::layouts.navbars.auth.sidebar>
 </x-slot>
 
     
@@ -29,4 +29,4 @@
 
 
     
-</x-core.views::layouts.app>
+</x-system.views::layouts.app>

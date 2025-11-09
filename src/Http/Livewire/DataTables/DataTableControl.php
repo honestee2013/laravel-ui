@@ -259,7 +259,7 @@ public function updatedViewType($viewType) {
         $columns = $this->visibleColumns;
         $fieldDefs = $this->fieldDefinitions;
 
-        $pdf = \PDF::loadView('core.views::exports.data-table-pdf', compact('data', 'columns', 'fieldDefs'))
+        $pdf = \PDF::loadView('system.views::exports.data-table-pdf', compact('data', 'columns', 'fieldDefs'))
             ->setPaper('a4', 'landscape');
 
         return response()->streamDownload(function () use ($pdf) {

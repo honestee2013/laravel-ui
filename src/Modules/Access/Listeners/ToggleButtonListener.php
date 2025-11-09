@@ -2,10 +2,10 @@
 
 namespace App\Modules\Access\Listeners;
 
-use App\Modules\Core\Models\Status;
+use App\Modules\System\Models\Status;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use App\Modules\Core\Events\DataTableFormEvent;
+use App\Modules\System\Events\DataTableFormEvent;
 
 use App\Modules\Access\Events\ToggleButtonEvent;
 use App\Modules\Production\Models\ProductionProcessLog;

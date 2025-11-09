@@ -98,7 +98,7 @@ class SidebarLinksGenerator extends Command
         $url = $sidebar['url']?? $url;
         //$iconClasses = $sidebar['iconClasses']?? "fas fa-cubes sidebar-icon";
 
-        return "<x-core.views::layouts.navbars.sidebar-link-item\n" .
+        return "<system.views::layouts.navbars.sidebar-link-item\n" .
             "    iconClasses=\"$iconClasses sidebar-icon\"\n" .
             "    url=\"{$module}/" . strtolower($url) . "\"\n" . // Default URL: /{module}/{pluralized_module_name}
             "    title=\"" . Str::title(Str::plural($title)) . "\"\n" . // Default title

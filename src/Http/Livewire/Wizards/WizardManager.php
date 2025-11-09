@@ -203,7 +203,7 @@ public function updatedFormData($value, $key)
     protected function getModelAlias(string $fqcn): string
     {
         $parts = explode('\\', $fqcn);
-        $module = $parts[2] ?? 'core';
+        $module = $parts[2] ?? 'system';
         $model = \Str::snake(end($parts));
         return strtolower($module) . '_' . $model;
     }

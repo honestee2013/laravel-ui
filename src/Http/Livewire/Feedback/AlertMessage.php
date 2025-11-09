@@ -27,7 +27,7 @@ class AlertMessage extends Component
 
     public function render()
     {
-        return view('core.views::feedback.alert-message');
+        return view('system.views::feedback.alert-message');
 
     }
 }

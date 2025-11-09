@@ -23,7 +23,7 @@ class DynamicViewLoader extends Component
             'view' => 'required|string',
         ])->validate();
     
-        $allowedModules = ['core', 'billing', 'sales', 'organization', 'hr', 'profile', 'item', 'warehouse', 'user', 'access'];
+        $allowedModules = ['system', 'billing', 'sales', 'organization', 'hr', 'profile', 'item', 'warehouse', 'user', 'access'];
     
         if (!in_array($module, $allowedModules)) {
             abort(404, 'Invalid module');
