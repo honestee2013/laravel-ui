@@ -32,7 +32,7 @@ class DataTableImageHandler extends Component
 
  public function openCropImageModal($field, $imgUrl, $id)
     {
-        dd("HERE");
+        
         
         $modalId = "crop-image-modal";
         $data = [
@@ -75,7 +75,7 @@ class DataTableImageHandler extends Component
             Storage::disk('public')->put($path, $image->encode('jpg', 80));
             
             // Emit event to parent component
-            $this->emit('imageCropped', $this->field, $path);
+            $this->dispatch('imageCropped', $this->field, $path);
             
             $this->dispatch('notify', [ // browser event
                 'type' => 'success',

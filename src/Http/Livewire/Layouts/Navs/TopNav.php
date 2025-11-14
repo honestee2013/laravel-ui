@@ -47,7 +47,7 @@ class TopNav extends Component
     /*public function selectContext($contextKey)
     {
         $this->activeContext = $contextKey;
-        $this->emit('contextChanged', $contextKey);
+        $this->dispatch('contextChanged', $contextKey);
         
         // Find and navigate to the route associated with this context
         foreach ($this->items as $item) {

@@ -48,6 +48,7 @@ class DataTableForm extends Component
     public $modalId;
     public $messages = [];
     public $selectedRows = [];
+    public $tenant;
     
     protected $listeners = [
         'openEditModalEvent' => 'openEditModal',
@@ -76,6 +77,7 @@ class DataTableForm extends Component
     
     public function mount()
     {
+       $this->tenant = tenant();
         $this->dispatch("addModalFormComponentStackEvent", [
             'modalId' => $this->modalId, 
             'componentId' => $this->getId()
@@ -100,6 +102,8 @@ class DataTableForm extends Component
     
     public function saveRecord($modalId)
     {
+       
+
         try {
             ///$this->authorizeAction();
             
@@ -123,9 +127,11 @@ class DataTableForm extends Component
 
             // Prepare data for save
             $data = $this->prepareDataForSave($record);
+            
 
             // Save record
             DB::transaction(function () use ($record, $data, $modalId) {
+                
                 if ($this->isEditMode) {
                     $oldRecord = $record->toArray();
                     $record->update($data);
@@ -151,6 +157,8 @@ class DataTableForm extends Component
         } catch (\Exception $e) {
             $this->handleError($e);
         }
+
+
     }
     
     protected function prepareDataForSave($record)
@@ -523,6 +531,45 @@ public function getFieldOptions($fieldDefinition)
     }
     
     return [];
+}
+
+
+
+
+
+
+
+
+
+
+
+// In your Livewire component
+public function updatedFields($value, $key)
+{
+    if (isset($this->fields[$key]) && is_object($this->fields[$key])) {
+        \Log::debug('File upload updated', [
+            'field' => $key,
+            'file_class' => get_class($this->fields[$key]),
+            'file_exists' => method_exists($this->fields[$key], 'getClientOriginalName'),
+            'tenant_id' => tenant('id'),
+            'all_fields' => array_keys($this->fields),
+        ]);
+    }
+}
+
+// Also add a method to check the current state
+public function checkFileState()
+{
+    foreach ($this->fields as $key => $value) {
+        if (is_object($value)) {
+            \Log::debug("Field {$key} state", [
+                'class' => get_class($value),
+                'methods' => get_class_methods($value),
+                'path' => method_exists($value, 'getPath') ? $value->getPath() : 'N/A',
+                'temp_url_method' => method_exists($value, 'temporaryUrl'),
+            ]);
+        }
+    }
 }
 
 

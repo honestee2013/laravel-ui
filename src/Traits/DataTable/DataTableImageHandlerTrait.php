@@ -117,7 +117,7 @@ public function saveCroppedImage($field, $croppedImageBase64, $id)
             Storage::disk('public')->put($path, $image->encode('jpg', 80));
             
             // Emit event to parent component
-            $this->emit('imageCropped', $this->field, $path);
+            $this->dispatch('imageCropped', $this->field, $path);
             
             $this->dispatch('notify', [ // browser event
                 'type' => 'success',

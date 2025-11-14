@@ -14,7 +14,7 @@ class ManualTenantBootstrap
         // Get tenant from domain
         $domain = $request->getHost();
         \Log::info('ManualTenantBootstrap: Looking for tenant for domain', ['domain' => $domain]);
-        
+
         $tenant = Tenant::whereHas('domains', function ($query) use ($domain) {
             $query->where('domain', $domain);
         })->first();
@@ -31,7 +31,7 @@ class ManualTenantBootstrap
 
         // Manually set the tenant in the container
         app()->instance(\Stancl\Tenancy\Contracts\Tenant::class, $tenant);
-        
+
         // Manually configure the database connection
         $databaseName = $tenant->getDatabaseName();
         $connectionConfig = [
@@ -50,7 +50,7 @@ class ManualTenantBootstrap
 
         // Set the configuration
         Config::set('database.connections.tenant', $connectionConfig);
-        
+
         // Purge and reconnect
         DB::purge('tenant');
         DB::reconnect('tenant');

@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Modules\Access\Http\Livewire\AccessControls\AccessControlManager;
-use App\Modules\System\Http\Controllers\ReportController;
+/*use App\Modules\System\Http\Controllers\ReportController;
 
 
 
@@ -16,7 +16,7 @@ use QuickerFaster\LaravelUI\Http\Livewire\Auth\ModuleSelection;
 use QuickerFaster\LaravelUI\Http\Livewire\Tenants\OnboardingForm;
 
 
-use QuickerFaster\LaravelUI\Http\Controllers\Central\Auth\VerificationController;
+use QuickerFaster\LaravelUI\Http\Controllers\Central\Auth\VerificationController;*/
 
 
 
@@ -31,12 +31,12 @@ use QuickerFaster\LaravelUI\Http\Controllers\Central\Auth\VerificationController
         // your actual routes*/
 
         // These routes should be in a `web` middleware group (Laravel does this by default in RouteServiceProvider)
-        Route::middleware(['web'])->group(function () {
+        /*Route::middleware(['web'])->group(function () {
             Route::get('/client-register', SignupForm::class)->name('register');
             Route::get('/verify', [VerificationController::class, 'show'])->name('verification.notice');
             Route::get('/verify/{token}', [VerificationController::class, 'verify'])->name('verification.verify');
             Route::middleware('verified.company')->get('/modules', ModuleSelection::class)->name('module.selection');
-        });
+        });*/
 
         //Route::get('/onboarding', OnboardingForm::class)->name('onboarding');
 
@@ -46,10 +46,11 @@ use QuickerFaster\LaravelUI\Http\Controllers\Central\Auth\VerificationController
 
 
 
-
+/*
 
 Route::get('/{module}/{view}/{id?}', function ($module, $view, $id = null) {
     // Validation
+  
     Validator::make(['module' => $module, 'view' => $view, 'id' => $id], [
         'module' => 'required|string',
         'view' => 'required|string',
@@ -100,7 +101,7 @@ Route::get('/{module}/{view}/{id?}', function ($module, $view, $id = null) {
 
 
 
-
+*/
 
 
 

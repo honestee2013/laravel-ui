@@ -14,10 +14,14 @@ use QuickerFaster\LaravelUI\Facades\DataTables\DataTableConfig;
 use QuickerFaster\LaravelUI\Facades\DataTables\DataTableOption;
 
 use QuickerFaster\LaravelUI\Commands\PackageDevCommand;
+use QuickerFaster\LaravelUI\Commands\QuickerFasterInstall;
+                
 use QuickerFaster\LaravelUI\Commands\CreateSuperUserPermissions;
 use QuickerFaster\LaravelUI\Commands\ReplenishTenantDatabases;
 
 use QuickerFaster\LaravelUI\Formatting\FieldFormattingService;
+
+use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 
 use Stancl\Tenancy\DatabaseConfig;
 use QuickerFaster\LaravelUI\Tenancy\CustomDatabaseConfig;
@@ -37,6 +41,11 @@ use Illuminate\Support\Facades\Event;
 use Stancl\Tenancy\TenantDatabaseManagers\MySQLDatabaseManager;
 use Illuminate\Support\Facades\DB;
 
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Illuminate\Http\UploadedFile;
+use Livewire\Features\SupportFileUploads\FilePreviewController;
+
+
 
 class QuickerFasterLaravelUIServiceProvider extends ServiceProvider
 {
@@ -45,6 +54,80 @@ class QuickerFasterLaravelUIServiceProvider extends ServiceProvider
     {
 
 
+
+        // Configure Livewire for tenant domains
+        if (tenant()) {
+            config([
+                'livewire.temporary_file_upload.disk' => 'tenant',
+                'livewire.temporary_file_upload.middleware' => [
+                    'throttle:60,1', 
+                    \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class
+                ],
+            ]);
+        }
+
+
+
+        // Update Livewire update route with tenancy middleware
+        /*Livewire::setUpdateRoute(function ($handle) {
+            return Route::post('/livewire/update', $handle)
+                ->middleware([
+                    'web',
+                    'universal', // Important for tenancy
+                    InitializeTenancyByDomain::class,
+                ]);
+        });
+
+        // Livewire script route (optional but recommended)
+        Livewire::setScriptRoute(function ($handle) {
+            return Route::get('/livewire/livewire.js', $handle)
+                ->middleware([
+                    'web',
+                    'universal',
+                    InitializeTenancyByDomain::class,
+                ]);
+        });
+
+
+// specify the right identification middleware for file previews
+    FilePreviewController::$middleware = ['web', 'universal', InitializeTenancyByDomain::class];
+
+ // Fix Livewire file preview controller for tenancy
+        FilePreviewController::$middleware = [
+            'web', 
+            'universal', 
+            InitializeTenancyByDomain::class
+        ];
+
+        // Livewire update route (from Solution 1)
+        Livewire::setUpdateRoute(function ($handle) {
+            return Route::post('/livewire/update', $handle)
+                ->middleware([
+                    'web',
+                    'universal',
+                    InitializeTenancyByDomain::class,
+                ]);
+        });*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                //$this->fixLivewireFileUploads();
+
+
+/*
 
 // In AppServiceProvider boot method
 // In AppServiceProvider boot method
@@ -60,6 +143,17 @@ class QuickerFasterLaravelUIServiceProvider extends ServiceProvider
    
     \Log::info('Initializing tenancy for tenant:', [$event]);
 });
+
+
+        // Configure Livewire to use the correct session domain
+        $this->app->bind('livewire', function ($app) {
+            return new \Livewire\LivewireManager($app);
+        });
+        
+        // Add CSRF token to Livewire requests
+        Livewire::addPersistentMiddleware([
+            \QuickerFaster\LaravelUI\Http\Middleware\LivewireTenantAwareCsrf::class,
+        ]);
 
 
 
@@ -82,7 +176,11 @@ $this->app->bind(\Stancl\Tenancy\DatabaseConfig::class, function ($app, $params)
     ]);
     
     return new \Stancl\Tenancy\DatabaseConfig($tenant);
-});
+});*/
+
+
+
+
 
 
         
@@ -96,6 +194,14 @@ $this->app->bind(\Stancl\Tenancy\DatabaseConfig::class, function ($app, $params)
         $this->publishes([
             __DIR__ . '/../../config/qf_laravel_ui.php' => config_path('qf_laravel_ui.php'),
         ], 'qf-config');
+
+        // 2. Publish and override tenancy.php config
+        /*$this->publishes([
+            __DIR__ . '/../../config/tenancy.php' => config_path('tenancy.php'),
+        ], 'tenancy-config');*/
+
+
+
 
         // 3. Register package views
         $this->loadViewsFrom(__DIR__ . '/../../resources/views', 'qf');
@@ -140,12 +246,66 @@ $this->app->bind(\Stancl\Tenancy\DatabaseConfig::class, function ($app, $params)
         // Publishing Creative Tim Bootstrap Soft UI Scaffolding
         ///$this->publishScaffold();
 
+
+    // Enable livewite to work with multitenancy
+    /*Livewire::setUpdateRoute(function ($handle) {
+        return Route::post('/livewire/update', $handle)
+            ->middleware(
+                'web',
+                'universal',
+                InitializeTenancyByDomain::class, // or whatever tenancy middleware you use
+            );
+    });*/
+
+
+
+
         // Load translations
         $this->setupModules();
         $this->loadAliases();
         $this->loadRoutes();
 
     }
+
+
+
+        protected function fixLivewireFileUploads()
+    {
+        // Override the isPreviewable method to fix extension detection
+        TemporaryUploadedFile::macro('fixedIsPreviewable', function () {
+            $extension = strtolower($this->getClientOriginalExtension());
+            
+            if (empty($extension)) {
+                // Fallback: try to get extension from filename
+                $filename = $this->getClientOriginalName();
+                $extension = pathinfo($filename, PATHINFO_EXTENSION);
+            }
+            
+            return in_array(
+                $extension, 
+                config('livewire.temporary_file_upload.preview_mimes', [])
+            );
+        });
+
+        TemporaryUploadedFile::macro('fixedTemporaryUrl', function () {
+            if (!$this->fixedIsPreviewable()) {
+                $extension = strtolower($this->getClientOriginalExtension());
+                if (empty($extension)) {
+                    $filename = $this->getClientOriginalName();
+                    $extension = pathinfo($filename, PATHINFO_EXTENSION);
+                }
+                
+                throw new \Livewire\Features\SupportFileUploads\FileNotPreviewableException(
+                    "File with extension \"{$extension}\" is not previewable. " .
+                    "See the livewire.temporary_file_upload.preview_mimes config."
+                );
+            }
+
+            return $this->temporaryUrl();
+        });
+    }
+
+       
 
 
 
@@ -195,6 +355,7 @@ protected function configureVite()
         $this->mergeConfigFrom(
             __DIR__.'/../../config/qf_laravel_ui.php', 'qf_laravel_ui'
         );
+        
 
         $this->registerServiceClasses(); 
 
@@ -202,18 +363,38 @@ protected function configureVite()
             $this->commands([
                 PackageDevCommand::class,
                 CreateSuperUserPermissions::class,
-                ReplenishTenantDatabases::class
+                ReplenishTenantDatabases::class,
+                QuickerFasterInstall::class,
             ]);
         }
 
 
 
         // Override the DatabaseConfig binding
-        $this->app->bind(DatabaseConfig::class, CustomDatabaseConfig::class);
+        //$this->app->bind(DatabaseConfig::class, CustomDatabaseConfig::class);
         
-        \Log::info('TenancyConfigServiceProvider: Bound FixedDatabaseConfig');
+        //\Log::info('TenancyConfigServiceProvider: Bound FixedDatabaseConfig');
 
 
+        // $this->setUpTenancyDependency();
+
+
+
+
+    }
+
+
+    private function setUpTenancyDependency() {
+
+        // Automatically register TenancyServiceProvider if not already registered
+        if (class_exists(App\Providers\TenancyServiceProvider::class)) {
+            $this->app->register(TenancyServiceProvider::class);
+        }
+
+        // Merge config
+        $this->mergeConfigFrom(
+            __DIR__.'/../config/tenancy.php', 'tenancy'
+        );
     }
 
 
@@ -619,6 +800,8 @@ protected function generateAlias($filePath) {
         if (File::exists(app_path("Modules/System/Routes/web.php"))) {
             Route::middleware('web')->group(app_path("Modules/System/Routes/web.php"));
         }
+
+
 
         // system Api loading
         if (File::exists(app_path("Modules/System/Routes/api.php"))) {

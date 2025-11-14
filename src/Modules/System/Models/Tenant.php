@@ -14,11 +14,40 @@ class Tenant extends BaseTenant implements TenantWithDatabase
 
     protected $fillable = ['id', 'data'];
 
+
+    public static function booted()
+    {
+        static::created(function ($tenant) {
+            // Create storage directories when tenant is created
+            $tenant->createStorageDirectories();
+        });
+    }
+
+    public function createStorageDirectories()
+    {
+        $directories = [
+            'framework/cache',
+            'framework/views',
+            'framework/sessions',
+            'app/public',
+            'logs',
+        ];
+        
+        foreach ($directories as $directory) {
+            $path = storage_path("app/tenant{$this->id}/{$directory}");
+            if (!is_dir($path)) {
+                mkdir($path, 0755, true);
+            }
+        }
+    }
+
+
+
     /**
      * This is the method the package uses to get the database name
      * Override it completely to ignore the config prefix/suffix
      */
-    public function getDatabaseName(): string
+    /*public function getDatabaseName(): string
     {
         // Always use custom database name from data
         if (isset($this->data['database_name']) && !empty($this->data['database_name'])) {
@@ -30,7 +59,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
             ->table('available_databases')
             ->where('tenant_id', $this->id)
             ->value('name');
-            
+
         if ($assignedDb) {
             return $assignedDb;
         }
@@ -42,32 +71,32 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     /**
      * Some package versions use this method - override it too
      */
-    public function getTenantDatabaseName(): string
+    /*public function getTenantDatabaseName(): string
     {
         return $this->getDatabaseName();
-    }
+    }*/
 
     /**
      * Force the database configuration to use our custom name
      */
-public function getDatabaseConfig(): array
-{
-    // Get the base tenant connection config
-    $defaultConfig = config('database.connections.tenant', [
-        'driver' => 'mysql',
-        'host' => env('DB_HOST', '127.0.0.1'),
-        'port' => env('DB_PORT', '3306'),
-        'username' => env('DB_USERNAME'),
-        'password' => env('DB_PASSWORD'),
-        'charset' => 'utf8mb4',
-        'collation' => 'utf8mb4_unicode_ci',
-        'prefix' => '',
-        'strict' => true,
-        'engine' => null,
-    ]);
+    /*public function getDatabaseConfig(): array
+    {
+        // Get the base tenant connection config
+        $defaultConfig = config('database.connections.tenant', [
+            'driver' => 'mysql',
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '3306'),
+            'username' => env('DB_USERNAME'),
+            'password' => env('DB_PASSWORD'),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ]);
 
-    return array_merge($defaultConfig, [
-        'database' => $this->getDatabaseName(), // This sets the actual database name
-    ]);
-}
+        return array_merge($defaultConfig, [
+            'database' => $this->getDatabaseName(), // This sets the actual database name
+        ]);
+    }*/
 }

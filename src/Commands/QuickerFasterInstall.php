@@ -1,0 +1,321 @@
+<?php
+
+namespace QuickerFaster\LaravelUI\Commands;
+
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
+
+class QuickerFasterInstall extends Command
+{
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'quickerfaster:install {--force : Force overwrite existing files}';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Quick installation setup for Laravel project';
+
+    /**
+     * Execute the console command.
+     */
+    public function handle()
+    {
+        $this->info('🚀 Starting QuickerFaster Installation...');
+
+        $force = $this->option('force');
+
+        // 1. Publish vendor files
+        $this->publishVendorFiles($force);
+
+        // 2. Run migrations
+        /*$this->runMigrations();
+
+        // 3. Run seeders
+        $this->runSeeders();
+
+        // 4. Create symbolic link
+        $this->createStorageLink();
+
+        // 5. Clear and cache
+        $this->optimizeApplication();
+
+        // 6. Generate application key if not exists
+        $this->generateAppKey();*/
+
+        $this->info('✅ QuickerFaster installation completed successfully!');
+    }
+
+    /**
+     * Publish vendor files
+     */
+    protected function publishVendorFiles($force)
+    {
+        $this->info('📁 Publishing vendor files...');
+
+
+
+        // Quicker faster publish
+        Artisan::call('vendor:publish --tag=qf-modules');
+        // Stancl/tenancy publish
+        Artisan::call('tenancy:install');
+        // Override tenancy config
+        $this->overrideTheDependencyFiles();
+
+
+        /*$providers = [
+            // Laravel UI (if using)
+            '--provider="Laravel\\Ui\\UiServiceProvider"' => [
+                '--tag' => 'auth'
+            ],
+
+            // Spatie Permissions (if using)
+            '--provider="Spatie\\Permission\\PermissionServiceProvider"' => [
+                '--tag' => 'migrations',
+                '--tag' => 'config'
+            ],
+
+            // Laravel Debugbar (if using)
+            '--provider="Barryvdh\\Debugbar\\ServiceProvider"' => [
+                '--tag' => 'config'
+            ],
+
+            // Add more providers as needed
+        ];
+
+        foreach ($providers as $provider => $tags) {
+            foreach ($tags as $tag) {
+                try {
+                    $command = array_merge([$provider], [$tag]);
+                    if ($force) {
+                        $command[] = '--force';
+                    }
+
+                    Artisan::call('vendor:publish', $command);
+                    $this->info("Published: {$provider} {$tag}");
+                } catch (\Exception $e) {
+                    $this->warn("Failed to publish {$provider} {$tag}: " . $e->getMessage());
+                }
+            }
+        }*/
+
+        $this->info('✅ Vendor files published successfully!');
+    }
+
+    /**
+     * Run migrations
+     */
+    protected function runMigrations()
+    {
+        $this->info('🗃️ Running migrations...');
+
+        try {
+            Artisan::call('migrate');
+            $this->info(Artisan::output());
+        } catch (\Exception $e) {
+            $this->error('Migration failed: ' . $e->getMessage());
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Run seeders
+     */
+    protected function runSeeders()
+    {
+        if ($this->confirm('Do you want to run database seeders?', true)) {
+            $this->info('🌱 Running database seeders...');
+
+            $seeders = [
+                'Database\\Seeders\\DatabaseSeeder',
+                // Add your specific seeders here
+                // 'Database\\Seeders\\UserSeeder',
+                // 'Database\\Seeders\\RoleSeeder',
+            ];
+
+            foreach ($seeders as $seeder) {
+                try {
+                    Artisan::call('db:seed', ['--class' => $seeder]);
+                    $this->info("Seeded: {$seeder}");
+                } catch (\Exception $e) {
+                    $this->warn("Seeder {$seeder} failed: " . $e->getMessage());
+                }
+            }
+        }
+    }
+
+    /**
+     * Create storage link
+     */
+    protected function createStorageLink()
+    {
+        $this->info('🔗 Creating storage link...');
+
+        if (file_exists(public_path('storage'))) {
+            $this->info('Storage link already exists.');
+            return;
+        }
+
+        try {
+            Artisan::call('storage:link');
+            $this->info('✅ Storage link created successfully!');
+        } catch (\Exception $e) {
+            $this->error('Failed to create storage link: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Optimize application
+     */
+    protected function optimizeApplication()
+    {
+        $this->info('⚡ Optimizing application...');
+
+        $commands = [
+            'cache:clear',
+            'config:clear',
+            'route:clear',
+            'view:clear',
+            'config:cache',
+            'route:cache',
+            'view:cache',
+        ];
+
+        foreach ($commands as $command) {
+            try {
+                Artisan::call($command);
+                $this->info("Executed: {$command}");
+            } catch (\Exception $e) {
+                $this->warn("Command {$command} failed: " . $e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * Generate application key
+     */
+    protected function generateAppKey()
+    {
+        if (empty(config('app.key'))) {
+            $this->info('🔑 Generating application key...');
+            Artisan::call('key:generate');
+            $this->info('✅ Application key generated!');
+        }
+    }
+
+
+
+
+
+
+    protected function overrideTheDependencyFiles()
+    {
+        $this->overrideTenancyPackageConfigFiles();
+        $this->overrideTenancyPackageRouteFiles();
+        $this->overrideDatabaseSeederFiles();
+
+
+    }
+
+
+
+    private function overrideTenancyPackageConfigFiles()
+    {
+        $source = __DIR__ . '/../../dependencies/tenancy/tenancy.php';
+        $destination = config_path('tenancy.php');
+
+        $content = file_get_contents($source);
+        if ($content === false) {
+            $this->error("Failed to read source file " . $source);
+            return 1;
+        }
+
+        if (file_put_contents($destination, $content) !== false) {
+            $this->info("✅ Config written successfully");
+            return 0;
+        } else {
+            $this->error("❌ Tenancy Failed to write destination file");
+            return 1;
+        }
+    }
+
+    private function overrideDatabaseSeederFiles()
+    {
+        $source = __DIR__ . '/../../dependencies/database/seeders';
+        $destination = database_path('seeders');
+
+        // Delete destination first
+
+
+        // Then copy
+        if ($this->copyDirectory($source, $destination)) {
+            $this->info("✅ Seder copied successfully");
+            return 0;
+        } else {
+            $this->error("❌ Seeder Copy failed");
+            return 1;
+        }
+    }
+
+
+
+    private function overrideTenancyPackageRouteFiles()
+    {
+        $source = __DIR__ . '/../../dependencies/tenancy/routes';
+        $destination = base_path('routes');
+
+        // Then copy
+        if ($this->copyDirectory($source, $destination)) {
+            $this->info("✅ Route copied successfully");
+            return 0;
+        } else {
+            $this->error("❌ Route Copy failed");
+            return 1;
+        }
+    }
+
+
+
+    public function copyDirectory($source, $destination)
+    {
+        if (!is_dir($destination)) {
+            mkdir($destination, 0755, true);
+        }
+
+        $dir = opendir($source);
+
+        while (($file = readdir($dir)) !== false) {
+            if ($file === '.' || $file === '..') {
+                continue;
+            }
+
+            $sourcePath = $source . '/' . $file;
+            $destPath = $destination . '/' . $file;
+
+            if (is_dir($sourcePath)) {
+                // Recursively copy subdirectories
+                $this->copyDirectory($sourcePath, $destPath);
+            } else {
+                // Copy files (overwrites by default)
+                copy($sourcePath, $destPath);
+            }
+        }
+
+        closedir($dir);
+        return true;
+    }
+
+
+
+
+
+
+}

@@ -182,7 +182,7 @@ class PayrollRunManager extends Component
         $this->dispatchBrowserEvent('show-success', [
             'message' => 'Payroll run approved and payslips generated.'
         ]);
-        $this->emit('refreshDataTable'); // Refresh the list
+        $this->dispatch('refreshDataTable'); // Refresh the list
     }
 
     public function render()

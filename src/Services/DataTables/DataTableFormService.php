@@ -66,13 +66,24 @@ public function handleUploadedFiles($record, $fields)
 
 protected function isUploadedFile($value): bool
 {
-    return is_object($value) && method_exists($value, 'isValid');
+    // Check if it's a Livewire uploaded file or regular uploaded file
+    if (is_object($value)) {
+        // For Livewire uploaded files
+        if (method_exists($value, 'getClientOriginalName')) {
+            return true;
+        }
+        // For regular uploaded files
+        if (method_exists($value, 'isValid')) {
+            return $value->isValid();
+        }
+    }
+    return false;
 }
 
 protected function processFileUpload($record, $file, string $fieldName, string $type): string
 {
     // Validate file
-    ///$this->validateFile($file, $type);
+    $this->validateFile($file, $type);
 
     // Delete old file if exists
     if (isset($record->{$fieldName}) && is_string($record->{$fieldName})) {
@@ -81,31 +92,38 @@ protected function processFileUpload($record, $file, string $fieldName, string $
 
     // Store in appropriate folder
     $folder = $type === 'image' ? 'uploads/images' : 'uploads/documents';
-    $path =  $file->store($folder, 'public');
+    
+    // Get the original filename with extension
+    $filename = $file->getClientOriginalName();
+    $extension = $file->getClientOriginalExtension();
+    
+    // Generate unique filename
+    $uniqueFilename = uniqid() . '_' . $filename;
+    
+    // Store the file
+    $path = $file->storeAs($folder, $uniqueFilename, 'public');
+    
     return $path;
 }
 
 protected function validateFile($file, string $type): void
 {
-    if (!$file->isValid()) {
-        throw new \Exception('Invalid file upload.');
-    }
-
+    // Get original extension
+    $extension = strtolower($file->getClientOriginalExtension());
+    
     $allowed = $type === 'image' 
-        ? ['jpg', 'jpeg', 'png', 'webp']
+        ? ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'svg']
         : ['pdf', 'docx', 'doc', 'xlsx', 'xls', 'csv', 'txt'];
 
-    $extension = strtolower($file->getClientOriginalExtension());
     if (!in_array($extension, $allowed)) {
-        throw new \Exception('Unsupported file type.');
+        throw new \Exception("Unsupported file type: .{$extension}. Allowed: " . implode(', ', $allowed));
     }
 
-    // Optional: Limit file size (e.g., 10MB)
+    // Limit file size (e.g., 10MB)
     if ($file->getSize() > 10 * 1024 * 1024) {
         throw new \Exception('File too large. Max 10MB allowed.');
     }
 }
-
 
 
 

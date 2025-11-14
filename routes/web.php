@@ -11,14 +11,21 @@ use QuickerFaster\LaravelUI\Http\Livewire\Pages\Rule;
 
 
 
-//Route::middleware(['auth'])->group(function () {
-
-    Route::get('/dashboard', Dashboard::class)->name('dashboard');
 
 
 
 
-    /*Route::get('/', Dashboard::class)->name('home');
+
+
+
+Route::middleware(['auth'])->group(function () {
+
+    //Route::get('/dashboard', Dashboard::class)->name('dashboard');
+
+
+
+
+    Route::get('/', Dashboard::class)->name('home');
     //Route::get('/home', Dashboard::class)->name('home');
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
     //Route::get('/people', People::class)->name('people');
@@ -45,9 +52,9 @@ use QuickerFaster\LaravelUI\Http\Livewire\Pages\Rule;
 
     Route::get('/profile', function () {
         return view('profile');
-    })->name('profile');*/
+    })->name('profile');
 
-//});
+});
 
 
 
@@ -78,7 +85,7 @@ Route::get('/employees', function () {
         'view' => 'required|string',
     ])->validate();
 
-    $allowedModules = ['core', 'billing', 'sales', 'organization', 'hr', 'profile', 'item', 'warehouse', 'user', 'access'];
+    $allowedModules = ['system', 'billing', 'sales', 'organization', 'hr', 'profile', 'item', 'warehouse', 'user', 'access'];
 
     if (!in_array($module, $allowedModules)) {
         abort(404, 'Invalid module');

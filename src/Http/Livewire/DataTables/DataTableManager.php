@@ -154,7 +154,8 @@ public function openEditModalFromUrl($id)
             return;
         }
         
-        $componentId = $this->modalStack[$data["modalId"]] ?? null;
+        $index = is_array($data["modalId"])? $data["modalId"][0]: $data["modalId"];
+        $componentId = $this->modalStack[$index] ?? null;
         Log::info(json_encode($this->modalStack));
         
         $this->dispatch("close-modal-event", [

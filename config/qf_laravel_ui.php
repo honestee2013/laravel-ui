@@ -21,6 +21,7 @@ return [
             "assets/js/core/bootstrap.bundle.min.js", // Plus popperjs
             "assets/js/soft-ui-dashboard.min.js",
             "assets/js/plugins/sweetalert.min.js",
+            "assets/js/plugins/chartjs.min.js",
         ] 
     ],
 
