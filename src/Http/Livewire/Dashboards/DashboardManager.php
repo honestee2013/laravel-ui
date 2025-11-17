@@ -4,6 +4,8 @@ namespace QuickerFaster\LaravelUI\Http\Livewire\Dashboards;
 
 use Livewire\Component;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\File;
+
 use QuickerFaster\LaravelUI\Services\Analytics\Aggregator;
 use QuickerFaster\LaravelUI\Services\Analytics\BatchAggregator;
 
@@ -256,7 +258,9 @@ protected function loadWidgetsConfiguration()
     public function render()
     {
         $view = "{$this->moduleName}.views::dashboard-manager";
-       
+        if (!view()->exists($view))
+            $view = "system.views::dashboard-manager";
+
         return view($view, [
             'widgetsConfig' => $this->widgets['widgets'] ?? [],
             'dashboardData' => $this->dashboardData,
