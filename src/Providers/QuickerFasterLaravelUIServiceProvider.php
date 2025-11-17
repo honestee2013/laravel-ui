@@ -15,7 +15,7 @@ use QuickerFaster\LaravelUI\Facades\DataTables\DataTableOption;
 
 use QuickerFaster\LaravelUI\Commands\PackageDevCommand;
 use QuickerFaster\LaravelUI\Commands\QuickerFasterInstall;
-                
+
 use QuickerFaster\LaravelUI\Commands\CreateSuperUserPermissions;
 use QuickerFaster\LaravelUI\Commands\ReplenishTenantDatabases;
 
@@ -46,6 +46,8 @@ use Illuminate\Http\UploadedFile;
 use Livewire\Features\SupportFileUploads\FilePreviewController;
 
 
+use App\Providers\TenancyServiceProvider;
+
 
 class QuickerFasterLaravelUIServiceProvider extends ServiceProvider
 {
@@ -53,8 +55,13 @@ class QuickerFasterLaravelUIServiceProvider extends ServiceProvider
     public function boot()
     {
 
-        
-        
+
+
+
+
+
+
+
         // 1. Load routes from the package's directory (if enabled from the config file)
         if (config('qf_laravel_ui.load_routes')) {
             $this->loadRoutesFrom(__DIR__ . '/../../routes/web.php');
@@ -100,12 +107,12 @@ class QuickerFasterLaravelUIServiceProvider extends ServiceProvider
         // 8. ✅ Vite integration
         $this->configureVite();
         $this->publishes([
-            __DIR__.'/../../resources/assets' => public_path('vendor/qf'),
+            __DIR__ . '/../../resources/assets' => public_path('vendor/qf'),
         ], 'qf-assets');
 
 
         $this->publishes([
-            __DIR__.'/../Modules' => app_path('Modules'),
+            __DIR__ . '/../Modules' => app_path('Modules'),
         ], 'qf-modules');
 
 
@@ -120,20 +127,20 @@ class QuickerFasterLaravelUIServiceProvider extends ServiceProvider
 
 
 
-        protected function fixLivewireFileUploads()
+    protected function fixLivewireFileUploads()
     {
         // Override the isPreviewable method to fix extension detection
         TemporaryUploadedFile::macro('fixedIsPreviewable', function () {
             $extension = strtolower($this->getClientOriginalExtension());
-            
+
             if (empty($extension)) {
                 // Fallback: try to get extension from filename
                 $filename = $this->getClientOriginalName();
                 $extension = pathinfo($filename, PATHINFO_EXTENSION);
             }
-            
+
             return in_array(
-                $extension, 
+                $extension,
                 config('livewire.temporary_file_upload.preview_mimes', [])
             );
         });
@@ -145,7 +152,7 @@ class QuickerFasterLaravelUIServiceProvider extends ServiceProvider
                     $filename = $this->getClientOriginalName();
                     $extension = pathinfo($filename, PATHINFO_EXTENSION);
                 }
-                
+
                 throw new \Livewire\Features\SupportFileUploads\FileNotPreviewableException(
                     "File with extension \"{$extension}\" is not previewable. " .
                     "See the livewire.temporary_file_upload.preview_mimes config."
@@ -156,7 +163,7 @@ class QuickerFasterLaravelUIServiceProvider extends ServiceProvider
         });
     }
 
-       
+
 
 
 
@@ -174,21 +181,21 @@ class QuickerFasterLaravelUIServiceProvider extends ServiceProvider
 
 
 
-protected function configureVite()
-{
-    // ✅ Manifest lives in: public/vendor/qf/.vite/manifest.json
-    Vite::useBuildDirectory('vendor/qf/.vite');
+    protected function configureVite()
+    {
+        // ✅ Manifest lives in: public/vendor/qf/.vite/manifest.json
+        Vite::useBuildDirectory('vendor/qf/.vite');
 
-    // ✅ Hot file should be in public/vendor/qf/hot (not vendor/qf/hot)
-    ///Vite::useHotFile(public_path('vendor/qf/hot'));
-    Vite::useHotFile(public_path('hot'));
+        // ✅ Hot file should be in public/vendor/qf/hot (not vendor/qf/hot)
+        ///Vite::useHotFile(public_path('vendor/qf/hot'));
+        Vite::useHotFile(public_path('hot'));
 
-    // ✅ Add macro for convenience -> @viteQf()
-    Vite::macro('qf', function () {
-        return $this->withEntryPoints(['resources/js/app.js'])
-            ->toHtml();
-    });
-}
+        // ✅ Add macro for convenience -> @viteQf()
+        Vite::macro('qf', function () {
+            return $this->withEntryPoints(['resources/js/app.js'])
+                ->toHtml();
+        });
+    }
 
 
 
@@ -201,14 +208,32 @@ protected function configureVite()
 
     public function register()
     {
-     
+
+
+        // Programatically add the TenancyServiceProvider::class to the config/app.php 
+        $providerClass = \App\Providers\TenancyServiceProvider::class;
+
+        if (class_exists($providerClass)) {
+            // Merge into config
+            $providers = config('app.providers', []);
+            if (!in_array($providerClass, $providers)) {
+                config(['app.providers' => array_merge($providers, [$providerClass])]);
+            }
+
+            // Register immediately
+            $this->app->register($providerClass);
+        }
+
+
+
         // Use the snake_case filename as the configuration key
         $this->mergeConfigFrom(
-            __DIR__.'/../../config/qf_laravel_ui.php', 'qf_laravel_ui'
+            __DIR__ . '/../../config/qf_laravel_ui.php',
+            'qf_laravel_ui'
         );
-        
 
-        $this->registerServiceClasses(); 
+
+        $this->registerServiceClasses();
 
         if ($this->app->runningInConsole()) {
             $this->commands([
@@ -223,7 +248,7 @@ protected function configureVite()
 
         // Override the DatabaseConfig binding
         //$this->app->bind(DatabaseConfig::class, CustomDatabaseConfig::class);
-        
+
         //\Log::info('TenancyConfigServiceProvider: Bound FixedDatabaseConfig');
 
 
@@ -235,18 +260,6 @@ protected function configureVite()
     }
 
 
-    private function setUpTenancyDependency() {
-
-        // Automatically register TenancyServiceProvider if not already registered
-        if (class_exists(App\Providers\TenancyServiceProvider::class)) {
-            $this->app->register(TenancyServiceProvider::class);
-        }
-
-        // Merge config
-        $this->mergeConfigFrom(
-            __DIR__.'/../config/tenancy.php', 'tenancy'
-        );
-    }
 
 
     private function loadAliases()
@@ -256,7 +269,7 @@ protected function configureVite()
         if (class_exists(UserActivityLoggerFacade::class)) {
             $loader->alias('UserActivityLoggerFacade', UserActivityLoggerFacade::class);
         }
-        
+
         if (class_exists(DataTableOption::class)) {
             $loader->alias('DataTableOption', DataTableOption::class);
         }
@@ -271,7 +284,8 @@ protected function configureVite()
 
 
 
-    public function registerServiceClasses() {
+    public function registerServiceClasses()
+    {
 
         $this->app->singleton('user-activity-logger', function () {
             return new UserActivityLogger();
@@ -300,75 +314,76 @@ protected function configureVite()
     /**
      * Automatically registers Livewire components from the package.
      */
-protected function registerPackageLivewireComponents()
-{
-    $basePath = __DIR__ . '/../Http/Livewire';
-    $baseNamespace = 'QuickerFaster\\LaravelUI\\Http\\Livewire';
-    
-    // Get the real base path without any relative references
-    $basePath = realpath($basePath);
-    
-    // Recursively scan directory
-    $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($basePath));
-  
-    foreach ($files as $file) {
-        if ($file->isDir() || $file->getExtension() !== 'php') {
-            continue;
-        }
-        
-        // Get the full file path
-        $filePath = $file->getRealPath();
-        
-        // Calculate relative path from the base path
-        $relativePath = str_replace([$basePath, '.php'], '', $filePath);
-        $relativePath = trim($relativePath, DIRECTORY_SEPARATOR);
-        
-        // Convert path to namespace
-        $className = str_replace(
-            DIRECTORY_SEPARATOR, 
-            '\\', 
-            $baseNamespace . '\\' . $relativePath
-        );
-   
-        // Calculate component name (convert to kebab-case)
-        $componentName =  str_replace(
-            DIRECTORY_SEPARATOR, 
-            '.', 
-            $relativePath
-        );
-       
-        // Convert to kebab-case for each part of the path
-        $parts = explode('.', $componentName);
-        $parts = array_map(function($part) {
-            return \Illuminate\Support\Str::kebab($part);
-        }, $parts);
-        $componentName = 'qf::'.implode('.', $parts);
-        
-        // Register the component
-        if (class_exists($className)) {
-            //dd($componentName, $className);
-            Livewire::component($componentName, $className);
+    protected function registerPackageLivewireComponents()
+    {
+        $basePath = __DIR__ . '/../Http/Livewire';
+        $baseNamespace = 'QuickerFaster\\LaravelUI\\Http\\Livewire';
+
+        // Get the real base path without any relative references
+        $basePath = realpath($basePath);
+
+        // Recursively scan directory
+        $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($basePath));
+
+        foreach ($files as $file) {
+            if ($file->isDir() || $file->getExtension() !== 'php') {
+                continue;
+            }
+
+            // Get the full file path
+            $filePath = $file->getRealPath();
+
+            // Calculate relative path from the base path
+            $relativePath = str_replace([$basePath, '.php'], '', $filePath);
+            $relativePath = trim($relativePath, DIRECTORY_SEPARATOR);
+
+            // Convert path to namespace
+            $className = str_replace(
+                DIRECTORY_SEPARATOR,
+                '\\',
+                $baseNamespace . '\\' . $relativePath
+            );
+
+            // Calculate component name (convert to kebab-case)
+            $componentName = str_replace(
+                DIRECTORY_SEPARATOR,
+                '.',
+                $relativePath
+            );
+
+            // Convert to kebab-case for each part of the path
+            $parts = explode('.', $componentName);
+            $parts = array_map(function ($part) {
+                return \Illuminate\Support\Str::kebab($part);
+            }, $parts);
+            $componentName = 'qf::' . implode('.', $parts);
+
+            // Register the component
+            if (class_exists($className)) {
+                //dd($componentName, $className);
+                Livewire::component($componentName, $className);
+            }
         }
     }
-}
 
 
 
 
 
-protected function generateAlias($filePath) {
-    // Get the base name of the file (e.g., "FormManager.php")
-    $fileName = basename($filePath);
-    
-    // Remove the file extension (e.g., "FormManager")
-    $className = pathinfo($fileName, PATHINFO_FILENAME);
-    
-    // Convert the string to snake case and replace underscores with hyphens
-    // This assumes the class name is in PascalCase, a common convention.
-    $alias = strtolower(preg_replace('/(?<=\\w)(?=[A-Z])/', '-', $className));
-   
-    return $alias;
-}
+    protected function generateAlias($filePath)
+    {
+        // Get the base name of the file (e.g., "FormManager.php")
+        $fileName = basename($filePath);
+
+        // Remove the file extension (e.g., "FormManager")
+        $className = pathinfo($fileName, PATHINFO_FILENAME);
+
+        // Convert the string to snake case and replace underscores with hyphens
+        // This assumes the class name is in PascalCase, a common convention.
+        $alias = strtolower(preg_replace('/(?<=\\w)(?=[A-Z])/', '-', $className));
+
+        return $alias;
+    }
 
     /**
      * Automatically registers Blade components from the package.
@@ -380,7 +395,7 @@ protected function generateAlias($filePath) {
         // Define the directory path to your Blade components
         $componentPath = __DIR__ . '/../Components/Blade';
 
-        if (! is_dir($componentPath)) {
+        if (!is_dir($componentPath)) {
             return;
         }
 
@@ -392,7 +407,7 @@ protected function generateAlias($filePath) {
 
 
 
-   /**
+    /**
      * Extract the fully-qualified class name from a file.
      */
     protected function getClassFromFile($moduleName, $directory, $filePath)
@@ -401,7 +416,7 @@ protected function generateAlias($filePath) {
         return "App\\Modules\\{$moduleName}\\{$directory}\\{$className}";
     }
 
-        /**
+    /**
      * Detect the event from a listener.
      */
     protected function getEventFromListener($class)
@@ -444,7 +459,7 @@ protected function generateAlias($filePath) {
     }
 
 
-        protected function scanLivewireComponents(string $path, string $namespace)
+    protected function scanLivewireComponents(string $path, string $namespace)
     {
         $components = [];
         $files = File::allFiles($path);
@@ -486,14 +501,14 @@ protected function generateAlias($filePath) {
 
 
 
-     private function setupModules()
+    private function setupModules()
     {
         // Get all module directories
         if (!file_exists(base_path('app/Modules'))) {
             return;
         }
-            
-            
+
+
         $modules = File::directories(base_path('app/Modules'));
 
         // Loop through each module to load views, routes, and config files dynamically
@@ -583,9 +598,9 @@ protected function generateAlias($filePath) {
                 if ($moduleName != 'System') {
                     Route::middleware('web')
                         ->group($routePath);
-                                           
+
                 }
-                
+
             }
 
 

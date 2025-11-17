@@ -35,7 +35,7 @@ class QuickerFasterInstall extends Command
         $this->publishVendorFiles($force);
 
         // 2. Run migrations
-        /*$this->runMigrations();
+        $this->runMigrations();
 
         // 3. Run seeders
         $this->runSeeders();
@@ -47,7 +47,7 @@ class QuickerFasterInstall extends Command
         $this->optimizeApplication();
 
         // 6. Generate application key if not exists
-        $this->generateAppKey();*/
+        $this->generateAppKey();
 
         $this->info('✅ QuickerFaster installation completed successfully!');
     }
@@ -214,35 +214,29 @@ class QuickerFasterInstall extends Command
 
 
 
-
-
     protected function overrideTheDependencyFiles()
     {
         $this->overrideTenancyPackageConfigFiles();
         $this->overrideTenancyPackageRouteFiles();
+        $this->overrideDatabaseMigrationFiles();
         $this->overrideDatabaseSeederFiles();
-
-
+        $this->overrideModelFiles();
+        $this->overrideAssetFiles();
     }
 
 
 
     private function overrideTenancyPackageConfigFiles()
     {
-        $source = __DIR__ . '/../../dependencies/tenancy/tenancy.php';
-        $destination = config_path('tenancy.php');
 
-        $content = file_get_contents($source);
-        if ($content === false) {
-            $this->error("Failed to read source file " . $source);
-            return 1;
-        }
+        $source = __DIR__ . '/../../dependencies/tenancy/config';
+        $destination = base_path('config');
 
-        if (file_put_contents($destination, $content) !== false) {
-            $this->info("✅ Config written successfully");
+        if ($this->copyDirectory($source, $destination)) {
+            $this->info("✅ config copied successfully");
             return 0;
         } else {
-            $this->error("❌ Tenancy Failed to write destination file");
+            $this->error("❌ config Copy failed");
             return 1;
         }
     }
@@ -252,15 +246,27 @@ class QuickerFasterInstall extends Command
         $source = __DIR__ . '/../../dependencies/database/seeders';
         $destination = database_path('seeders');
 
-        // Delete destination first
-
-
-        // Then copy
         if ($this->copyDirectory($source, $destination)) {
-            $this->info("✅ Seder copied successfully");
+            $this->info("✅ Seeder copied successfully");
             return 0;
         } else {
             $this->error("❌ Seeder Copy failed");
+            return 1;
+        }
+    }
+
+
+
+    private function overrideDatabaseMigrationFiles()
+    {
+        $source = __DIR__ . '/../../dependencies/database/migrations';
+        $destination = database_path('migrations');
+
+        if ($this->copyDirectory($source, $destination)) {
+            $this->info("✅ Migrations copied successfully");
+            return 0;
+        } else {
+            $this->error("❌ Migrations Copy failed");
             return 1;
         }
     }
@@ -278,6 +284,38 @@ class QuickerFasterInstall extends Command
             return 0;
         } else {
             $this->error("❌ Route Copy failed");
+            return 1;
+        }
+    }
+
+
+    private function overrideModelFiles()
+    {
+        $source = __DIR__ . '/../../dependencies/Models';
+        $destination = app_path('Models');
+
+        // Then copy
+        if ($this->copyDirectory($source, $destination)) {
+            $this->info("✅ Route copied successfully");
+            return 0;
+        } else {
+            $this->error("❌ Route Copy failed");
+            return 1;
+        }
+    }
+
+
+    private function overrideAssetFiles()
+    {
+        $source = __DIR__ . '/../../dependencies/tenancy/tenancy';
+        $destination = public_path('tenancy');
+
+        // Then copy
+        if ($this->copyDirectory($source, $destination)) {
+            $this->info("✅ Assets copied successfully");
+            return 0;
+        } else {
+            $this->error("❌ Assets Copy failed");
             return 1;
         }
     }

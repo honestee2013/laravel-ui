@@ -23,11 +23,10 @@ class TopNav extends Component
 
 
 
-    public function logout() {
-        //auth()->logout();
-        //return redirect()->route('login');
-        return redirect()->route('logout');
-    }
+public function logout() {
+    // Let Laravel handle the URL generation - it's smart about http vs https
+    return redirect(url('/logout'));
+}
 
 
     // In your TopBar component

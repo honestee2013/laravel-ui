@@ -17,9 +17,9 @@ return [
      * Only relevant if you're using the domain or subdomain identification middleware.
      */
     'central_domains' => [
-        'quickerfaster.test',
-        '127.0.0.1',
-        'localhost',
+        'quickerfaster.test'
+        //'127.0.0.1',
+        //'localhost',
     ],
 
     /**
@@ -52,7 +52,7 @@ return [
          * Tenant database names are created like this:
          * prefix + tenant_id + suffix.
          */
-        'prefix' => 'tenant',
+        'prefix' => '',
         'suffix' => '',
 
         /**

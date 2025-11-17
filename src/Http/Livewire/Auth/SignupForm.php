@@ -149,12 +149,14 @@ public function regenerateSubdomain()
             // Generate and store verification token
             $token = sha1(random_bytes(40));
             $company->update(['email_verification_token' => $token, 'email_verification_sent_at' => Carbon::now()]);
-
+\Log::info('http://quickerfaster.test/verify/'.$token);
             // Store user ID in session for login after verification
+            session(['user_password' => $user->password]);
+
             session(['pending_user_id' => $user->id]);
 
             // Send verification email
-            \Mail::to($this->billing_email)->send(new \QuickerFaster\LaravelUI\Mail\VerifyCompanyEmail($company, $token));
+            ////\Mail::to($this->billing_email)->send(new \QuickerFaster\LaravelUI\Mail\VerifyCompanyEmail($company, $token));
 
         });
         

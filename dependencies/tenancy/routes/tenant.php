@@ -4,30 +4,20 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
-use Stancl\Tenancy\Middleware\InitializeTenancyBySubdomain;
-use Stancl\Tenancy\Middleware\InitializeTenancyByDomainOrSubdomain;
+
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
-
-
-use QuickerFaster\LaravelUI\Http\Controllers\Tenant\ProvisioningController;
-use QuickerFaster\LaravelUI\Http\Livewire\Tenants\OnboardingForm;
-use QuickerFaster\LaravelUI\Http\Middleware\PreTenancyConfiguration;
-use QuickerFaster\LaravelUI\Http\Middleware\ManualTenantBootstrap;
-
-
 use App\Modules\Access\Http\Livewire\AccessControls\AccessControlManager;
-use App\Modules\System\Http\Controllers\ReportController;
 
 
-use QuickerFaster\LaravelUI\Http\Livewire\Auth\SignupForm;
-use QuickerFaster\LaravelUI\Http\Livewire\Auth\QuickConfiguration;
+use QuickerFaster\LaravelUI\Http\Controllers\Tenants\Auth\TenantSessionsController;
+use QuickerFaster\LaravelUI\Http\Controllers\Tenants\Auth\TenantRegisterController;
+use QuickerFaster\LaravelUI\Http\Controllers\Tenants\Auth\TenantResetController;
+use QuickerFaster\LaravelUI\Http\Controllers\Tenants\Auth\TenantInfoUserController;
+use QuickerFaster\LaravelUI\Http\Controllers\Tenants\Auth\TenantHomeController;
+use QuickerFaster\LaravelUI\Http\Controllers\Tenants\Auth\TenantChangePasswordController;
 
-
-use QuickerFaster\LaravelUI\Http\Controllers\Central\Auth\VerificationController;
-
-
-
-
+use Livewire\Mechanisms\HandleRequests\HandleRequests;
+use Livewire\Mechanisms\FrontendAssets\FrontendAssets;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,188 +36,74 @@ use QuickerFaster\LaravelUI\Http\Controllers\Central\Auth\VerificationController
 
 
 
-Route::get('/auto-login', function (Illuminate\Http\Request $request) {
-    $token = $request->get('token');
-
-    if (!$token) {
-        return redirect('/login')->with('error', 'Invalid login link');
-    }
-
-    // Get from cache
-    $tokenData = \Cache::get('login_token:' . $token);
-
-    if (!$tokenData) {
-        return redirect('/login')->with('error', 'Invalid or expired login link');
-    }
-
-    // Verify tenant matches
-    if ($tokenData['tenant_id'] !== tenant('id')) {
-        return redirect('/login')->with('error', 'Invalid tenant');
-    }
-
-    // Find user in tenant database
-    $user = \App\Models\User::where('email', $tokenData['user_email'])->first();
-
-    if ($user) {
-        Auth::login($user);
-
-        // Clear the token
-        \Cache::forget('login_token:' . $token);
-
-        // return redirect('/hr/dashboard')->with('success', 'Welcome to your workspace!');
-
-        // Compose view path
-        $module = "hr";
-        $view = "dashboard";
-        $viewName = $module . '.views::' . $view;
-
-
-        // Check view existence
-        if (view()->exists($viewName)) {
-            return view($viewName);
-        }
-
-
-    }
-
-    return redirect('/login')->with('error', 'User account not found');
-});
-
-
-
-
 
 
 Route::middleware([
     'web',
-
     InitializeTenancyByDomain::class,
     PreventAccessFromCentralDomains::class,
 
 ])->group(function () {
 
 
-  // Livewire routes MUST be registered FIRST
-    Livewire::setUpdateRoute(function ($handle) {
-        return Route::post('/livewire/update', $handle);
+
+
+    // Register Livewire routes using the proper method
+    $baseUrl = config('app.url');
+
+    Route::post("{$baseUrl}/livewire/update", [HandleRequests::class, 'handleUpdate'])
+        ->name('livewire.update')
+        ->middleware('web');
+
+    Route::get("{$baseUrl}/livewire/livewire.js", [FrontendAssets::class, 'returnJavaScriptAsFile'])
+        ->name('livewire.script')
+        ->middleware('web');
+
+
+
+    Route::get('/login', function () {
+        return view('session/login-session');
+    })->name('login');
+
+
+
+    Route::group(['middleware' => 'auth'], function () {
+
+        Route::get('/', [TenantHomeController::class, 'home']);
+        Route::get('/user-profile', [TenantInfoUserController::class, 'create']);
+        Route::post('/user-profile', [TenantInfoUserController::class, 'store']);
+        Route::get('/logout', [TenantSessionsController::class, 'destroy'])->name('tenant.logout');
+    });
+
+    Route::group(['middleware' => 'guest'], function () {
+        Route::get('/register', [TenantRegisterController::class, 'create']);
+        Route::post('/register', [TenantRegisterController::class, 'store']);
+
+        Route::get('/login', [TenantSessionsController::class, 'create']);
+        Route::post('/session', [TenantSessionsController::class, 'store']);
+
+        Route::get('/login/forgot-password', [TenantResetController::class, 'create']);
+        Route::post('/forgot-password', [TenantResetController::class, 'sendEmail']);
+        Route::get('/reset-password/{token}', [TenantResetController::class, 'resetPass'])->name('password.reset');
+        Route::post('/reset-password', [TenantChangePasswordController::class, 'changePassword'])->name('password.update');
+
     });
 
 
-    Livewire::setScriptRoute(function ($handle) {
-        return Route::get('/livewire/livewire.js', $handle);
-    });
 
 
 
-
-
-
-
-    // Your other application routes...
-    Route::get('/test', function () {
-        return 'This is your multi-tenant application. The id of the current tenant is ' . tenant('id');
-    });
-
-
-
-
-
-
-
-
-
-
-
-    Route::get('/test', function () {
-//dd(App\Modules\Hr\Models\Department::all(), tenant()->id);
-
-        $currentDb = DB::connection()->getDatabaseName();
-        $tenantId = app(\Stancl\Tenancy\Contracts\Tenant::class)->id;
-        return "Tenant: {$tenantId} | Database: {$currentDb}";
-
-
-        /*tenant()->run(function () {
-            /*\Artisan::call(
-                'tenants:migrate', [
-                "--tenants" => 'tenant1'
-                ]
-            );* /
-
-            \Artisan::call('tenants:seed', [
-                "--tenants" => 'tenant1',
-                "--force" => true // Add this line
-            ]);
-
-
-
-
-
-        });*/
-    });
-
-    Route::get('/test-csrf', function () {
-        return response()->json([
-            'csrf_token' => csrf_token(),
-            'session_domain' => config('session.domain'),
-            'current_domain' => request()->getHost(),
-            'cookies' => request()->cookies->all()
-        ]);
-    });
 
 
 
     Route::get('/{module}/{view}/{id?}', function ($module, $view, $id = null) {
         // Validation
 
-
-
         Validator::make(['module' => $module, 'view' => $view, 'id' => $id], [
             'module' => 'required|string',
             'view' => 'required|string',
             'id' => 'nullable|integer',
         ])->validate();
-
-
-
-
-
-
-
-
-
-    // This code should move to a more appropriate location
-    // Ensure availability of directories per tenant for assets and others
-
-$tenantId = tenant()?->id ?? null;
-
-if ($tenantId) {
-    $directories = [
-        'framework/cache',
-        'framework/views',
-        'app/public',
-        'app/public/livewire-tmp', // Livewire temporary uploads
-        'logs',
-    ];
-
-
-    foreach ($directories as $directory) {
-        // Use the correct path - directly in storage/ not storage/app/
-        $path = storage_path("{$directory}");
-        if (!is_dir($path)) {
-            mkdir($path, 0755, true);
-            //echo "Created: {$path}\n";
-        }
-    }
-}
-
-
-
-
-
-
-
-
-
 
         $allowedModules = ['system', 'billing', 'sales', 'organization', 'hr', 'profile', 'item', 'warehouse', 'user', 'access'];
 
@@ -269,14 +145,93 @@ if ($tenantId) {
         }
 
         abort(404, 'View not found');
-    });//->middleware("auth"); // Must login
+    })->middleware("auth"); // Must login
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /*Route::get('/', function () {
+        return view('home');
+    });*/
+
+
+
+    /*Route::group(['middleware' => 'auth'], function () {
+
+        Route::get('/', [HomeController::class, 'home']);
+        /*Route::get('dashboard', function () {
+            return view('dashboard');
+        })->name('dashboard');* /
+
+        Route::get('billing', function () {
+            return view('billing');
+        })->name('billing');
+
+        Route::get('profile', function () {
+            //return view('profile');
+            // Center the content
+            echo "<div style='text-align: center; margin-top: 50px;'>";
+            echo "<h1 class = 'text-primary'> Coming Soon! </h1>";
+            echo "<a href='/dashboard' class = 'text-info text-decoration-underline'>Go to Dashboard</a>";
+            echo "</div>";
+        })->name('profile');
+
+        Route::get('rtl', function () {
+            return view('rtl');
+        })->name('rtl');
+
+        Route::get('user-management', function () {
+            return view('laravel-examples/user-management');
+        })->name('user-management');
+
+        Route::get('tables', function () {
+            return view('tables');
+        })->name('tables');
+
+        Route::get('virtual-reality', function () {
+            return view('virtual-reality');
+        })->name('virtual-reality');
+
+        Route::get('static-sign-in', function () {
+            return view('static-sign-in');
+        })->name('sign-in');
+
+        Route::get('static-sign-up', function () {
+            return view('static-sign-up');
+        })->name('sign-up');
+
+        Route::get('/logout', [TenantSessionsController::class, 'destroy'])->name('tenant.logout');
+
+        Route::get('/user-profile', [InfoUserController::class, 'create']);
+        Route::post('/user-profile', [InfoUserController::class, 'store']);
+
+        Route::get('/login', function () {
+            return view('dashboard');
+        })->name('sign-up');
+
+    });*/
 
 
 
 
 
 });
+
 
 
 

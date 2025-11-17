@@ -12,91 +12,54 @@ class Tenant extends BaseTenant implements TenantWithDatabase
 {
     use HasFactory, HasDatabase, HasDomains;
 
-    protected $fillable = ['id', 'data'];
-
-
-    public static function booted()
-    {
-        static::created(function ($tenant) {
-            // Create storage directories when tenant is created
-            $tenant->createStorageDirectories();
-        });
-    }
-
-    public function createStorageDirectories()
-    {
-        $directories = [
-            'framework/cache',
-            'framework/views',
-            'framework/sessions',
-            'app/public',
-            'logs',
-        ];
-        
-        foreach ($directories as $directory) {
-            $path = storage_path("app/tenant{$this->id}/{$directory}");
-            if (!is_dir($path)) {
-                mkdir($path, 0755, true);
-            }
-        }
-    }
-
-
+    protected $fillable = ['id', 'data', 'tenancy_db_name'];
+    protected $casts = ['data' => 'array'];
 
     /**
-     * This is the method the package uses to get the database name
-     * Override it completely to ignore the config prefix/suffix
+     * Override to prevent automatic database creation
      */
-    /*public function getDatabaseName(): string
+    public function getDatabaseName(): string
     {
-        // Always use custom database name from data
-        if (isset($this->data['database_name']) && !empty($this->data['database_name'])) {
-            return $this->data['database_name'];
-        }
-
-        // Fallback to available_databases table
-        $assignedDb = DB::connection('mysql') // Use central connection
+        // Always use the database from available_databases pool
+        $assignedDb = DB::connection('mysql')
             ->table('available_databases')
             ->where('tenant_id', $this->id)
             ->value('name');
 
         if ($assignedDb) {
+            \Log::info('Using database from pool', [
+                'tenant_id' => $this->id,
+                'database' => $assignedDb
+            ]);
             return $assignedDb;
         }
 
-        // Final fallback - but this should rarely happen
-        return 'tenant_' . $this->id . '_db';
+        // Fallback
+        return $this->id . '_db';
     }
 
     /**
-     * Some package versions use this method - override it too
+     * Override to skip database creation
      */
-    /*public function getTenantDatabaseName(): string
+    protected function createDatabase(): void
     {
-        return $this->getDatabaseName();
-    }*/
+        $database = $this->getDatabaseName();
 
-    /**
-     * Force the database configuration to use our custom name
-     */
-    /*public function getDatabaseConfig(): array
-    {
-        // Get the base tenant connection config
-        $defaultConfig = config('database.connections.tenant', [
-            'driver' => 'mysql',
-            'host' => env('DB_HOST', '127.0.0.1'),
-            'port' => env('DB_PORT', '3306'),
-            'username' => env('DB_USERNAME'),
-            'password' => env('DB_PASSWORD'),
-            'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-            'prefix' => '',
-            'strict' => true,
-            'engine' => null,
+        \Log::info('Skipping automatic database creation', [
+            'tenant_id' => $this->id,
+            'database' => $database
         ]);
 
-        return array_merge($defaultConfig, [
-            'database' => $this->getDatabaseName(), // This sets the actual database name
-        ]);
-    }*/
+        // Just verify it exists
+        $result = DB::connection('mysql')->select(
+            "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = ?",
+            [$database]
+        );
+
+        if (empty($result)) {
+            throw new \Exception("Database from pool does not exist: {$database}");
+        }
+
+        \Log::info('Database verified successfully', ['database' => $database]);
+    }
 }

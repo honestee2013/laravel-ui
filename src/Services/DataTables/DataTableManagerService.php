@@ -54,10 +54,15 @@ class DataTableManagerService
 
     protected function getControls($config)
     {
+
+        if (empty($config['controls']))
+            return [];
+
         if (is_array($config['controls']) && !empty($config['controls'])) {
             return $config['controls'];
         }
-        
+         
+
         if (isset($config['controls']) && strtolower($config['controls']) === "all") {
             return $this->getDataTableAllControls();
         }
