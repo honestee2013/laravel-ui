@@ -3,8 +3,8 @@
 <div style="max-width: 70em; margin: auto;">
 <system.views::layouts.app>
     {{--<x-slot name="sidebar">
-        <system.views::layouts.navbars.auth.sidebar moduleName="access">
-            <x-access.views::layouts.navbars.auth.sidebar-links />
+        <system.views::layouts.navbars.auth.sidebar moduleName="Admin">
+            <x-Admin.views::layouts.navbars.auth.sidebar-links />
         </x-system.views::layouts.navbars.auth.sidebar>
     </x-slot>--}}
     <x-slot name="pageHeader">
@@ -23,8 +23,8 @@
 
         @include('system.views::module-menu-icon', [
             'icon' => 'fas fa-key',
-            'title' => 'Access Control',
-            'url' => '/access/dashboard',
+            'title' => 'Admin Control',
+            'url' => '/Admin/dashboard',
             ]
         )
 

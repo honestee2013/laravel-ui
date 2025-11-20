@@ -6,7 +6,8 @@
             <a class="col-11" data-bs-toggle="collapse" href="#component-{{$componentId}}" role="button" aria-expanded="false"
                 aria-controls="collapseExample">
 
-                @include('system.views::widgets.buttons.title-icon', [
+
+                @include('qf::components.livewire.bootstrap.widgets.buttons.title-icon', [
                     'title' => $title,
                     'subtitle' => $subtitle,
                     'description' => $description,
@@ -40,7 +41,7 @@
                 <li
                   class="list-group-item border-0 rounded rounded-3  bg-gray-100  m-2 p-0"
                 >
-                    <livewire:widgets.buttons.toggle-button
+                    <livewire:qf::widgets.buttons.toggle-button
                         :is-card="true"
                         :title="$button['title']?? ''"
                         :subtitle="$button['subtitle']?? ''"

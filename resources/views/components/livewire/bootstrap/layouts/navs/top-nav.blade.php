@@ -2,10 +2,113 @@
     <div class="container-fluid">
         {{-- Brand --}}
         {{--<a class="navbar-brand d-flex align-items-center" href="{{ route('dashboard') }}" wire:navigate>--}}
-        <a class="navbar-brand d-flex align-items-center" href="#" wire:navigate>
-            <i class="fas fa-bolt me-2"></i>
-            <span class="fw-bold">QuickHR</span>
-        </a>
+
+
+
+
+
+
+
+
+
+
+
+@php
+    $currentModule = request()->segment(1); // Gets 'hr', 'Admin', or 'organization'
+    $moduleNames = [
+        'hr' => 'Human Resource Module',
+        /*'Admin' => 'Admin Control Module', 
+        'organization' => 'Organization Module'*/
+    ];
+    $currentModuleName = $moduleNames[$currentModule] ?? 'QuickHR';
+@endphp
+
+
+
+
+
+
+@php
+    $currentModule = request()->segment(1); // Gets 'hr', 'Admin', or 'organization'
+    $moduleNames = [
+        'hr' => 'QuickHR',
+        /*'Admin' => 'Admin Control', 
+        'organization' => 'Organization'*/
+    ];
+    $currentModuleName = $moduleNames[$currentModule] ?? 'QuickHR';
+    $moduleIcons = [
+        'hr' => 'fas fa-users',
+        /*'Admin' => 'fas fa-shield-alt',
+        'organization' => 'fas fa-building'*/
+    ];
+    $currentModuleIcon = $moduleIcons[$currentModule] ?? 'fas fa-bolt';
+@endphp
+
+<div class="dropdown" wire:ignore.self>
+    <a class="navbar-brand d-flex align-items-center dropdown-toggle module-switcher" href="#" 
+       data-bs-toggle="dropdown" data-bs-auto-close="true">
+        <i class="{{ $currentModuleIcon }} me-2"></i>
+        <span class="fw-bold">{{ $currentModuleName }}</span>
+    </a>
+    
+    <ul class="dropdown-menu me-sm-n4 dropdown-menu-start p-3 pt-4">
+        <li>
+            <a class="border-radius-md dropdown-item d-flex align-items-center {{ $currentModule === 'hr' ? 'active' : '' }}" 
+               href="{{ url('/hr/dashboard') }}">
+                <i class="fas fa-users me-2"></i>
+                HR Module
+                @if($currentModule === 'hr')
+                    <i class="fas fa-check ms-auto text-primary"></i>
+                @endif
+            </a>
+        </li>
+        {{--  <li>
+            <a class="border-radius-md dropdown-item d-flex align-items-center {{ $currentModule === 'Admin' ? 'active' : '' }}" 
+               href="{{ url('/Admin/dashboard') }}">
+                <i class="fas fa-shield-alt me-2"></i>
+                Admin Module
+                @if($currentModule === 'Admin')
+                    <i class="fas fa-check ms-auto text-primary"></i>
+                @endif
+            </a>
+        </li>
+        <li>
+            <a class="border-radius-md dropdown-item d-flex align-items-center {{ $currentModule === 'organization' ? 'active' : '' }}" 
+               href="{{ url('/organization/dashboard') }}">
+                <i class="fas fa-building me-2"></i>
+                Organization Module
+                @if($currentModule === 'organization')
+                    <i class="fas fa-check ms-auto text-primary"></i>
+                @endif
+            </a>
+        </li> --}}
+    </ul>
+</div>
+
+@script
+<script>
+document.addEventListener('livewire:init', function () {
+    // Initialize dropdowns
+    var moduleDropdown = new bootstrap.Dropdown(document.querySelector('.module-switcher'));
+});
+</script>
+@endscript
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         {{-- Toggler for mobile --}}
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNavCollapse">

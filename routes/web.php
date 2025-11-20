@@ -85,14 +85,14 @@ Route::get('/employees', function () {
         'view' => 'required|string',
     ])->validate();
 
-    $allowedModules = ['system', 'billing', 'sales', 'organization', 'hr', 'profile', 'item', 'warehouse', 'user', 'access'];
+    $allowedModules = ['system', 'billing', 'sales', 'organization', 'hr', 'profile', 'item', 'warehouse', 'user', 'Admin'];
 
     if (!in_array($module, $allowedModules)) {
         abort(404, 'Invalid module');
     }
 
 
-    // Chech if only admin can access this view. If the user is not admin do not proceed
+    // Chech if only admin can Admin this view. If the user is not admin do not proceed
     /*if (in_array($view, AccessControlManager::ROLE_ADMIN_ONLY_VIEWS)) {
         // Check if the user has the role
         if (!auth()->check() || !auth()->user()->hasRole(['admin', 'super_admin'])) {

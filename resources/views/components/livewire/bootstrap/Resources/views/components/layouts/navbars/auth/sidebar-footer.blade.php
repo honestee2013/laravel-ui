@@ -7,8 +7,8 @@
 
     <system.views::layouts.navbars.sidebar-link-item
         iconClasses="fas fa-key sidebar-icon"
-        url="access/access-control-management/{{$moduleName}}"
-        title="Control User Access"
+        url="Admin/Admin-control-management/{{$moduleName}}"
+        title="Control User Admin"
         target="_blank"
     />
 @endhasanyrole

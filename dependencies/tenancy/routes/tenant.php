@@ -6,8 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
-use App\Modules\Access\Http\Livewire\AccessControls\AccessControlManager;
-
+use App\Modules\Admin\Http\Livewire\AccessControls\AccessControlManager;
 
 use QuickerFaster\LaravelUI\Http\Controllers\Tenants\Auth\TenantSessionsController;
 use QuickerFaster\LaravelUI\Http\Controllers\Tenants\Auth\TenantRegisterController;
@@ -105,7 +104,7 @@ Route::middleware([
             'id' => 'nullable|integer',
         ])->validate();
 
-        $allowedModules = ['system', 'billing', 'sales', 'organization', 'hr', 'profile', 'item', 'warehouse', 'user', 'access'];
+        $allowedModules = ['system', 'billing', 'sales', 'organization', 'hr', 'profile', 'item', 'warehouse', 'user', 'admin'];
 
         if (!in_array($module, $allowedModules)) {
             abort(404, 'Invalid module');

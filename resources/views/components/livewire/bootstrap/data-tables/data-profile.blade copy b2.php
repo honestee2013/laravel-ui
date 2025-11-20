@@ -121,7 +121,7 @@
         <div class="card-body">
           <h6 class="section-title">Payroll Information</h6>
           <p><strong>Salary:</strong> $75,000 / year</p>
-          <p><strong>Bank:</strong> Access Bank</p>
+          <p><strong>Bank:</strong> Admin Bank</p>
           <p><strong>Account No:</strong> **** 4567</p>
           <p><strong>Last Payment:</strong> Aug 31, 2025</p>
         </div>

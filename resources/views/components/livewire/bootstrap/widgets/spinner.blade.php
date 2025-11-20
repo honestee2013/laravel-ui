@@ -11,7 +11,7 @@
             ">
             <div class="spinner-border text-primary" style="width: 4em; height: 4em; margin:auto; margin-top:40%"
                 role="status">
-                <span class="sr-only">Loading...</span>
+                {{--  <span class="sr-only">Loading...</span> --}}
             </div>
 
         </div>

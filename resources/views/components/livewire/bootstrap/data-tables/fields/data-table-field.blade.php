@@ -51,7 +51,7 @@
     <div class="form-group">
         <label class="mt-2 mb-1" for="{{ $field }}">{{ $label }}</label>
 
-        @if($hasInlineAdd)
+        @if($hasInlineAdd && isset($fields[$field]) &&  isset($fields[$field]['relationship']) && isset($fields[$field]['relationship']['model']))
             <span role="button" class="badge rounded-pill bg-primary text-xxs"
                 onclick="Livewire.dispatch('openAddRelationshipItemModalEvent',
                 [{{ json_encode($fields[$field]['relationship']['model']) }}])">

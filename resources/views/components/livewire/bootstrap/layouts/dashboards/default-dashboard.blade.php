@@ -19,5 +19,6 @@
 
 
     {{-- -- @include('core.views::widgets.spinner') --}}
+    @include('qf::components.livewire.bootstrap.widgets.spinner')
 
 </div>

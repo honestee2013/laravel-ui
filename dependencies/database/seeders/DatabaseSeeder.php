@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Modules\Access\Database\Seeders\QFDatabaseSeeder;
+use App\Modules\Admin\Database\Seeders\QFDatabaseSeeder;
 
 class DatabaseSeeder extends Seeder
 {
