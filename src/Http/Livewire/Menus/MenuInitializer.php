@@ -5,7 +5,7 @@ namespace QuickerFaster\LaravelUI\Http\Livewire\Menus;
 
 use Livewire\Component;
 use Illuminate\Support\Facades\Validator;
-use App\Modules\Access\Http\Livewire\AccessControls\AccessControlManager;
+use App\Modules\Admin\Http\Livewire\AccessControls\AccessControlManager;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -106,9 +106,9 @@ class MenuInitializer extends Component
                 //'permission' => 'view-dashboard'
             ],
             [
-               'title' => 'Access Control',
+               'title' => 'Admin Control',
                 'icon' => 'fas fa-key sidebar-icon',
-                'url' => "access/access-control-management/$this->moduleName",
+                'url' => "Admin/access-control-management/$this->moduleName",
                 'cssClasses' => "menu-item-footer menu-footer",
                 'itemType' => 'footer',
                 //'permission' => 'view-dashboard'

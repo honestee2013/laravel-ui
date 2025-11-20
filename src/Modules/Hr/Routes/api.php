@@ -2,7 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Modules\Access\Http\Controllers\AuthController;
+use App\Modules\Admin\Http\Controllers\AuthController;
 
 use App\Modules\Hr\Http\Controllers\ClockEventController;
 

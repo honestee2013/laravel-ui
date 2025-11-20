@@ -81,7 +81,7 @@ class RegisterTenant extends Component
             $this->runTenantMigrations($tenantConnectionName);
 
             // === STEP 7: Create Tenant User ===
-            $tenantUser = \App\Modules\Access\Models\User::on($tenantConnectionName)->create([
+            $tenantUser = \App\Modules\Admin\Models\User::on($tenantConnectionName)->create([
                 'name' => $this->company_name . ' Admin',
                 'email' => $this->email,
                 'password' => Hash::make($this->password),
@@ -90,7 +90,7 @@ class RegisterTenant extends Component
             ]);
 
             // === STEP 8: Assign CEO Role ===
-            $ceoRole = \App\Modules\Access\Models\Role::on($tenantConnectionName)
+            $ceoRole = \App\Modules\Admin\Models\Role::on($tenantConnectionName)
                 ->firstOrCreate(
                     ['name' => 'ceo', 'guard_name' => 'web'],
                     ['company_id' => $company->id]
@@ -148,7 +148,7 @@ public function runTenantMigrations($tenantConnectionName)
 
     // Run module migrations if they exist
     $modulePaths = [
-        app_path('Modules/Access/Database/Migrations'),
+        app_path('Modules/Admin/Database/Migrations'),
         app_path('Modules/System/Database/Migrations'),
         app_path('Modules/Hr/Database/Migrations'),
     ];

@@ -10,6 +10,13 @@ class ChartWidget extends BaseWidget
     public $chartId;
     public $aggregations = [];
 
+
+
+
+
+
+    
+
     public function mount($widgetId, $config, $initialData = null)
     {
         parent::mount($widgetId, $config, $initialData);
@@ -26,6 +33,11 @@ class ChartWidget extends BaseWidget
             'chartOptions' => $this->prepareChartOptions()
         ]);
     }
+
+
+
+
+
 
     protected function calculateAggregations()
     {
@@ -89,7 +101,12 @@ protected function prepareChartData()
                 'data' => $dataValues,
                 'backgroundColor' => $this->generateColors(count($dataValues)),
                 'borderColor' => 'rgba(54, 162, 235, 1)',
-                'borderWidth' => 2
+                'borderWidth' => 2,
+
+                'barPercentage' => 0.1,
+                //'barThickness' => 6,
+                //'maxBarThickness' => 8,
+                'minBarLength' => 2,
             ]
         ]
     ];
@@ -175,6 +192,11 @@ protected function getEmptyChartData()
     {
         parent::onDataUpdated($dashboardData);
         $this->calculateAggregations();
+        $this->dispatch('updateChart', $this->chartId, [
+            'chartType' => $this->chartType,
+            'chartData' => $this->prepareChartData(),
+            'chartOptions' => $this->prepareChartOptions()
+        ]);
     }
 
     public function render()

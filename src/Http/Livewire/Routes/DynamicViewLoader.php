@@ -5,7 +5,7 @@ namespace QuickerFaster\LaravelUI\Http\Livewire\Routes;
 
 use Livewire\Component;
 use Illuminate\Support\Facades\Validator;
-use App\Modules\Access\Http\Livewire\AccessControls\AccessControlManager;
+use App\Modules\Admin\Http\Livewire\AccessControls\AccessControlManager;
 
 class DynamicViewLoader extends Component
 {

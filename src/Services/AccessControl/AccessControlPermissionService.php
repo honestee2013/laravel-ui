@@ -7,7 +7,7 @@ use Illuminate\Support\Str;
 
 use QuickerFaster\LaravelUI\Services\system\ApplicationInfo;
 use function Laravel\Prompts\error;
-use App\Modules\Access\Models\Permission;
+use App\Modules\Admin\Models\Permission;
 use App\Models\User;
 
 class AccessControlPermissionService

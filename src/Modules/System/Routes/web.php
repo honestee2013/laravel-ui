@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Modules\Access\Http\Livewire\AccessControls\AccessControlManager;
+use App\Modules\Admin\Http\Livewire\AccessControls\AccessControlManager;
 /*use App\Modules\System\Http\Controllers\ReportController;
 
 

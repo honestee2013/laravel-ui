@@ -44,7 +44,7 @@ class IconCardWidget extends BaseWidget
     {
         $cacheKey = "widget_trend:{$this->widgetId}:" . md5(json_encode($this->config));
         
-        return Cache::remember($cacheKey, 300, function() { // Cache for 5 minutes
+        ///return Cache::remember($cacheKey, 300, function() { // Cache for 5 minutes
             $previousPeriod = $this->getPreviousPeriod($this->config['time_duration'] ?? 'this_month');
             
             if (!$previousPeriod) {
@@ -86,7 +86,7 @@ class IconCardWidget extends BaseWidget
                 ]);
                 return 0;
             }
-        });
+        ///});
     }
 
     protected function getPreviousPeriod($currentPeriod)

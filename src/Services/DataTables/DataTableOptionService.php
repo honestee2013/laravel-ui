@@ -56,7 +56,7 @@ class DataTableOptionService
             $query->with($relationshipName);
 
             return $query->get()->mapWithKeys(function ($obj) use ($key, $relationshipName, $relatedColumn, $hintField) {
-                $relatedModel = $obj->$relationshipName; // Access the related model dynamically
+                $relatedModel = $obj->$relationshipName; // Admin the related model dynamically
                 $val = $relatedModel ? $relatedModel->$relatedColumn : null;
 
                 $key = $obj->$key;

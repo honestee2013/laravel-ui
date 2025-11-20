@@ -83,6 +83,8 @@ protected function loadWidgetsConfiguration()
 
     public function refreshData()
     {
+
+
         $this->isLoading = true;
         
         $cacheKey = $this->generateCacheKey();

@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use App\Modules\Access\Models\Role;
+use App\Modules\Admin\Models\Role;
 use Illuminate\Support\Facades\DB;
 
 

@@ -69,41 +69,29 @@ class QuickerFasterInstall extends Command
         $this->overrideTheDependencyFiles();
 
 
-        /*$providers = [
-            // Laravel UI (if using)
-            '--provider="Laravel\\Ui\\UiServiceProvider"' => [
-                '--tag' => 'auth'
+        $providers = [
+            'Spatie\Activitylog\ActivitylogServiceProvider' => [
+                '--tag' => ['activitylog-migrations', 'activitylog-config']
             ],
-
-            // Spatie Permissions (if using)
-            '--provider="Spatie\\Permission\\PermissionServiceProvider"' => [
-                '--tag' => 'migrations',
-                '--tag' => 'config'
-            ],
-
-            // Laravel Debugbar (if using)
-            '--provider="Barryvdh\\Debugbar\\ServiceProvider"' => [
-                '--tag' => 'config'
-            ],
-
             // Add more providers as needed
         ];
 
-        foreach ($providers as $provider => $tags) {
-            foreach ($tags as $tag) {
-                try {
-                    $command = array_merge([$provider], [$tag]);
-                    if ($force) {
-                        $command[] = '--force';
-                    }
-
-                    Artisan::call('vendor:publish', $command);
-                    $this->info("Published: {$provider} {$tag}");
-                } catch (\Exception $e) {
-                    $this->warn("Failed to publish {$provider} {$tag}: " . $e->getMessage());
+        foreach ($providers as $provider => $options) {
+            try {
+                $command = array_merge([
+                    '--provider' => $provider
+                ], $options);
+                
+                if ($force) {
+                    $command['--force'] = true;
                 }
+
+                Artisan::call('vendor:publish', $command);
+                $this->info("Published: {$provider} with tags: " . implode(', ', (array)$options['--tag']));
+            } catch (\Exception $e) {
+                $this->warn("Failed to publish {$provider}: " . $e->getMessage());
             }
-        }*/
+        }
 
         $this->info('✅ Vendor files published successfully!');
     }

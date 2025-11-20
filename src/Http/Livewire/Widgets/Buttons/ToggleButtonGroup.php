@@ -2,7 +2,7 @@
 
 namespace QuickerFaster\LaravelUI\Http\Livewire\Widgets\Buttons;
 
-use App\Modules\Access\Events\ToggleButtonEvent;
+use App\Modules\Admin\Events\ToggleButtonEvent;
 use Livewire\Component;
 use Illuminate\Support\Facades\Log;
 use QuickerFaster\LaravelUI\Traits\Widgets\HandlesToggleState;
@@ -163,7 +163,16 @@ class ToggleButtonGroup extends Component
 
     public function render()
     {
-        return view('system.views::widgets.buttons.toggle-button-group');
+
+        
+        $UIFramework = config('qf_laravel_ui.ui_framework', 'bootstrap'); // default to bootstrap
+        $viewPath =  "qf::components.livewire.$UIFramework";
+        $theView = "$viewPath.widgets.buttons.toggle-button-group"; // table, list, cards
+
+        return view($theView);
+            
+
+        //return view('system.views::widgets.buttons.toggle-button-group');
     }
 }
 

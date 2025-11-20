@@ -41,16 +41,18 @@ class BaseWidget extends Component
 
     public function onDataUpdated($dashboardData)
     {
+        
         if (isset($dashboardData[$this->widgetId])) {
             $this->data = $dashboardData[$this->widgetId];
             $this->isLoading = false;
+            $this->dispatch('$refresh');
         }
     }
 
     public function refresh()
     {
         $this->isLoading = true;
-        $this->emit('refreshDashboard');
+        $this->dispatch('refreshDashboard');
     }
 
     public function render()

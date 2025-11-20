@@ -4,7 +4,7 @@ namespace QuickerFaster\LaravelUI\Http\Livewire\Auth;
 use App\Modules\System\Models\Tenant;
 use App\Modules\System\Models\Company;
 use App\Models\User;
-use App\Modules\Access\Models\Role;
+use App\Modules\Admin\Models\Role;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -21,7 +21,7 @@ class QuickConfiguration extends Component
     public $industry = 'technology';
     public $active_modules = ['hr'];
     public $main_module = 'hr';
-    public $dependency_modules = ['system','access'];
+    public $dependency_modules = ['system','Admin'];
     
     public $company;
 
@@ -196,10 +196,10 @@ protected function manualRollback($databaseSlot, $tenant)
     ]);
 
         // Assign admin role
-        $adminRole = \App\Modules\Access\Models\Role::where('name', 'admin')->first();
+        $adminRole = \App\Modules\Admin\Models\Role::where('name', 'admin')->first();
         
         if (!$adminRole) {
-            $adminRole = \App\Modules\Access\Models\Role::create([
+            $adminRole = \App\Modules\Admin\Models\Role::create([
                 'name' => 'admin',
                 'description' => 'Manage users, settings, and system operations',
                 'guard_name' => 'web',
@@ -477,7 +477,7 @@ protected function initializeTenant(Tenant $tenant)
             // Run specific module seeders if needed
             Artisan::call('tenants:seed', [
                 '--tenants' => [tenant('id')],
-                '--class' => 'App\Modules\Access\Database\Seeders\RoleSeeder',
+                '--class' => 'App\Modules\Admin\Database\Seeders\RoleSeeder',
                 '--force' => true,
             ]);
             

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use App\Modules\System\Models\Plan;
-use App\Modules\Access\Models\User;
+use App\Modules\Admin\Models\User;
 
 
 class Company extends Model
@@ -96,7 +96,7 @@ class Company extends Model
 
     public function users()
     {
-        return $this->hasMany(\App\Modules\Access\Models\User::class, 'company_id', 'id');
+        return $this->hasMany(\App\Modules\Admin\Models\User::class, 'company_id', 'id');
     }
 
     /**

@@ -183,7 +183,7 @@ public function downloadDocument($documentId, $column)
         abort(404, 'Document not found.');
     }
     
-    // Authorize: can user access this?
+    // Authorize: can user Admin this?
     ///$this->authorize('view', $doc);
 
 
