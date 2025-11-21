@@ -428,6 +428,9 @@ protected function initializeTenant(Tenant $tenant)
             throw new Exception("Database mismatch! Expected: {$expectedDatabase}, Actual: {$actualDatabase}");
         }
 
+        // 🔥 NEW: Clean the database before running migrations
+        $this->purgeTenantDatabase();
+
         // Run migrations for the tenant
         $this->runTenantMigrations($tenant);
         
@@ -438,6 +441,34 @@ protected function initializeTenant(Tenant $tenant)
         \Log::error('Tenant initialization failed: ' . $e->getMessage());
         throw $e;
     }
+}
+
+
+protected function purgeTenantDatabase(): void
+{
+    \Log::info('Purging existing tables from tenant database');
+
+    $tables = DB::select('SHOW TABLES');
+    $connection = config('database.default');
+    $schema = collect($tables)->map(function ($table) {
+        return (array) $table;
+    })->flatten()->values();
+
+    if ($schema->isEmpty()) {
+        \Log::info('No tables found in tenant database');
+        return;
+    }
+
+    // Disable foreign key checks
+    DB::statement('SET FOREIGN_KEY_CHECKS = 0');
+
+    foreach ($schema as $table) {
+        DB::statement("DROP TABLE IF EXISTS `{$table}`");
+    }
+
+    DB::statement('SET FOREIGN_KEY_CHECKS = 1');
+
+    \Log::info('Tenant database purged successfully', ['tables_dropped' => $schema->count()]);
 }
 
 

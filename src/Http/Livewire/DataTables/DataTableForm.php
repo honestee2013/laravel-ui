@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use QuickerFaster\LaravelUI\Services\GUI\SweetAlertService;
+use App\Modules\System\Events\DataTableFormEvent;
 
 
 use QuickerFaster\LaravelUI\Services\DataTables\DataTableFormService;
@@ -135,11 +136,11 @@ class DataTableForm extends Component
                 if ($this->isEditMode) {
                     $oldRecord = $record->toArray();
                     $record->update($data);
-                    $this->dispatchEvent('updated', $oldRecord, $record->toArray());
+                    $this->dispatchAllEvents('updated', $oldRecord, $record->toArray());
                 } else {
                     $record = $this->model::create($data);
                     $this->selectedItemId = $record->id;
-                    $this->dispatchEvent('created', [], $record->toArray());
+                    $this->dispatchAllEvents('created', [], $record->toArray());
                 }
                 
                 // Handle relationships
@@ -236,15 +237,71 @@ class DataTableForm extends Component
         $this->dispatch("recordSavedEvent"); // Table refresh
         $this->dispatch('$refresh');  // To update  modal modal field dropdown options data
     }
+
     
-    protected function dispatchEvent($eventName, $oldData, $newData)
+    /*protected function dispatchEvent($eventName, $oldData, $newData)
     {
         $eventClass = "App\\Events\\DataTable\\{$this->modelName}{$eventName}";
         
         if (class_exists($eventClass)) {
             event(new $eventClass($oldData, $newData, auth()->id()));
         }
+    }*/
+
+
+
+    private function dispatchAllEvents($eventName, $oldRecord, $newData) {
+
+        if (!isset($this->config["dispatchEvents"]) || !$this->config["dispatchEvents"])
+            return;
+
+        // AVAILABLE FOR IMPLEMENTATION EVENTS:
+        // DataTableFormEvent, DataTableFormBeforeCreateEvent,  DataTableFormAfterCreateEvent,
+        // DataTableFormBeforeUpdateEvent,  DataTableFormAfterUpdateEvent,
+        // {AnyModelName}Event, {AnyModelName}BeforeCreateEvent,  {AnyModelName}AfterCreateEvent,
+        // {AnyModelName}BeforeUpdateEvent,  {AnyModelName}AfterUpdateEvent,
+
+        // Sending DtatTableForm Generic event
+        DataTableFormEvent::dispatch($oldRecord, $newData, $eventName, $this->model);
+
+        // Sending DtatTableForm Specific event eg. DataTableForm{BeforeUpdate}Event
+        $dataTableFormEvent = "DataTableForm{$eventName}Event";
+        if(class_exists($dataTableFormEvent))
+            $dataTableFormEvent::dispatch($oldRecord, $newData, $eventName, $this->model);
+
+
+        // Specific Model releted eg. {User}BeforeUpdateEvent
+        $specificEvent = $this->getSpecificEventFullName($eventName);
+        $event = $this->getEventFullName();
+        if (class_exists($specificEvent))
+            $specificEvent::dispatch($oldRecord, $newData);
+
+        // Generic Model releted eg. {User}Event
+        if (class_exists($event))
+            $event::dispatch($oldRecord, $newData, $eventName);
     }
+
+
+private function getSpecificEventFullName($eventName) {
+    return "\\App\\Modules\\{$this->moduleName}\\Events\\{$eventName}".$this->modelName."Event";
+}
+
+private function getEventFullName() {
+    return "\\App\\Modules\\{$this->moduleName}\\Events\\".$this->modelName."Event";
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
     
     protected function handleError(\Exception $e)
     {
@@ -393,7 +450,7 @@ class DataTableForm extends Component
                 $record = $this->model::findOrFail($id);
                 $record->delete();
                 
-                $this->dispatchEvent('deleted', $record->toArray(), []);
+                $this->dispatchAllEvents('deleted', $record->toArray(), []);
             }
         });
         
@@ -412,16 +469,17 @@ class DataTableForm extends Component
     
     public function updateModelField($modelIds, $fieldName, $fieldValue, $actionName = null)
     {
+       
         ///$this->authorize('update', $this->model);
         
         $modelIds = is_array($modelIds) ? $modelIds : [$modelIds];
         
-        DB::transaction(function () use ($modelIds, $fieldName, $fieldValue) {
+        DB::transaction(function () use ($modelIds, $fieldName, $fieldValue, $actionName) {
             $this->model::whereIn('id', $modelIds)->update([$fieldName => $fieldValue]);
             
             foreach ($modelIds as $id) {
                 $record = $this->model::findOrFail($id);
-                $this->dispatchEvent('updated', $record->toArray(), array_merge($record->toArray(), [$fieldName => $fieldValue]));
+                $this->dispatchAllEvents('updated', $record->toArray(), array_merge($record->toArray(), [$fieldName => $fieldValue, "actionName" => $actionName]));
             }
         });
         

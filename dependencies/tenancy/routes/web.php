@@ -69,10 +69,10 @@ foreach (config('tenancy.central_domains') as $domain) {
             Route::get('/configure', QuickConfiguration::class)->name('quick.configure');
 
             // Step 3: Dashboard (REQUIRES AUTHENTICATION)
-            Route::middleware(['auth', 'tenant'])->prefix('/app')->group(function () {
+            /*Route::middleware(['auth', 'tenant'])->prefix('/app')->group(function () {
                 Route::get('/dashboard', [DashboardController::class, 'index'])->name('tenant.dashboard');
                 // ... other tenant routes
-            });
+            });*/
 
 
 

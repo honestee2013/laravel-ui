@@ -187,7 +187,7 @@ class PayrollRunController extends Controller
             'approved_at' => now()
         ]);
 
-        return redirect()->route('payroll.payroll-runs.index')
-            ->with('success', 'Payroll run approved and payslips generated.');
+        //return redirect(url("/hr/payroll-runs")) //->route('payroll.payroll-runs.index')
+            //->with('success', 'Payroll run approved and payslips generated.');
     }
 }
