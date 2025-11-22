@@ -1,13 +1,76 @@
 deployment:
   tasks:
-    - echo "🔁 Starting deployment..."
-    - /opt/cpanel/ea-php81/root/usr/bin/php artisan down || true
-    - composer install --no-dev --optimize-autoloader
-    - /opt/cpanel/ea-php81/root/usr/bin/php artisan key:generate --force
-    - /opt/cpanel/ea-php81/root/usr/bin/php artisan migrate --force
-    - /opt/cpanel/ea-php81/root/usr/bin/php artisan config:cache
-    - /opt/cpanel/ea-php81/root/usr/bin/php artisan route:cache
-    - /opt/cpanel/ea-php81/root/usr/bin/php artisan view:cache
-    - /opt/cpanel/ea-php81/root/usr/bin/php artisan storage:link
-    - /opt/cpanel/ea-php81/root/usr/bin/php artisan up
-    - echo "✅ Deployment complete!"
+    # Paths
+    - export COMPOSER_BIN=/home/quickerf/composer.phar
+    - export REPOPATH=/home/quickerf/laravel_suites_repo/suites.quickerfaster.com
+    - export DEPLOYPATH=/home/quickerf/public_html/suites.quickerfaster.com
+    - export LOGDIR=/home/quickerf/deploy_logs
+    - mkdir -p $LOGDIR
+    - export LOGFILE=$LOGDIR/deploy_$(date +"%Y-%m-%d_%H-%M-%S").log
+
+    # Start log
+    - /bin/echo "===== Deployment started at $(date) =====" >> $LOGFILE
+
+    # Pull latest changes from GitHub
+    - /bin/echo "Pulling latest changes from GitHub..." >> $LOGFILE
+    - cd $REPOPATH && /usr/bin/git pull origin main >> $LOGFILE 2>&1
+
+    # Clean destination folder but preserve .env, .cpanel.yml, storage, bootstrap/cache
+    - /bin/echo "Cleaning destination folder..." >> $LOGFILE
+    - /bin/sh -c 'for f in $(/bin/ls -A "$DEPLOYPATH"); do
+        [ "$f" = ".env" ] || [ "$f" = ".cpanel.yml" ] || [ "$f" = "storage" ] || [ "$f" = "bootstrap/cache" ] || /bin/rm -rf "$DEPLOYPATH/$f";
+      done' >> $LOGFILE 2>&1
+
+    # Copy repository files to deployment path
+    - /bin/echo "Copying files to deployment path..." >> $LOGFILE
+    - /bin/sh -c 'cd "$REPOPATH" && /bin/cp -a $(/bin/ls -A | grep -vE "^(\.git|\.env|\.cpanel\.yml)$") "$DEPLOYPATH"' >> $LOGFILE 2>&1
+
+    # Ensure Laravel storage and cache directories exist and are writable
+    - /bin/echo "Ensuring Laravel storage and cache folders exist..." >> $LOGFILE
+    - /bin/sh -c '/bin/mkdir -p $DEPLOYPATH/storage/framework/cache/data \
+                   $DEPLOYPATH/storage/framework/sessions \
+                   $DEPLOYPATH/storage/framework/views \
+                   $DEPLOYPATH/bootstrap/cache \
+                   $DEPLOYPATH/storage/logs' >> $LOGFILE 2>&1
+
+    # Install Composer locally if missing
+    - /bin/echo "Checking Composer..." >> $LOGFILE
+    - /bin/sh -c 'if [ ! -f "$COMPOSER_BIN" ]; then
+        /bin/echo "Downloading Composer..." >> $LOGFILE &&
+        cd /home/quickerf &&
+        /usr/bin/curl -sS https://getcomposer.org/installer -o composer-setup.php &&
+        php composer-setup.php --quiet &&
+        rm composer-setup.php &&
+        /bin/echo "Composer installed successfully" >> $LOGFILE;
+      fi'
+
+    # Install PHP dependencies without running scripts (prevents cache errors)
+    - /bin/echo "Installing PHP dependencies..." >> $LOGFILE
+    - /bin/sh -c 'cd "$DEPLOYPATH" && php "$COMPOSER_BIN" install --no-dev --no-scripts --optimize-autoloader >> "$LOGFILE" 2>&1'
+
+    # Run Artisan post-deploy tasks manually
+    - /bin/echo "Running Artisan post-deploy tasks..." >> $LOGFILE
+    - /bin/sh -c 'php "$DEPLOYPATH/artisan" config:clear >> "$LOGFILE" 2>&1'
+    - /bin/sh -c 'php "$DEPLOYPATH/artisan" cache:clear >> "$LOGFILE" 2>&1'
+    - /bin/sh -c 'php "$DEPLOYPATH/artisan" package:discover >> "$LOGFILE" 2>&1'
+    - /bin/sh -c 'php "$DEPLOYPATH/artisan" config:cache >> "$LOGFILE" 2>&1'
+    - /bin/sh -c 'php "$DEPLOYPATH/artisan" route:cache >> "$LOGFILE" 2>&1'
+    - /bin/sh -c 'php "$DEPLOYPATH/artisan" view:cache >> "$LOGFILE" 2>&1'
+
+    # Run migrations
+    - /bin/echo "Running migrations..." >> $LOGFILE
+    - /bin/sh -c 'php "$DEPLOYPATH/artisan" migrate --force >> "$LOGFILE" 2>&1'
+
+    # Seed database
+    - /bin/echo "Seeding database..." >> $LOGFILE
+    - /bin/sh -c 'php "$DEPLOYPATH/artisan" db:seed --force >> "$LOGFILE" 2>&1'
+
+    # Final cache cleanup
+    - /bin/echo "Clearing caches..." >> $LOGFILE
+    - /bin/sh -c 'php "$DEPLOYPATH/artisan" optimize:clear >> "$LOGFILE" 2>&1'
+
+    # End log
+    - /bin/echo "===== Deployment finished at $(date) =====" >> $LOGFILE
+
+    # Rotate logs - keep only last 5
+    - /bin/ls -1t $LOGDIR/deploy_*.log | /usr/bin/tail -n +6 | /bin/xargs -r /bin/rm --

@@ -12,3 +12,21 @@
         }
 
     ]
+
+
+    or 
+
+
+      "repositories": [
+
+        {
+            "type": "path",
+            "url": "./../packages/quicker-faster/laravel-code-gen"
+        },
+
+        {
+            "type": "path",
+            "url": "https://github.com/honestee2013/laravel-ui.git"
+        }
+
+    ]

@@ -210,6 +210,7 @@ class QuickerFasterInstall extends Command
         $this->overrideDatabaseSeederFiles();
         $this->overrideModelFiles();
         $this->overrideAssetFiles();
+        $this->overridMiddlewareFiles();
 
         $this->copyCpanelDeploymentFile();
     }
@@ -306,6 +307,23 @@ class QuickerFasterInstall extends Command
             return 0;
         } else {
             $this->error("❌ Assets Copy failed");
+            return 1;
+        }
+    }
+
+
+
+    private function overridMiddlewareFiles()
+    {
+        $source = __DIR__ . '/../../dependencies/Middleware';
+        $destination = app_path("Http/Middleware");// Then copy');
+
+        // Then copy
+        if ($this->copyDirectory($source, $destination)) {
+            $this->info("✅ Middleware copied successfully");
+            return 0;
+        } else {
+            $this->error("❌ Middleware Copy failed");
             return 1;
         }
     }
