@@ -43,17 +43,17 @@ foreach (config('tenancy.central_domains') as $domain) {
             $baseUrl = config('app.url');
 
             Route::post("{$baseUrl}/livewire/update", [HandleRequests::class, 'handleUpdate'])
-                ->name('livewire.update')
+                ->name('central.livewire.update')
                 ->middleware('web');
 
             Route::get("{$baseUrl}/livewire/livewire.js", [FrontendAssets::class, 'returnJavaScriptAsFile'])
-                ->name('livewire.script')
+                ->name('central.livewire.script')
                 ->middleware('web');
 
 
             Route::get('/login', function () {
                 return view('session/login-session');
-            })->name('login');
+            })->name('central.login');
 
 
 
@@ -90,8 +90,8 @@ foreach (config('tenancy.central_domains') as $domain) {
                 Route::post('/session', [SessionsController::class, 'store']);
                 Route::get('/login/forgot-password', [ResetController::class, 'create']);
                 Route::post('/forgot-password', [ResetController::class, 'sendEmail']);
-                Route::get('/reset-password/{token}', [ResetController::class, 'resetPass'])->name('password.reset');
-                Route::post('/reset-password', [ChangePasswordController::class, 'changePassword'])->name('password.update');
+                Route::get('/reset-password/{token}', [ResetController::class, 'resetPass'])->name('central.password.reset');
+                Route::post('/reset-password', [ChangePasswordController::class, 'changePassword'])->name('central.password.update');
 
             });
 

@@ -51,18 +51,18 @@ Route::middleware([
     $baseUrl = config('app.url');
 
     Route::post("{$baseUrl}/livewire/update", [HandleRequests::class, 'handleUpdate'])
-        ->name('livewire.update')
+        ->name('tenant.livewire.update')
         ->middleware('web');
 
     Route::get("{$baseUrl}/livewire/livewire.js", [FrontendAssets::class, 'returnJavaScriptAsFile'])
-        ->name('livewire.script')
+        ->name('tenant.livewire.script')
         ->middleware('web');
 
 
 
     Route::get('/login', function () {
         return view('session/login-session');
-    })->name('login');
+    })->name('tenant.login');
 
 
 
@@ -83,8 +83,8 @@ Route::middleware([
 
         Route::get('/login/forgot-password', [TenantResetController::class, 'create']);
         Route::post('/forgot-password', [TenantResetController::class, 'sendEmail']);
-        Route::get('/reset-password/{token}', [TenantResetController::class, 'resetPass'])->name('password.reset');
-        Route::post('/reset-password', [TenantChangePasswordController::class, 'changePassword'])->name('password.update');
+        Route::get('/reset-password/{token}', [TenantResetController::class, 'resetPass'])->name('tenant.password.reset');
+        Route::post('/reset-password', [TenantChangePasswordController::class, 'changePassword'])->name('tenant.password.update');
 
     });
 
