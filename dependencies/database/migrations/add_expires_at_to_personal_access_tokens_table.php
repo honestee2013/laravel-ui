@@ -6,7 +6,8 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up()
+    // Uncomment for laravel/sanctum ^v4
+    /*public function up()
     {
         Schema::table('personal_access_tokens', function (Blueprint $table) {
             $table->timestamp('expires_at')->nullable()->after('abilities');
@@ -18,5 +19,5 @@ return new class extends Migration
         Schema::table('personal_access_tokens', function (Blueprint $table) {
             $table->dropColumn('expires_at');
         });
-    }
+    }*/ 
 };
