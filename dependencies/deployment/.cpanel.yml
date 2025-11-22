@@ -1,0 +1,13 @@
+deployment:
+  tasks:
+    - echo "🔁 Starting deployment..."
+    - /opt/cpanel/ea-php81/root/usr/bin/php artisan down || true
+    - composer install --no-dev --optimize-autoloader
+    - /opt/cpanel/ea-php81/root/usr/bin/php artisan key:generate --force
+    - /opt/cpanel/ea-php81/root/usr/bin/php artisan migrate --force
+    - /opt/cpanel/ea-php81/root/usr/bin/php artisan config:cache
+    - /opt/cpanel/ea-php81/root/usr/bin/php artisan route:cache
+    - /opt/cpanel/ea-php81/root/usr/bin/php artisan view:cache
+    - /opt/cpanel/ea-php81/root/usr/bin/php artisan storage:link
+    - /opt/cpanel/ea-php81/root/usr/bin/php artisan up
+    - echo "✅ Deployment complete!"

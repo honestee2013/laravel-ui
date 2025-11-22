@@ -210,6 +210,8 @@ class QuickerFasterInstall extends Command
         $this->overrideDatabaseSeederFiles();
         $this->overrideModelFiles();
         $this->overrideAssetFiles();
+
+        $this->copyCpanelDeploymentFile();
     }
 
 
@@ -307,6 +309,25 @@ class QuickerFasterInstall extends Command
             return 1;
         }
     }
+
+
+
+    private function copyCpanelDeploymentFile()
+    {
+        $source = __DIR__ . '/../../dependencies/deployment';
+        $destination = base_path("/");
+
+        // Then copy
+        if ($this->copyDirectory($source, $destination)) {
+            $this->info("✅ Cpanel Deployment File copied successfully");
+            return 0;
+        } else {
+            $this->error("❌ Cpanel Deployment File Copy failed");
+            return 1;
+        }
+    }
+
+
 
 
 
