@@ -2,8 +2,10 @@ deployment:
   tasks:
     # Paths
     - export COMPOSER_BIN=/home/quickerf/composer.phar
-    - export REPOPATH=/home/quickerf/laravel_suites_repo/suites.quickerfaster.com
-    - export DEPLOYPATH=/home/quickerf/public_html/suites.quickerfaster.com
+    # - export REPOPATH=/home/quickerf/laravel_suites_repo/suites.quickerfaster.com
+    # - export DEPLOYPATH=/home/quickerf/public_html/suites.quickerfaster.com
+    - export REPOPATH=/home/quickerf/laravel_suites_repo/quickerfaster.com
+    - export DEPLOYPATH=/home/quickerf/public_html
     - export LOGDIR=/home/quickerf/deploy_logs
     - mkdir -p $LOGDIR
     - export LOGFILE=$LOGDIR/deploy_$(date +"%Y-%m-%d_%H-%M-%S").log
