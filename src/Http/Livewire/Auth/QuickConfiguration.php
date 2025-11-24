@@ -59,13 +59,13 @@ class QuickConfiguration extends Component
         // User is NOT logged in yet - we're using session
         $companyId = session('verified_company_id');
         if (!$companyId) {
-            return redirect()->route('register');
+            return redirect()->route('central.client.register');
         }
         
         $this->company = Company::findOrFail($companyId);
         
         if (!$this->company || !$this->company->domain_verified) {
-            return redirect()->route('register');
+            return redirect()->route('central.client.register');
         }
     }
 

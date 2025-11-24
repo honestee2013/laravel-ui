@@ -149,7 +149,7 @@ public function regenerateSubdomain()
             // Generate and store verification token
             $token = sha1(random_bytes(40));
             $company->update(['email_verification_token' => $token, 'email_verification_sent_at' => Carbon::now()]);
-\Log::info('http://quickerfaster.test/verify/'.$token);
+\Log::info('http://quickerfaster.test/suites/verify/'.$token);
             // Store user ID in session for login after verification
             session(['user_password' => $user->password]);
 
@@ -161,7 +161,7 @@ public function regenerateSubdomain()
         });
         
         session()->flash('message', 'Check your email to verify your account.');
-        return redirect()->route('register');
+        return redirect(url('/suites/client-register'));//->route('central.client.register');
         
     }
 

@@ -287,10 +287,10 @@ class QuickerFasterInstall extends Command
 
         // Then copy
         if ($this->copyDirectory($source, $destination)) {
-            $this->info("✅ Route copied successfully");
+            $this->info("✅ Models copied successfully");
             return 0;
         } else {
-            $this->error("❌ Route Copy failed");
+            $this->error("❌ Models Copy failed");
             return 1;
         }
     }
