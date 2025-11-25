@@ -1,4 +1,4 @@
-<?php 
+<?php
 namespace QuickerFaster\LaravelUI\Commands;
 
 
@@ -11,6 +11,8 @@ class ReplenishTenantDatabases extends Command
 {
     protected $signature = 'tenancy:replenish-pool {--count=5}';
     protected $description = 'Replenish pre-provisioned tenant database pool';
+
+    // app/Console/Commands/ReplenishTenantDatabases.php
 
     public function handle()
     {
@@ -25,33 +27,26 @@ class ReplenishTenantDatabases extends Command
         }
 
         $toCreate = $minPoolSize - $available;
-        $this->info("Creating {$toCreate} new tenant databases...");
+        $this->info("Preparing {$toCreate} tenant databases...");
 
         for ($i = 0; $i < $toCreate; $i++) {
             $dbSuffix = now()->format('ymdHis') . Str::random(4);
             $dbName = '_qf_suite_tenant_' . $dbSuffix;
 
             try {
-                // 1. Create DB via raw SQL (if cPanel allows)
-                DB::connection('mysql')->statement("CREATE DATABASE `{$dbName}`");
-
-                // 2. Temporarily configure tenancy to use this DB
-                config(['tenancy.database.prefix' => '']);
-                config(['tenancy.database.suffix' => '']);
-                config(['database.connections.tenant_pool.database' => $dbName]);
-
-                // 3. Run migrations
-                $exitCode = Artisan::call('migrate', [
-                    '--database' => 'tenant_pool',
-                    '--force' => true,
-                    '--path' => 'database/migrations/tenant',
-                ]);
-
-                if ($exitCode !== 0) {
-                    throw new \Exception("Migration failed for {$dbName}");
+                if (app()->environment('production')) {
+                    // On shared hosting: Assume DB was pre-created
+                    // Or call external script
+                    $this->createDatabaseInProduction($dbName);
+                } else {
+                    // Local: create via SQL
+                    DB::connection('mysql')->statement("CREATE DATABASE `{$dbName}`");
                 }
 
-                // 4. Add to pool
+                // Run migrations on the new DB
+                ///$this->migrateDatabase($dbName);
+
+                // Add to pool
                 DB::table('available_databases')->insert([
                     'name' => $dbName,
                     'status' => 'available',
@@ -59,13 +54,41 @@ class ReplenishTenantDatabases extends Command
                     'updated_at' => now(),
                 ]);
 
-                $this->info("✅ Created and migrated: {$dbName}");
+                $this->info("✅ Activated: {$dbName}");
 
             } catch (\Exception $e) {
-                $this->error("❌ Failed to create {$dbName}: " . $e->getMessage());
-                // Optionally alert admin
-                \Log::error("DB replenish failed: " . $e->getMessage());
+                $this->error("❌ Failed: {$dbName} - " . $e->getMessage());
+                \Log::error("DB replenish failed", ['db' => $dbName, 'error' => $e->getMessage()]);
             }
         }
+    }
+
+    protected function createDatabaseInProduction(string $dbName)
+    {
+        // Option A: Call external cPanel script
+        $command = "php " . base_path('database/create_db_via_cpanel.php') . " {$dbName}";
+        $output = [];
+        $exitCode = 0;
+        exec($command . " 2>&1", $output, $exitCode);
+
+        if ($exitCode !== 0) {
+            throw new \Exception("cPanel DB creation failed: " . implode("\n", $output));
+        }
+
+        // Option B: If you pre-create DBs manually, just verify existence
+        // DB::connection('mysql')->select("SHOW DATABASES LIKE '{$dbName}'");
+    }
+
+    protected function migrateDatabase(string $dbName)
+    {
+        // Temporarily configure a DB connection for this tenant
+        config(["database.connections.tenant_temp.database" => $dbName]);
+        DB::purge('tenant_temp');
+
+        Artisan::call('migrate', [
+            '--database' => 'tenant_temp',
+            '--path' => 'database/tenant_migrations/hr', // Only HR for now
+            '--force' => true,
+        ]);
     }
 }
