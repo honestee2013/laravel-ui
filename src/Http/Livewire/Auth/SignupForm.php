@@ -149,7 +149,11 @@ public function regenerateSubdomain()
             // Generate and store verification token
             $token = sha1(random_bytes(40));
             $company->update(['email_verification_token' => $token, 'email_verification_sent_at' => Carbon::now()]);
-\Log::info('http://quickerfaster.test/suites/verify/'.$token);
+
+
+\Log::info(url('suites/verify/'.$token));
+
+
             // Store user ID in session for login after verification
             session(['user_password' => $user->password]);
 
