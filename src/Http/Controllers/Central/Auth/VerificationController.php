@@ -36,6 +36,6 @@ class VerificationController extends Controller
         ]);
 
         // 👈 REDIRECT TO CONFIGURATION (NOT MODULE SELECTION)
-        return redirect(url("configure"));//->route('central.quick.configure');
+        return redirect()->route('central.quick.configure');
     }
 }

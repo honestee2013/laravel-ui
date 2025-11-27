@@ -54,9 +54,14 @@ Route::get('/', function () {
 
 
 
+
+foreach (config('tenancy.central_domains') as $domain) {
+    Route::domain($domain)->group(function () {
+
+
 Route::middleware(['web'])->group(function () {
     // Register Livewire routes using the proper method
-    /*$baseUrl = config('app.url');
+    $baseUrl = config('app.url');
 
     Route::post("{$baseUrl}/livewire/update", [HandleRequests::class, 'handleUpdate'])
         ->name('central.livewire.update')
@@ -64,7 +69,7 @@ Route::middleware(['web'])->group(function () {
 
     Route::get("{$baseUrl}/livewire/livewire.js", [FrontendAssets::class, 'returnJavaScriptAsFile'])
         ->name('central.livewire.script')
-        ->middleware('web');*/
+        ->middleware('web');
 
 
 
@@ -73,7 +78,7 @@ Route::middleware(['web'])->group(function () {
 
 
     // Central SaaS app (registration, auth, billing, etc.)
-    Route::prefix('suites')->middleware(['web'])->group(function () {
+    //Route::prefix('suites')->middleware(['web'])->group(function () {
 
         // Authentication (guest-only)
         Route::middleware('guest')->group(function () {
@@ -101,7 +106,7 @@ Route::middleware(['web'])->group(function () {
             // Add billing, account settings, etc. here later
             // Route::get('/billing', [BillingController::class, 'index'])->name('central.billing');
         });
-    });
+    //});
 
 
 
@@ -179,8 +184,8 @@ Route::middleware(['web'])->group(function () {
 
 
 
-//});
-//}
+});
+}
 
 
 

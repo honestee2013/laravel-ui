@@ -151,7 +151,7 @@ public function regenerateSubdomain()
             $company->update(['email_verification_token' => $token, 'email_verification_sent_at' => Carbon::now()]);
 
 
-\Log::info(url('suites/verify/'.$token));
+\Log::info(url('verify/'.$token));
 
 
             // Store user ID in session for login after verification
@@ -165,7 +165,7 @@ public function regenerateSubdomain()
         });
         
         session()->flash('message', 'Check your email to verify your account.');
-        return redirect(url('/suites/client-register'));//->route('central.client.register');
+        return redirect()->route('central.client.register');
         
     }
 
