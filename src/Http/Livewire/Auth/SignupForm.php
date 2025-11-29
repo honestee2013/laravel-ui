@@ -101,73 +101,126 @@ public function regenerateSubdomain()
 
 
 
-    public function submit()
-    {
-        $this->validate();
 
-        DB::transaction(function () {
+public function submit()
+{
 
-            // Create company
-            $company = Company::create([
-                'name' => $this->company_name,
-                'billing_email' => $this->billing_email,
-                'subdomain' => $this->subdomain,
-                'status' => 'Pending',
-                'timezone' => 'UTC',
-                'currency_code' => 'USD',
-                'domain_verified' => false,
+
+        // Ensure we're using central database
+    config(['database.default' => 'mysql']);
+    DB::purge('mysql');
+    DB::reconnect('mysql');
+    
+    $this->validate();
+
+    \Log::info('=== SIGNUP PROCESS START ===');
+    \Log::info('Form data', [
+        'company_name' => $this->company_name,
+        'email' => $this->billing_email,
+        'subdomain' => $this->subdomain
+    ]);
+
+    try {
+        DB::beginTransaction();
+        \Log::info('Transaction started');
+
+        // Create company
+        $company = Company::create([
+            'name' => $this->company_name,
+            'billing_email' => $this->billing_email,
+            'subdomain' => $this->subdomain,
+            'status' => 'Pending',
+            'timezone' => 'UTC',
+            'currency_code' => 'USD',
+            'domain_verified' => false,
+        ]);
+
+        \Log::info('Company created', [
+            'company_id' => $company->id,
+            'company_name' => $company->name
+        ]);
+
+        // Create user account
+        $user = User::create([
+            'name' => 'Admin',
+            'email' => $this->billing_email,
+            'password' => Hash::make($this->password),
+            'company_id' => $company->id,
+        ]);
+
+        \Log::info('User created', [
+            'user_id' => $user->id,
+            'user_email' => $user->email
+        ]);
+
+        // Assign admin role
+        $adminRole = Role::where('name', 'admin')->first();
+        if ($adminRole) {
+            $user->assignRole($adminRole);
+            \Log::info('Admin role assigned');
+        } else {
+            $adminRole = Role::create([
+                'name' => 'admin',
+                'description' => 'Manage users, settings, and system operations',
+                'guard_name' => 'web',
+                'editable' => 'No',
             ]);
+            $user->assignRole($adminRole);
+            \Log::info('Admin role created and assigned');
+        }
 
+        // Generate and store verification token
+        $token = sha1(random_bytes(40));
+        $company->update([
+            'email_verification_token' => $token, 
+            'email_verification_sent_at' => Carbon::now()
+        ]);
 
-            // Create user account
-            $user = User::create([
-                'name' => 'Admin', // We'll collect actual name later
-                'email' => $this->billing_email,
-                'password' => Hash::make($this->password),
-                'company_id' => $company->id,
-            ]);
+        \Log::info('Token generated and saved', [
+            'token' => $token,
+            'company_id' => $company->id
+        ]);
 
+        // Verify the token was actually saved
+        $freshCompany = Company::find($company->id);
+        \Log::info('Token verification - fresh company', [
+            'token_in_db' => $freshCompany->email_verification_token,
+            'token_matches' => $freshCompany->email_verification_token === $token
+        ]);
 
-            // 👈 ASSIGN ADMIN ROLE USING SPATIE PERMISSION
-            $adminRole = Role::where('name', 'admin')->first();
+        // Store in session
+        session(['pending_company_id' => $company->id]);
+        session(['pending_user_id' => $user->id]);
 
-            if ($adminRole) {
-                $user->assignRole($adminRole);
-            } else {
-                // Fallback: create admin role if it doesn't exist
-                $adminRole = Role::create([
-                    'name' => 'admin',
-                    'description' => 'Manage users, settings, and system operations',
-                    'guard_name' => 'web',
-                    'editable' => 'No',
-                ]);
-                $user->assignRole($adminRole);
-            }
+        \Log::info('Session set', [
+            'pending_company_id' => session('pending_company_id'),
+            'pending_user_id' => session('pending_user_id')
+        ]);
 
+        DB::commit();
+        \Log::info('=== TRANSACTION COMMITTED SUCCESSFULLY ===');
 
+        \Log::info('Verification URL: ' . url('verify/'.$token));
 
-            // Generate and store verification token
-            $token = sha1(random_bytes(40));
-            $company->update(['email_verification_token' => $token, 'email_verification_sent_at' => Carbon::now()]);
+        return redirect()->route('central.client.register')
+                ->with('message', 'Check your email to verify your account.');
 
-
-\Log::info(url('verify/'.$token));
-
-
-            // Store user ID in session for login after verification
-            session(['user_password' => $user->password]);
-
-            session(['pending_user_id' => $user->id]);
-
-            // Send verification email
-            ////\Mail::to($this->billing_email)->send(new \QuickerFaster\LaravelUI\Mail\VerifyCompanyEmail($company, $token));
-
-        });
+    } catch (\Exception $e) {
+        DB::rollBack();
+        \Log::error('=== TRANSACTION ROLLED BACK ===');
+        \Log::error('Signup failed: ' . $e->getMessage());
+        \Log::error('Exception trace: ' . $e->getTraceAsString());
         
-        session()->flash('message', 'Check your email to verify your account.');
-        return redirect()->route('central.client.register');
-        
+        session()->flash('error', 'Registration failed. Please try again.');
+        return back();
     }
+}
+
+
+
+
+
+
 
     public function render()
     {

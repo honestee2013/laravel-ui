@@ -54,20 +54,44 @@ class QuickConfiguration extends Component
         'benefits' => 'Benefits'
     ];
 
-    public function mount()
-    {
-        // User is NOT logged in yet - we're using session
-        $companyId = session('verified_company_id');
-        if (!$companyId) {
-            return redirect()->route('central.client.register');
-        }
-        
-        $this->company = Company::findOrFail($companyId);
-        
-        if (!$this->company || !$this->company->domain_verified) {
-            return redirect()->route('central.client.register');
-        }
+public function mount()
+{
+    \Log::info('=== QUICK CONFIGURATION MOUNT START ===');
+    \Log::info('Session data at mount', [
+        'verified_company_id' => session('verified_company_id'),
+        'all_session_keys' => array_keys(session()->all()),
+        'session_id' => session()->getId()
+    ]);
+
+    // User is NOT logged in yet - we're using session
+    $companyId = session('verified_company_id');
+    
+    \Log::info('Company ID from session', ['company_id' => $companyId]);
+
+    if (!$companyId) {
+        \Log::warning('No verified_company_id in session - redirecting to client register');
+        return redirect()->route('central.client.register');
     }
+    
+    $this->company = Company::find($companyId);
+    
+    \Log::info('Company lookup result', [
+        'company_found' => !is_null($this->company),
+        'company_id' => $this->company ? $this->company->id : null,
+        'company_name' => $this->company ? $this->company->name : null,
+        'company_domain_verified' => $this->company ? $this->company->domain_verified : null
+    ]);
+
+    if (!$this->company || !$this->company->domain_verified) {
+        \Log::warning('Company not found or not verified', [
+            'company_exists' => !is_null($this->company),
+            'domain_verified' => $this->company ? $this->company->domain_verified : 'no company'
+        ]);
+        return redirect()->route('central.client.register');
+    }
+
+    \Log::info('=== QUICK CONFIGURATION MOUNT SUCCESS ===');
+}
 
 
 public function submit()
@@ -94,6 +118,9 @@ public function submit()
         
         // Initialize tenant and run migrations
         $this->initializeTenant($tenant);
+
+        // Ensure tenant storage directories exist
+        $this->createTenantStorageDirectories();
         
         // Create user and roles in tenant context
         $user = $this->createTenantAdminUser($tenant);
@@ -128,6 +155,29 @@ return redirect("http://{$this->getFullDomain()}/hr/dashboard");
         session()->flash('error', 'Tenant creation failed: ' . $e->getMessage());
         return back();
     }
+}
+
+
+protected function createTenantStorageDirectories()
+{
+    $tenantStoragePath = storage_path();
+    
+    $directories = [
+        "framework/cache",
+        "framework/views",
+        "framework/sessions",
+        "livewire-tmp",
+        "app/public",
+    ];
+
+    foreach ($directories as $directory) {
+        $path = $tenantStoragePath . '/' . $directory;
+        if (!is_dir($path)) {
+            mkdir($path, 0755, true);
+        }
+    }
+    
+    \Log::info('Tenant storage directories created for: ' . tenant('id'));
 }
 
 protected function manualRollback($databaseSlot, $tenant)

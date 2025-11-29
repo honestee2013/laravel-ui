@@ -39,7 +39,13 @@ trait DataTableImageHandlerTrait
         ];
 
         //@include('system.views::data-tables.modals.crop-image-modal')
-        $modalHtml = view('system.views::data-tables.modals.crop-image-modal', $data)->render();
+
+        $UIFramework = config('qf_laravel_ui.ui_framework', 'bootstrap'); // default to bootstrap
+        $viewPath =  "qf::components.livewire.$UIFramework";
+        $modalHtml = view("$viewPath.data-tables.modals.crop-image-modal", $data)->render();
+           
+
+        //$modalHtml = view('system.views::data-tables.modals.crop-image-modal', $data)->render();
         //$this->dispatch("open-add-relationship-modal", ['modalHtml' => $modalHtml, "modalId" => $modalId]);
         $data["modalHtml"] = $modalHtml;
 

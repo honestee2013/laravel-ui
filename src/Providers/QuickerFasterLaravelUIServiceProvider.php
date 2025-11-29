@@ -59,6 +59,9 @@ class QuickerFasterLaravelUIServiceProvider extends ServiceProvider
 
 
 
+        
+
+
 
 
 
@@ -122,7 +125,36 @@ class QuickerFasterLaravelUIServiceProvider extends ServiceProvider
         $this->setupModules();
         $this->loadAliases();
         $this->loadRoutes();
+        $this->ensureTenantStorageDirectoriesExist();
 
+    }
+
+    
+
+
+
+   protected function ensureTenantStorageDirectoriesExist()
+    {
+        // Use tenancy's storage path (this is what Stancl Tenancy uses internally)
+        $tenantStoragePath = storage_path(); // This already includes the tenant suffix
+        
+        $directories = [
+            "framework/cache",
+            "framework/views",
+            "framework/sessions", 
+            "livewire-tmp",
+            "app/public",
+        ];
+
+        foreach ($directories as $directory) {
+            $path = $tenantStoragePath . '/' . $directory;
+            if (!is_dir($path)) {
+                mkdir($path, 0755, true);
+                \Log::info("Created tenant directory: {$path}");
+            }
+        }
+
+        \Log::info("Tenant storage initialized for: " . tenant('id'));
     }
 
 

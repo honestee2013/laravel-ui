@@ -211,6 +211,7 @@ class QuickerFasterInstall extends Command
         $this->overrideModelFiles();
         $this->overrideAssetFiles();
         $this->overridMiddlewareFiles();
+        $this->overridProviderFiles();
 
         $this->copyCpanelDeploymentFile();
     }
@@ -324,6 +325,23 @@ class QuickerFasterInstall extends Command
             return 0;
         } else {
             $this->error("❌ Middleware Copy failed");
+            return 1;
+        }
+    }
+
+
+
+    private function overridProviderFiles()
+    {
+        $source = __DIR__ . '/../../dependencies/tenancy/Providers';
+        $destination = app_path("Providers");// Then copy');
+        
+        // Then copy
+        if ($this->copyDirectory($source, $destination)) {
+            $this->info("✅ Providers override successfully");
+            return 0;
+        } else {
+            $this->error("❌ Providers override failed");
             return 1;
         }
     }

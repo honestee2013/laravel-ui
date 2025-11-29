@@ -79,4 +79,8 @@
             </div>
         </div>
     </div>
+
+    {{---------------- SPINNER ------------------}}
+    @include('qf::components.livewire.bootstrap.widgets.spinner')
+
 </div>

@@ -33,10 +33,6 @@ use Livewire\Mechanisms\FrontendAssets\FrontendAssets;
 
 
 
-
-
-
-
 Route::middleware([
     'web',
     InitializeTenancyByDomain::class,
@@ -46,23 +42,17 @@ Route::middleware([
 
 
 
+    Route::post('/livewire/update', [HandleRequests::class, 'handleUpdate'])
+        ->name('livewire.update');
 
-    // Register Livewire routes using the proper method
-    $baseUrl = config('app.url');
-
-    Route::post("{$baseUrl}/livewire/update", [HandleRequests::class, 'handleUpdate'])
-        ->name('livewire.update')
-        ->middleware('web');
-
-    Route::get("{$baseUrl}/livewire/livewire.js", [FrontendAssets::class, 'returnJavaScriptAsFile'])
-        ->name('livewire.script')
-        ->middleware('web');
+    Route::get('/livewire/livewire.js', [FrontendAssets::class, 'returnJavaScriptAsFile'])
+        ->name('livewire.script');
 
 
 
     Route::get('/login', function () {
         return view('session/login-session');
-    })->name('login');
+    })->name('tenant.login');
 
 
 
@@ -83,8 +73,8 @@ Route::middleware([
 
         Route::get('/login/forgot-password', [TenantResetController::class, 'create']);
         Route::post('/forgot-password', [TenantResetController::class, 'sendEmail']);
-        Route::get('/reset-password/{token}', [TenantResetController::class, 'resetPass'])->name('password.reset');
-        Route::post('/reset-password', [TenantChangePasswordController::class, 'changePassword'])->name('password.update');
+        Route::get('/reset-password/{token}', [TenantResetController::class, 'resetPass'])->name('tenant.password.reset');
+        Route::post('/reset-password', [TenantChangePasswordController::class, 'changePassword'])->name('tenant.password.update');
 
     });
 
@@ -145,87 +135,6 @@ Route::middleware([
 
         abort(404, 'View not found');
     })->middleware("auth"); // Must login
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    /*Route::get('/', function () {
-        return view('home');
-    });*/
-
-
-
-    /*Route::group(['middleware' => 'auth'], function () {
-
-        Route::get('/', [HomeController::class, 'home']);
-        /*Route::get('dashboard', function () {
-            return view('dashboard');
-        })->name('dashboard');* /
-
-        Route::get('billing', function () {
-            return view('billing');
-        })->name('billing');
-
-        Route::get('profile', function () {
-            //return view('profile');
-            // Center the content
-            echo "<div style='text-align: center; margin-top: 50px;'>";
-            echo "<h1 class = 'text-primary'> Coming Soon! </h1>";
-            echo "<a href='/dashboard' class = 'text-info text-decoration-underline'>Go to Dashboard</a>";
-            echo "</div>";
-        })->name('profile');
-
-        Route::get('rtl', function () {
-            return view('rtl');
-        })->name('rtl');
-
-        Route::get('user-management', function () {
-            return view('laravel-examples/user-management');
-        })->name('user-management');
-
-        Route::get('tables', function () {
-            return view('tables');
-        })->name('tables');
-
-        Route::get('virtual-reality', function () {
-            return view('virtual-reality');
-        })->name('virtual-reality');
-
-        Route::get('static-sign-in', function () {
-            return view('static-sign-in');
-        })->name('sign-in');
-
-        Route::get('static-sign-up', function () {
-            return view('static-sign-up');
-        })->name('sign-up');
-
-        Route::get('/logout', [TenantSessionsController::class, 'destroy'])->name('tenant.logout');
-
-        Route::get('/user-profile', [InfoUserController::class, 'create']);
-        Route::post('/user-profile', [InfoUserController::class, 'store']);
-
-        Route::get('/login', function () {
-            return view('dashboard');
-        })->name('sign-up');
-
-    });*/
-
-
 
 
 
