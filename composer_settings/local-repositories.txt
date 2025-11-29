@@ -25,7 +25,7 @@
         },
 
         {
-            "type": "path",
+            "type": "vcs",
             "url": "https://github.com/honestee2013/laravel-ui.git"
         }
 
