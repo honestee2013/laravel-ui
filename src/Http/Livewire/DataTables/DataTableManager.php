@@ -253,7 +253,7 @@ public function formatFieldValue($record, $field)
         $UIFramework = config('qf_laravel_ui.ui_framework', 'bootstrap'); // default to bootstrap
 
         $viewPath =  "qf::components.livewire.$UIFramework";
-        return view("$viewPath.data-tables.data-table-manager")
-            ->layout("$viewPath.layouts.app"); // 👈 important
+        return view("$viewPath.data-tables.data-table-manager");
+            //->layout("$viewPath.layouts.app"); // 👈 important
     }
 }

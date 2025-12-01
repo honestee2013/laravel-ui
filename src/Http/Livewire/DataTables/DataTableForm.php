@@ -649,6 +649,6 @@ public function checkFileState()
 
         $viewPath =  "qf::components.livewire.$UIFramework";
         return view("$viewPath.data-tables.data-table-form")
-            ->layout("$viewPath.layouts.app"); // 👈 important
+            ;//->layout("$viewPath.layouts.app"); // 👈 important
     }
 }

@@ -394,7 +394,7 @@ public function getRelationDisplayValue($relationData)
         $theView = "$viewPath.data-tables.data-{$this->viewType}"; // table, list, cards
 
         return view($theView, ['data' => $data])
-            ->layout("$viewPath.layouts.app"); // 👈 important    
+            ;//->layout("$viewPath.layouts.app"); // 👈 important    
             
     }
 }

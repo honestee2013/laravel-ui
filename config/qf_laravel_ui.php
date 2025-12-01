@@ -18,19 +18,19 @@ return [
             "assets/css/soft-ui-dashboard.min.css",
 
             // Add these from Starter Kit if needed:
-            "assets/css/plugins/perfect-scrollbar.css",
+            // "assets/css/plugins/perfect-scrollbar.css",
         ],
         "js" => [
             "assets/js/core/bootstrap.bundle.min.js", // Plus popperjs
             "assets/js/soft-ui-dashboard.min.js",
             "assets/js/plugins/sweetalert.min.js",
-            "assets/js/plugins/chartjs.min.js",
+            // "assets/js/plugins/chartjs.min.js",
 
 
-            "assets/js/plugins/perfect-scrollbar.min.js",
-            "assets/js/plugins/smooth-scrollbar.min.js",
+            // "assets/js/plugins/perfect-scrollbar.min.js",
+            // "assets/js/plugins/smooth-scrollbar.min.js",
             // Add these from Starter Kit if needed:
-            "assets/js/plugins/fullcalendar.min.js",
+            // "assets/js/plugins/fullcalendar.min.js",
         ] 
     ],
 

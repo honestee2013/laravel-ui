@@ -26,7 +26,7 @@ class WizardStepForm extends Component
 
         $viewPath =  "qf::components.livewire.$UIFramework";
         return view("$viewPath.wizards.wizard-step-form")
-            ->layout("$viewPath.layouts.app"); // 👈 important
+            ;//->layout("$viewPath.layouts.app"); // 👈 important
 
 
     }

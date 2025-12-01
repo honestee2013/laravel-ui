@@ -37,7 +37,7 @@ class OnboardingForm extends Component
         $UIFramework = config('qf_laravel_ui.ui_framework', 'bootstrap');
         $viewPath = "qf::components.livewire.$UIFramework";
         return view("$viewPath.tenants.onboarding-form")
-            ->layout("$viewPath.layouts.app");
+            ;//->layout("$viewPath.layouts.app");
 
 
     }

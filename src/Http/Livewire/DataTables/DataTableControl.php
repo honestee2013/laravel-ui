@@ -374,7 +374,7 @@ public function updatedViewType($viewType) {
 
         $viewPath =  "qf::components.livewire.$UIFramework";
         return view("$viewPath.data-tables.data-table-control", [])
-            ->layout("$viewPath.layouts.app"); // 👈 important   
+            ;//->layout("$viewPath.layouts.app"); // 👈 important   
     }
 
 
