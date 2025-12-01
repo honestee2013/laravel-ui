@@ -1,6 +1,5 @@
-
 <nav class="navbar navbar-light bg-white shadow-sm d-md-none fixed-bottom" style="z-index: 1030;">
-  <div class="d-flex px-2 py-1" style="gap:.5rem; overflow-x:auto; overflow-y:visible;">
+    <div class="d-flex px-2 py-1" style="gap:.5rem; overflow-x:auto; overflow-y:visible;">
 
         @php
             $visibleItems = array_slice($items, 0, $maxVisible);
@@ -8,27 +7,27 @@
         @endphp
 
         {{-- Visible buttons --}}
-        {{--@foreach($visibleItems as $item)
+        {{-- @foreach ($visibleItems as $item)
             <a href="{{ $item['route'] }}" class="btn btn-light flex-shrink-0 text-center" style="min-width:70px;" wire:navigate>
                 <i class="fa {{ $item['icon'] }} d-block mb-1"></i>
                 <small>{{ $item['label'] }}</small>
             </a>
-        @endforeach--}}
+        @endforeach --}}
 
-        
 
-            @php
-                $module = "hr";
-                $path = "{$module}.views::components.layouts.navbars.auth.{$context}.bottom-bar-links";
-            @endphp
-            @if(view()->exists($path))
-                @include("$path")
-            @endif
+
+        @php
+            $module = 'hr';
+            $path = "{$module}.views::components.layouts.navbars.auth.{$context}.bottom-bar-links";
+        @endphp
+        @if (view()->exists($path))
+            @include("$path")
+        @endif
 
 
 
         {{-- More Button - Desktop Dropdown --}}
-        {{--@if(count($overflowItems) > 0)
+        {{-- @if (count($overflowItems) > 0)
             <div class="btn-group dropup flex-shrink-0 d-md-block d-none">
                 <button class="btn btn-light dropdown-toggle"
                         data-bs-toggle="dropdown"
@@ -37,7 +36,7 @@
                     <i class="fa fa-ellipsis-h"></i>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    @foreach($overflowItems as $item)
+                    @foreach ($overflowItems as $item)
                         <li>
                             <a href="{{ $item['route'] }}" class="dropdown-item d-flex align-items-center" wire:navigate>
                                 <i class="fa {{ $item['icon'] }} me-2"></i>
@@ -61,7 +60,7 @@
                     </div>
                     <div class="offcanvas-body p-0">
                         <ul class="list-group list-group-flush">
-                            @foreach($overflowItems as $item)
+                            @foreach ($overflowItems as $item)
                                 <li class="list-group-item">
                                     <a href="{{ $item['route'] }}" class="d-flex align-items-center" wire:navigate>
                                         <i class="fa {{ $item['icon'] }} me-2"></i>
@@ -73,8 +72,8 @@
                     </div>
                 </div>
             </div>
-        @endif--}}
+        @endif --}}
 
 
     </div>
-</div>
+</nav>
