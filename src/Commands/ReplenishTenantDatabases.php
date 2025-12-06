@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Artisan;
 
 class ReplenishTenantDatabases extends Command
 {
-    protected $signature = 'tenancy:replenish-pool {--count=5}';
+    protected $signature = 'quickerfaster:replenish-pool {--count=5}';
     protected $description = 'Replenish pre-provisioned tenant database pool';
 
     // app/Console/Commands/ReplenishTenantDatabases.php
