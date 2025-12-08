@@ -2,51 +2,12 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Modules\Admin\Http\Livewire\AccessControls\AccessControlManager;
-/*use App\Modules\System\Http\Controllers\ReportController;
-
-
-
-
-//Route::get('/dashboard', Dashboard::class)->name('dashboard');
-
-
-
-use QuickerFaster\LaravelUI\Http\Livewire\Auth\SignupForm;
-use QuickerFaster\LaravelUI\Http\Livewire\Auth\ModuleSelection;
-use QuickerFaster\LaravelUI\Http\Livewire\Tenants\OnboardingForm;
-
-
-use QuickerFaster\LaravelUI\Http\Controllers\Central\Auth\VerificationController;*/
+use Illuminate\Support\Facades\Validator;
 
 
 
 
 
-
-
-
-
-/*foreach (config('tenancy.central_domains') as $domain) {
-    Route::domain($domain)->group(function () {
-        // your actual routes*/
-
-        // These routes should be in a `web` middleware group (Laravel does this by default in RouteServiceProvider)
-        /*Route::middleware(['web'])->group(function () {
-            Route::get('/client-register', SignupForm::class)->name('register');
-            Route::get('/verify', [VerificationController::class, 'show'])->name('verification.notice');
-            Route::get('/verify/{token}', [VerificationController::class, 'verify'])->name('verification.verify');
-            Route::middleware('verified.company')->get('/modules', ModuleSelection::class)->name('module.selection');
-        });*/
-
-        //Route::get('/onboarding', OnboardingForm::class)->name('onboarding');
-
-
-   // });
-//}
-
-
-
-/*
 
 Route::get('/{module}/{view}/{id?}', function ($module, $view, $id = null) {
     // Validation
@@ -101,7 +62,7 @@ Route::get('/{module}/{view}/{id?}', function ($module, $view, $id = null) {
 
 
 
-*/
+
 
 
 

@@ -14,7 +14,6 @@
         "maatwebsite/excel": "^3.1",
         "barryvdh/laravel-dompdf": "^3.1",
         "simplesoftwareio/simple-qrcode": "^4.2",
-        "stancl/tenancy": "^3.0",
         "spatie/laravel-activitylog": "^4.10",
         "doctrine/dbal": "^3.6"
     },

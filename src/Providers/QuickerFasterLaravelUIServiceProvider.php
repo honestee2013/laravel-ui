@@ -17,7 +17,6 @@ use QuickerFaster\LaravelUI\Commands\PackageDevCommand;
 use QuickerFaster\LaravelUI\Commands\QuickerFasterInstall;
 
 use QuickerFaster\LaravelUI\Commands\CreateSuperUserPermissions;
-use QuickerFaster\LaravelUI\Commands\ReplenishTenantDatabases;
 
 use QuickerFaster\LaravelUI\Formatting\FieldFormattingService;
 
@@ -38,7 +37,6 @@ use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Event;
-use Stancl\Tenancy\TenantDatabaseManagers\MySQLDatabaseManager;
 use Illuminate\Support\Facades\DB;
 
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -125,37 +123,11 @@ class QuickerFasterLaravelUIServiceProvider extends ServiceProvider
         $this->setupModules();
         $this->loadAliases();
         $this->loadRoutes();
-        $this->ensureTenantStorageDirectoriesExist();
 
     }
 
     
 
-
-
-   protected function ensureTenantStorageDirectoriesExist()
-    {
-        // Use tenancy's storage path (this is what Stancl Tenancy uses internally)
-        $tenantStoragePath = storage_path(); // This already includes the tenant suffix
-        
-        $directories = [
-            "framework/cache",
-            "framework/views",
-            "framework/sessions", 
-            "livewire-tmp",
-            "app/public",
-        ];
-
-        foreach ($directories as $directory) {
-            $path = $tenantStoragePath . '/' . $directory;
-            if (!is_dir($path)) {
-                mkdir($path, 0755, true);
-                \Log::info("Created tenant directory: {$path}");
-            }
-        }
-
-        \Log::info("Tenant storage initialized for: " . tenant('id'));
-    }
 
 
 
@@ -271,7 +243,6 @@ class QuickerFasterLaravelUIServiceProvider extends ServiceProvider
             $this->commands([
                 PackageDevCommand::class,
                 CreateSuperUserPermissions::class,
-                ReplenishTenantDatabases::class,
                 QuickerFasterInstall::class,
             ]);
         }
@@ -687,21 +658,16 @@ class QuickerFasterLaravelUIServiceProvider extends ServiceProvider
 
 
 
-
-
-
-
         }
 
-
         // Now loade the 'system' module's routes
+        // Dynamic route loading for the 'system' module should be done last to avoid conflicts
         if (File::exists(app_path("Modules/System/Routes/web.php"))) {
             Route::middleware('web')->group(app_path("Modules/System/Routes/web.php"));
         }
 
 
-
-        // system Api loading
+        // System Api loading
         if (File::exists(app_path("Modules/System/Routes/api.php"))) {
             Route::prefix('api')->middleware('api')->group(app_path("Modules/System/Routes/api.php"));
         }

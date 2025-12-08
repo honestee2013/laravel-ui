@@ -49,7 +49,6 @@ class DataTableForm extends Component
     public $modalId;
     public $messages = [];
     public $selectedRows = [];
-    public $tenant;
     
     protected $listeners = [
         'openEditModalEvent' => 'openEditModal',
@@ -78,7 +77,7 @@ class DataTableForm extends Component
     
     public function mount()
     {
-       $this->tenant = tenant();
+       
         $this->dispatch("addModalFormComponentStackEvent", [
             'modalId' => $this->modalId, 
             'componentId' => $this->getId()
@@ -601,19 +600,6 @@ public function getFieldOptions($fieldDefinition)
 
 
 
-// In your Livewire component
-public function updatedFields($value, $key)
-{
-    if (isset($this->fields[$key]) && is_object($this->fields[$key])) {
-        \Log::debug('File upload updated', [
-            'field' => $key,
-            'file_class' => get_class($this->fields[$key]),
-            'file_exists' => method_exists($this->fields[$key], 'getClientOriginalName'),
-            'tenant_id' => tenant('id'),
-            'all_fields' => array_keys($this->fields),
-        ]);
-    }
-}
 
 // Also add a method to check the current state
 public function checkFileState()

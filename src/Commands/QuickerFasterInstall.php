@@ -64,7 +64,7 @@ class QuickerFasterInstall extends Command
         // Quicker faster publish
         Artisan::call('vendor:publish --tag=qf-modules');
         // Stancl/tenancy publish
-        Artisan::call('tenancy:install');
+        // Artisan::call('tenancy:install');
         // Override tenancy config
         $this->overrideTheDependencyFiles();
 
@@ -204,16 +204,16 @@ class QuickerFasterInstall extends Command
 
     protected function overrideTheDependencyFiles()
     {
-        $this->overrideTenancyPackageConfigFiles();
-        $this->overrideTenancyPackageRouteFiles();
+        // $this->overrideTenancyPackageConfigFiles();
+        // $this->overrideTenancyPackageRouteFiles();
         $this->overrideDatabaseMigrationFiles();
         $this->overrideDatabaseSeederFiles();
         $this->overrideModelFiles();
-        $this->overrideAssetFiles();
-        $this->overridMiddlewareFiles();
-        $this->overridProviderFiles();
+        // $this->overrideAssetFiles();
+        // $this->overridMiddlewareFiles();
+        // $this->overridProviderFiles();
 
-        $this->copyCpanelDeploymentFile();
+        // $this->copyCpanelDeploymentFile();
     }
 
 
