@@ -16,7 +16,6 @@
         @endforeach
 
                 
-        @livewireStyles
 
         @stack('styles')
         <style>
@@ -51,7 +50,6 @@
 
 
  <!-- 1. Load Livewire -->
-    @livewireScripts
 
     <!-- 2. Load Flatpickr library -->
     <script src="/assets/js/plugins/flatpickr.min.js"></script>
