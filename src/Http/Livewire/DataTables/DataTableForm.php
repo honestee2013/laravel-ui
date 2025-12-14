@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use QuickerFaster\LaravelUI\Services\GUI\SweetAlertService;
 use App\Modules\System\Events\DataTableFormEvent;
+use Illuminate\Support\Facades\Validator;
 
 
 use QuickerFaster\LaravelUI\Services\DataTables\DataTableFormService;
@@ -24,12 +25,12 @@ use QuickerFaster\LaravelUI\Traits\GUI\HasAutoGenerateFieldTrait;
 class DataTableForm extends Component
 {
     use WithFileUploads, DataTableImageHandlerTrait, HasAutoGenerateFieldTrait;
-    
+
     // Services
     protected $formService;
     protected $validationService;
     protected $relationshipService;
-    
+
     // Component properties
     public $model;
     public $modelName;
@@ -49,7 +50,7 @@ class DataTableForm extends Component
     public $modalId;
     public $messages = [];
     public $selectedRows = [];
-    
+
     protected $listeners = [
         'openEditModalEvent' => 'openEditModal',
         'openAddModalEvent' => 'openAddModal',
@@ -64,7 +65,7 @@ class DataTableForm extends Component
         'openCropImageModalEvent' => 'openCropImageModal'
 
     ];
-    
+
     public function boot(
         DataTableFormService $formService,
         DataTableValidationService $validationService,
@@ -74,39 +75,38 @@ class DataTableForm extends Component
         $this->validationService = $validationService;
         $this->relationshipService = $relationshipService;
     }
-    
+
     public function mount()
     {
-       
+
         $this->dispatch("addModalFormComponentStackEvent", [
-            'modalId' => $this->modalId, 
+            'modalId' => $this->modalId,
             'componentId' => $this->getId()
         ]);
-        
+
         // Initialize fields with default values
         foreach ($this->fieldDefinitions as $field => $definition) {
             $this->fields[$field] = $definition['default'] ?? null;
             // Add options for boolcheckbox & boolradio 
             if (isset($definition['field_type'])) {
-                if (!isset($this->fieldDefinitions[$field]["options"]) &&  $definition['field_type'] == 'boolradio')
+                if (!isset($this->fieldDefinitions[$field]["options"]) && $definition['field_type'] == 'boolradio')
                     $this->fieldDefinitions[$field]["options"] = [1 => 'Yes', 0 => 'No'];
-                else if (!isset($this->fieldDefinitions[$field]["options"]) &&  $definition['field_type'] == 'boolcheckbox')
-                  $this->fieldDefinitions[$field]["options"] = [1 => 'Yes'];
+                else if (!isset($this->fieldDefinitions[$field]["options"]) && $definition['field_type'] == 'boolcheckbox')
+                    $this->fieldDefinitions[$field]["options"] = [1 => 'Yes'];
             }
         }
 
     }
 
 
-    
-    
+
+
     public function saveRecord($modalId)
     {
-       
+
 
         try {
-            ///$this->authorizeAction();
-            
+
             // Validate inputs
             $rules = $this->validationService->getDynamicValidationRules(
                 $this->fieldDefinitions,
@@ -114,24 +114,41 @@ class DataTableForm extends Component
                 $this->selectedItemId,
                 $this->hiddenFields
             );
-            
-            $this->validate($rules, $this->messages);
-            
+
+
+            $validator = Validator::make($this->fields, $rules, $this->messages);
+
+            if ($validator->fails()) {
+                // Map errors back without the fields prefix
+                $errors = new \Illuminate\Support\MessageBag();
+                foreach ($validator->errors()->messages() as $key => $messages) {
+                    //$cleanKey = str_replace('fields.', '', $key);
+                    foreach ($messages as $message) {
+                        $errors->add($key, $message);
+                    }
+                }
+
+                $this->setErrorBag($errors);
+                return;
+
+            }
+
+
             // Process record
-            $record = $this->isEditMode 
+            $record = $this->isEditMode
                 ? $this->model::findOrFail($this->selectedItemId)
                 : new $this->model();
-                
+
             // Handle file uploads
             $this->fields = $this->formService->handleUploadedFiles($record, $this->fields);
 
             // Prepare data for save
             $data = $this->prepareDataForSave($record);
-            
+
 
             // Save record
             DB::transaction(function () use ($record, $data, $modalId) {
-                
+
                 if ($this->isEditMode) {
                     $oldRecord = $record->toArray();
                     $record->update($data);
@@ -141,7 +158,7 @@ class DataTableForm extends Component
                     $this->selectedItemId = $record->id;
                     $this->dispatchAllEvents('created', [], $record->toArray());
                 }
-                
+
                 // Handle relationships
                 $this->relationshipService->handleRelationships(
                     $record,
@@ -150,17 +167,17 @@ class DataTableForm extends Component
                     $this->singleSelectFormFields,
                     $this->fields
                 );
-                
+
                 $this->dispatchSuccessEvent($modalId);
             });
-            
+
         } catch (\Exception $e) {
             $this->handleError($e);
         }
 
 
     }
-    
+
     protected function prepareDataForSave($record)
     {
         // Filter allowed fields
@@ -169,7 +186,7 @@ class DataTableForm extends Component
             $this->columns, // remove hidden fields from allowed fields
             $this->hiddenFields[$formType] ?? []
         );
-                     
+
         $data = array_filter(
             $this->fields,
             fn($key) => in_array($key, $allowedFields),
@@ -178,17 +195,17 @@ class DataTableForm extends Component
 
         // Hash passwords
         $data = $this->formService->hashPasswordFields(
-            $data, 
-            $this->isEditMode, 
+            $data,
+            $this->isEditMode,
             $this->isEditMode ? $record : null
         );
-        
+
         // Add audit trail fields
         $action = $this->isEditMode ? 'updated' : 'created';
         $data = $this->formService->addAuditTrailFields($data, $action, $this->config);
 
         $data = $this->addSelectedSingleFieldsToData($data);
-      
+
         return $data;
     }
 
@@ -202,19 +219,19 @@ class DataTableForm extends Component
     }
 
 
-    
 
 
-    
+
+
     protected function authorizeAction()
     {
         $action = $this->isEditMode ? 'update' : 'create';
-        
+
         if (!auth()->user()->can($action, $this->model)) {
             abort(403, 'Unauthorized action.');
         }
     }
-    
+
     protected function dispatchSuccessEvent($modalId)
     {
         /*$this->dispatch('notify', [ // browser event
@@ -225,7 +242,7 @@ class DataTableForm extends Component
         // Display saving success message
         SweetAlertService::showSuccess($this, "Success!", "Record saved successfully.");
 
-        
+
         // Close the modal, reset fields and refresh the table after saving
         $this->dispatch('closeModalEvent', ["modalId" => $modalId]);  // To show modal
         $this->dispatch('refreshFieldsEvent');  // To update  modal form field dropdown options data
@@ -237,11 +254,11 @@ class DataTableForm extends Component
         $this->dispatch('$refresh');  // To update  modal modal field dropdown options data
     }
 
-    
+
     /*protected function dispatchEvent($eventName, $oldData, $newData)
     {
         $eventClass = "App\\Events\\DataTable\\{$this->modelName}{$eventName}";
-        
+
         if (class_exists($eventClass)) {
             event(new $eventClass($oldData, $newData, auth()->id()));
         }
@@ -249,7 +266,8 @@ class DataTableForm extends Component
 
 
 
-    private function dispatchAllEvents($eventName, $oldRecord, $newData) {
+    private function dispatchAllEvents($eventName, $oldRecord, $newData)
+    {
 
         if (!isset($this->config["dispatchEvents"]) || !$this->config["dispatchEvents"])
             return;
@@ -265,7 +283,7 @@ class DataTableForm extends Component
 
         // Sending DtatTableForm Specific event eg. DataTableForm{BeforeUpdate}Event
         $dataTableFormEvent = "DataTableForm{$eventName}Event";
-        if(class_exists($dataTableFormEvent))
+        if (class_exists($dataTableFormEvent))
             $dataTableFormEvent::dispatch($oldRecord, $newData, $eventName, $this->model);
 
 
@@ -281,17 +299,15 @@ class DataTableForm extends Component
     }
 
 
-private function getSpecificEventFullName($eventName) {
-    return "\\App\\Modules\\{$this->moduleName}\\Events\\{$eventName}".$this->modelName."Event";
-}
+    private function getSpecificEventFullName($eventName)
+    {
+        return "\\App\\Modules\\{$this->moduleName}\\Events\\{$eventName}" . $this->modelName . "Event";
+    }
 
-private function getEventFullName() {
-    return "\\App\\Modules\\{$this->moduleName}\\Events\\".$this->modelName."Event";
-}
-
-
-
-
+    private function getEventFullName()
+    {
+        return "\\App\\Modules\\{$this->moduleName}\\Events\\" . $this->modelName . "Event";
+    }
 
 
 
@@ -301,11 +317,15 @@ private function getEventFullName() {
 
 
 
-    
+
+
+
+
+
     protected function handleError(\Exception $e)
     {
         Log::error('DataTableForm Error: ' . $e->getMessage());
-        
+
         /*$this->dispatch('notify', [ // browser event
             'type' => 'error',
             'message' => 'An error occurred while saving the record.'
@@ -316,19 +336,20 @@ private function getEventFullName() {
             throw $e;
         }
     }
-    
+
     public function openEditModal($id, $model, $modalId = 'addEditModal')
     {
-        
-        if ($this->model !== $model) return;
-        
+
+        if ($this->model !== $model)
+            return;
+
         ///$this->authorize('update', $model::findOrFail($id));
-        
+
         $this->selectedItemId = $id;
         $this->isEditMode = true;
-        
+
         $record = $model::findOrFail($id);
-        
+
         // Populate fields
         foreach ($this->fieldDefinitions as $field => $definition) {
             if (!str_contains($field, 'password')) {
@@ -340,7 +361,7 @@ private function getEventFullName() {
         $this->populateRelationshipFields($record);
         // Populate single select fields
         $this->populateSingleSelectFields($record);
-        
+
 
         $this->dispatch('open-modal-event', ['isEditMode' => $this->isEditMode, 'editModalTitle' => 'Newwww', 'modalId' => $modalId]); // browser event
     }
@@ -361,7 +382,7 @@ private function getEventFullName() {
 
 
 
-   ///////////////////// SHOW DETAIL MODAL //////////////////
+    ///////////////////// SHOW DETAIL MODAL //////////////////
     public function openDetailModal($id, $model)
     {
 
@@ -382,14 +403,14 @@ private function getEventFullName() {
 
 
 
-    
+
     protected function populateRelationshipFields($record)
     {
         foreach ($this->fieldDefinitions as $fieldName => $definition) {
             if (isset($definition['relationship'])) {
                 $relationshipType = $definition['relationship']['type'] ?? null;
                 $dynamicProperty = $definition['relationship']['dynamic_property'] ?? null;
-                
+
                 if ($relationshipType && $dynamicProperty && $record->$dynamicProperty) {
                     if (in_array($relationshipType, ['hasMany', 'belongsToMany', 'morphMany', 'morphToMany'])) {
                         $this->multiSelectFormFields[$fieldName] = $record->$dynamicProperty->pluck('id')->toArray();
@@ -400,19 +421,19 @@ private function getEventFullName() {
             }
         }
     }
-    
+
     public function openAddModal()
     {
         /////$this->authorize('create', $this->model);
-        
+
         $this->resetFields();
         $this->isEditMode = false;
-        
+
         $this->dispatch('changeFormModeEvent', ['mode' => 'new']);
         $this->dispatch('open-modal-event', ['modalId' => 'addEditModal']); // browser event
 
     }
-    
+
     public function resetFields()
     {
         $this->fields = [];
@@ -420,39 +441,39 @@ private function getEventFullName() {
         $this->singleSelectFormFields = [];
         $this->selectedItemId = null;
         $this->isEditMode = false;
-        
+
         // Reset to default values
         foreach ($this->fieldDefinitions as $field => $definition) {
             $this->fields[$field] = $definition['default'] ?? null;
         }
 
-        
+
     }
-    
+
     public function confirmDelete($ids)
     {
         ///$this->authorize('delete', $this->model);
-        
+
         $this->selectedRows = is_array($ids) ? $ids : [$ids];
-        
+
         $this->dispatch('confirm-delete', [ // browser event
             'message' => 'Are you sure you want to delete the selected records?'
         ]);
     }
-    
+
     public function deleteSelected()
     {
         ///$this->authorize('delete', $this->model);
-        
+
         DB::transaction(function () {
             foreach ($this->selectedRows as $id) {
                 $record = $this->model::findOrFail($id);
                 $record->delete();
-                
+
                 $this->dispatchAllEvents('deleted', $record->toArray(), []);
             }
         });
-        
+
         /*$this->dispatch('notify', [ // browser event
             'type' => 'success',
             'message' => 'Records deleted successfully.'
@@ -460,35 +481,35 @@ private function getEventFullName() {
         SweetAlertService::showSuccess($this, "Success!", "Records deleted successfully.");
 
 
-        
-        
+
+
         $this->dispatch('refreshDataTable');
         $this->selectedRows = [];
     }
-    
+
     public function updateModelField($modelIds, $fieldName, $fieldValue, $actionName = null)
     {
-       
+
         ///$this->authorize('update', $this->model);
-        
+
         $modelIds = is_array($modelIds) ? $modelIds : [$modelIds];
-        
+
         DB::transaction(function () use ($modelIds, $fieldName, $fieldValue, $actionName) {
             $this->model::whereIn('id', $modelIds)->update([$fieldName => $fieldValue]);
-            
+
             foreach ($modelIds as $id) {
                 $record = $this->model::findOrFail($id);
                 $this->dispatchAllEvents('updated', $record->toArray(), array_merge($record->toArray(), [$fieldName => $fieldValue, "actionName" => $actionName]));
             }
         });
-        
+
         /*$this->dispatch('notify', [ // browser event
             'type' => 'success',
             'message' => 'Field updated successfully.'
         ]);*/
         SweetAlertService::showSuccess($this, "Success!", "Records updated successfully.");
 
-        
+
         $this->dispatch('refreshDataTable');
     }
 
@@ -496,7 +517,7 @@ private function getEventFullName() {
 
 
 
-    
+
     public function refreshFields()
     {
         // Refresh options for select fields
@@ -504,14 +525,14 @@ private function getEventFullName() {
             if (isset($definition['relationship']['model'])) {
                 $modelClass = $definition['relationship']['model'];
                 $displayField = $definition['relationship']['display_field'] ?? 'name';
-                
+
                 if (class_exists($modelClass)) {
                     $options = $modelClass::pluck($displayField, 'id')->toArray();
                     $this->fieldDefinitions[$fieldName]['options'] = $options;
                 }
             }
         }
-        
+
         $this->dispatch('fieldsRefreshed');
     }
 
@@ -526,69 +547,95 @@ private function getEventFullName() {
 
     // In your DataTableForm Livewire component
 
-/**
- * Check if a field should be displayed based on edit mode and hidden fields
- */
-public function shouldDisplayField($field, $hiddenFields, $isEditMode)
-{
-    if ($isEditMode) {
-        return !in_array($field, $hiddenFields['onEditForm'] ?? []);
-    } else {
-        return !in_array($field, $hiddenFields['onNewForm'] ?? []);
+    /**
+     * Check if a field should be displayed based on edit mode and hidden fields
+     */
+    public function shouldDisplayField($field, $hiddenFields, $isEditMode)
+    {
+        if ($isEditMode) {
+            return !in_array($field, $hiddenFields['onEditForm'] ?? []);
+        } else {
+            return !in_array($field, $hiddenFields['onNewForm'] ?? []);
+        }
     }
-}
 
-/**
- * Check if a group is empty (all fields are hidden)
- */
-public function isGroupEmpty($groupType, $fields, $hiddenFields, $isEditMode)
-{
-    if (empty($fields)) {
-        return true;
-    }
-    
-    if ($isEditMode) {
-        $hidden = $hiddenFields['onEditForm'] ?? [];
-    } else {
-        $hidden = $hiddenFields['onNewForm'] ?? [];
-    }
-    
-    return empty(array_diff($fields, $hidden));
-}
+    /**
+     * Check if a group is empty (all fields are hidden)
+     */
+    public function isGroupEmpty($groupType, $fields, $hiddenFields, $isEditMode)
+    {
+        if (empty($fields)) {
+            return true;
+        }
 
-/**
- * Get the field type from field definition
- */
-public function getFieldType($fieldDefinition)
-{
-    if (is_array($fieldDefinition)) {
-        return $fieldDefinition['field_type'] ?? 'text';
-    }
-    
-    return $fieldDefinition;
-}
+        if ($isEditMode) {
+            $hidden = $hiddenFields['onEditForm'] ?? [];
+        } else {
+            $hidden = $hiddenFields['onNewForm'] ?? [];
+        }
 
-/**
- * Get field options from field definition
- */
-public function getFieldOptions($fieldDefinition)
-{
-    if (!is_array($fieldDefinition)) {
+        return empty(array_diff($fields, $hidden));
+    }
+
+    /**
+     * Get the field type from field definition
+     */
+    public function getFieldType($fieldDefinition)
+    {
+        if (is_array($fieldDefinition)) {
+            return $fieldDefinition['field_type'] ?? 'text';
+        }
+
+        return $fieldDefinition;
+    }
+
+    /**
+     * Get field options from field definition
+     */
+    public function getFieldOptions($fieldDefinition)
+    {
+        if (!is_array($fieldDefinition)) {
+            return [];
+        }
+
+        if (isset($fieldDefinition['options'])) {
+            if (isset($fieldDefinition['options']['model'], $fieldDefinition['options']['column'])) {
+                ///return DataTableOption::getOptionList($fieldDefinition['options']);
+                return DataTableOption::getOptionList($fieldDefinition['options']);
+
+            } else {
+                return $fieldDefinition['options'];
+            }
+        }
+
         return [];
     }
-    
-    if (isset($fieldDefinition['options'])) {
-        if (isset($fieldDefinition['options']['model'], $fieldDefinition['options']['column'])) {
-            ///return DataTableOption::getOptionList($fieldDefinition['options']);
-            return DataTableOption::getOptionList($fieldDefinition['options']);
 
-        } else {
-            return $fieldDefinition['options'];
+
+
+
+
+
+
+
+
+
+
+
+    // Also add a method to check the current state
+    public function checkFileState()
+    {
+        foreach ($this->fields as $key => $value) {
+            if (is_object($value)) {
+                \Log::debug("Field {$key} state", [
+                    'class' => get_class($value),
+                    'methods' => get_class_methods($value),
+                    'path' => method_exists($value, 'getPath') ? $value->getPath() : 'N/A',
+                    'temp_url_method' => method_exists($value, 'temporaryUrl'),
+                ]);
+            }
         }
     }
-    
-    return [];
-}
 
 
 
@@ -601,40 +648,14 @@ public function getFieldOptions($fieldDefinition)
 
 
 
-// Also add a method to check the current state
-public function checkFileState()
-{
-    foreach ($this->fields as $key => $value) {
-        if (is_object($value)) {
-            \Log::debug("Field {$key} state", [
-                'class' => get_class($value),
-                'methods' => get_class_methods($value),
-                'path' => method_exists($value, 'getPath') ? $value->getPath() : 'N/A',
-                'temp_url_method' => method_exists($value, 'temporaryUrl'),
-            ]);
-        }
-    }
-}
 
-
-
-
-
-
-
-
-
-
-
-
-    
     public function render()
     {
-         
+
         $UIFramework = config('qf_laravel_ui.ui_framework', 'bootstrap'); // default to bootstrap
 
-        $viewPath =  "qf::components.livewire.$UIFramework";
+        $viewPath = "qf::components.livewire.$UIFramework";
         return view("$viewPath.data-tables.data-table-form")
-            ;//->layout("$viewPath.layouts.app"); // 👈 important
+        ;//->layout("$viewPath.layouts.app"); // 👈 important
     }
 }

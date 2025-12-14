@@ -16,7 +16,7 @@ use QuickerFaster\LaravelUI\Http\Livewire\Pages\Rule;
 
 
 
-
+/*
 
 Route::middleware(['auth'])->group(function () {
 
@@ -55,7 +55,7 @@ Route::middleware(['auth'])->group(function () {
     })->name('profile');
 
 });
-
+*/
 
 
 

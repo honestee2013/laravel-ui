@@ -16,6 +16,7 @@ return [
             "assets/css/nucleo-icons.css",
             "assets/css/nucleo-svg.css",
             "assets/css/soft-ui-dashboard.min.css",
+            "assets/css/quicker-faster.css",
 
             // Add these from Starter Kit if needed:
             // "assets/css/plugins/perfect-scrollbar.css",
@@ -24,6 +25,7 @@ return [
             "assets/js/core/bootstrap.bundle.min.js", // Plus popperjs
             "assets/js/soft-ui-dashboard.min.js",
             "assets/js/plugins/sweetalert.min.js",
+            "assets/js/quicker-faster.js",
             // "assets/js/plugins/chartjs.min.js",
 
 

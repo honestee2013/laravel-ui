@@ -63,6 +63,7 @@ class QuickerFasterInstall extends Command
 
         // Quicker faster publish
         Artisan::call('vendor:publish --tag=qf-modules');
+        Artisan::call('vendor:publish --tag=qf-assets');
         // Stancl/tenancy publish
         // Artisan::call('tenancy:install');
         // Override tenancy config

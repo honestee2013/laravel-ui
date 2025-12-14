@@ -115,6 +115,7 @@
     </div>
 </section>
 
+{{--
 @php
     $assets = 'qf::components.livewire.bootstrap.resources.assets.data-tables.assets';
     $scripts = 'qf::components.livewire.bootstrap.resources.assets.data-tables.scripts';
@@ -126,3 +127,4 @@
     @include("$scripts")
 @endif
 
+--}}

@@ -185,7 +185,7 @@
         
 
         {{-- Validation Errors --}}
-        @error($binding)
+        @error($field)
             <span class="text-danger text-sm mb-0">
                 {{ str_replace(['characters.', 'id', 'fields.'], ['', '', ''], $message) }}
             </span>

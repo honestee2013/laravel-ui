@@ -13,7 +13,7 @@ class DataTableValidationService
         foreach ($fieldDefinitions as $field => $definition) {
             if ($this->shouldValidateField($field, $isEditMode, $hiddenFields)) {
                 if (isset($definition['validation'])) {
-                    $ruleKey = "fields.{$field}";
+                    $ruleKey = "{$field}"; // "fields.{$field}"
                     $rules[$ruleKey] = $this->adjustUniqueRule(
                         $definition['validation'], 
                         $isEditMode, 
@@ -22,10 +22,10 @@ class DataTableValidationService
 
                     // Always validate file fields if they exist in request
                 } elseif (isset($definition['field_type']) && $definition['field_type'] === 'file') {
-                    $ruleKey = "fields.{$field}";
+                    $ruleKey = "{$field}"; // "fields.{$field}"
                     $rules[$ruleKey] = $this->getDefaultFileValidationRules($definition);
                 } else {
-                    $ruleKey = "fields.{$field}";
+                    $ruleKey = "{$field}"; // "fields.{$field}"
                     $rules[$ruleKey] = $this->adjustUniqueRule(
                         'sometimes', 
                         $isEditMode, 

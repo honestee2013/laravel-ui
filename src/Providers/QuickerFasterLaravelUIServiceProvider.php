@@ -107,8 +107,11 @@ class QuickerFasterLaravelUIServiceProvider extends ServiceProvider
 
         // 8. ✅ Vite integration
         $this->configureVite();
+
+        // Assets
         $this->publishes([
-            __DIR__ . '/../../resources/assets' => public_path('vendor/qf'),
+            //__DIR__ . '/../../resources/assets' => public_path('vendor/qf'),
+            __DIR__ . '/../../resources/assets' => public_path('assets'),
         ], 'qf-assets');
 
 
