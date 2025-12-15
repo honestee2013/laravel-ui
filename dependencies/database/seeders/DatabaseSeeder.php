@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Modules\Admin\Database\Seeders\QFDatabaseSeeder;
 use  Database\Seeders\UserSeeder;
+use QuickerFaster\LaravelUI\Services\AccessControl\AccessControlPermissionService;
 
 class DatabaseSeeder extends Seeder
 {
@@ -20,5 +21,8 @@ class DatabaseSeeder extends Seeder
             QFDatabaseSeeder::class,
             UserSeeder::class
         ]);
+
+        AccessControlPermissionService::seedPermissionNames();
+
     }
 }
