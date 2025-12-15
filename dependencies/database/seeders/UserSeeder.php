@@ -26,7 +26,7 @@ class UserSeeder extends Seeder
         ]);
 
         $dmin = User::create([
-            'id' => 1,
+            'id' => 2,
             'name' => 'admin',
             'email' => 'hrhead@agriwatts.ng',
             'password' => Hash::make('HRHead@2025'),
