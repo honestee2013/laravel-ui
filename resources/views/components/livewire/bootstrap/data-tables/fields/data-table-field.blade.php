@@ -42,8 +42,7 @@
                     
 
     $binding = $fieldBindingPath ?? 'fields.' . $field;
-
-        
+    $fieldBindingPath = $fieldBindingPath?? $field;
 @endphp
 
 
@@ -185,7 +184,7 @@
         
 
         {{-- Validation Errors --}}
-        @error($field)
+        @error($fieldBindingPath)
             <span class="text-danger text-sm mb-0">
                 {{ str_replace(['characters.', 'id', 'fields.'], ['', '', ''], $message) }}
             </span>

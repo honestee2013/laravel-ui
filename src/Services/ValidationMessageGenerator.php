@@ -24,7 +24,8 @@ class ValidationMessageGenerator
         foreach ($prefixedRules as $fullKey => $rules) {
             // Extract field name: formData.hr_employee.first_name → first_name
             $fieldName = $this->extractFieldName($fullKey, $modelAlias);
-            if ($fieldName === null) continue;
+            if ($fieldName === null)
+                continue;
 
             // Get human-readable label
             $label = $this->getFieldLabel($fieldDefinitions, $fieldName);
@@ -34,7 +35,8 @@ class ValidationMessageGenerator
 
             foreach ($ruleList as $rule) {
                 [$ruleName, $parameters] = $this->parseRule($rule);
-                if (!$ruleName) continue;
+                if (!$ruleName)
+                    continue;
 
                 $messageKey = "{$fullKey}.{$ruleName}";
                 $messages[$messageKey] = $this->buildMessage($ruleName, $parameters, $label);
@@ -46,11 +48,19 @@ class ValidationMessageGenerator
 
     protected function extractFieldName(string $fullKey, string $modelAlias): ?string
     {
-        $parts = explode('.', $fullKey);
+        /*$parts = explode('.', $fullKey);
         if (count($parts) === 3 && $parts[0] === 'formData' && $parts[1] === $modelAlias) {
             return $parts[2];
         }
+        return null;*/
+
+        $parts = explode('.', $fullKey);
+
+        if (count($parts) === 2 && $parts[0] === $modelAlias) {
+            return $parts[1];
+        }
         return null;
+
     }
 
     protected function getFieldLabel(array $fieldDefinitions, string $fieldName): string
@@ -71,7 +81,7 @@ class ValidationMessageGenerator
 
 
 
-    
+
 
     protected function parseRules($rules): array
     {
@@ -93,7 +103,7 @@ class ValidationMessageGenerator
 
     protected function buildMessage(string $ruleName, array $parameters, string $label): string
     {
-        return match($ruleName) {
+        return match ($ruleName) {
             'required' => "The {$label} field is required.",
             'required_if' => "The {$label} field is required when " . ($parameters[0] ?? 'another field') . " is " . ($parameters[1] ?? 'set.'),
             'required_with' => "The {$label} field is required when " . ($parameters[0] ?? 'another field') . " is present.",
@@ -141,7 +151,8 @@ class ValidationMessageGenerator
 
     protected function handleMinRule(array $parameters, string $label): string
     {
-        if (empty($parameters)) return "{$label} is too short.";
+        if (empty($parameters))
+            return "{$label} is too short.";
         $value = $parameters[0];
         // Guess if it's string (chars) or numeric (value)
         return is_numeric($value) && $value > 1000
@@ -151,7 +162,8 @@ class ValidationMessageGenerator
 
     protected function handleMaxRule(array $parameters, string $label): string
     {
-        if (empty($parameters)) return "{$label} is too long.";
+        if (empty($parameters))
+            return "{$label} is too long.";
         $value = $parameters[0];
         return is_numeric($value) && $value > 1000
             ? "{$label} may not be greater than {$value}."

@@ -22,7 +22,8 @@
         {{-- Only render if field exists in definitions --}}
         @if(isset($fieldDefinitions[$field]))
             @php
-                $binding = "formData." . $currentModelAlias . "." . $field;
+                // $binding = "formData." . $currentModelAlias . "." . $field;
+                $binding =  $currentModelAlias . "." . $field;
                 $isUserLinkField = ($field === $linkUserFieldName);
                 $isDatabaseLinkField = ($field === $linkDatabaseFieldName);
                 $isLinkSource = ($currentStepConfig['isLinkSource'] ?? false);
