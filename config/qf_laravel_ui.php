@@ -26,13 +26,13 @@ return [
             "assets/js/soft-ui-dashboard.min.js",
             "assets/js/plugins/sweetalert.min.js",
             "assets/js/quicker-faster.js",
-            // "assets/js/plugins/chartjs.min.js",
+            "assets/js/plugins/chartjs.min.js",
 
 
             // "assets/js/plugins/perfect-scrollbar.min.js",
-            // "assets/js/plugins/smooth-scrollbar.min.js",
+            "assets/js/plugins/smooth-scrollbar.min.js",
             // Add these from Starter Kit if needed:
-            // "assets/js/plugins/fullcalendar.min.js",
+            "assets/js/plugins/fullcalendar.min.js",
         ] 
     ],
 
