@@ -13,7 +13,7 @@
     'autoGenerate' => false,
         
     'fieldBindingPath' => null, // e.g., 'formData.employee.name'
-
+    'binding' => null, 
 ])
 
 @php
@@ -40,9 +40,9 @@
     $hasInlineAdd = isset($fieldDefinitions[$field]['relationship']['inlineAdd']) &&
     $fieldDefinitions[$field]['relationship']['inlineAdd'];
                     
-
-    $binding = $fieldBindingPath ?? 'fields.' . $field;
+    
     $fieldBindingPath = $fieldBindingPath?? $field;
+    //$binding = $fieldBindingPath ?? 'fields.' . $field;
 @endphp
 
 

@@ -22,8 +22,9 @@
         {{-- Only render if field exists in definitions --}}
         @if(isset($fieldDefinitions[$field]))
             @php
-                // $binding = "formData." . $currentModelAlias . "." . $field;
-                $binding =  $currentModelAlias . "." . $field;
+                $binding = "formData." . $currentModelAlias . "." . $field;
+                $fieldBindingPath =  $currentModelAlias . "." . $field;
+
                 $isUserLinkField = ($field === $linkUserFieldName);
                 $isDatabaseLinkField = ($field === $linkDatabaseFieldName);
                 $isLinkSource = ($currentStepConfig['isLinkSource'] ?? false);
@@ -53,7 +54,9 @@
                 :modelName="$modelName"
                 reactivity="live"
                 :autoGenerate="$fieldDefinitions[$field]['autoGenerate'] ?? false"
-                :fieldBindingPath="$binding"
+
+                :fieldBindingPath="$fieldBindingPath"
+                :binding="$binding"
             />
         @endif
     @endforeach
