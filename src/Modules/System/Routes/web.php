@@ -18,7 +18,7 @@ Route::get('/{module}/{view}/{id?}', function ($module, $view, $id = null) {
         'id' => 'nullable|integer',
     ])->validate();
 
-    $allowedModules = ['system', 'billing', 'sales', 'organization', 'hr', 'profile', 'item', 'warehouse', 'user', 'access'];
+    $allowedModules = ['system', 'admin',  'hr'];
 
     if (!in_array($module, $allowedModules)) {
         abort(404, 'Invalid module');
