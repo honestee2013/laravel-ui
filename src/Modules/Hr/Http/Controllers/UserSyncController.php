@@ -9,35 +9,39 @@ class UserSyncController extends Controller
 {
     public function syncUser()
     {
-        // Query employees who have employee profiles
+        // Query employees who have BOTH employee profile AND user relationship
         $employees = Employee::with([
+                'user.roles',  // Load user with their roles (from Spatie Permission)
                 'department',
                 'employeeProfile',
-                'employeePosition',
-                'user.roles' // Optional: include user if exists
+                'employeePosition'
             ])
-            ->whereHas('employeeProfile') // Only employees with profiles
+            ->whereHas('employeeProfile')  // Must have employee profile
+            ->whereHas('user')             // Must have user account
+            ->whereNotNull('user_id')      // Additional check for user relationship
             ->get()
             ->map(function ($employee) {
-                $employeeProfile = $employee->employeeProfile;
                 $user = $employee->user;
+                $employeeProfile = $employee->employeeProfile;
                 
-                // Get user role if user exists
+                // Get the user's role
                 $role = '';
-                if ($user && $user->roles) {
-                    $role = $user->roles->first() ? $user->roles->first()->name : '';
+                if ($user->roles->isNotEmpty()) {
+                    $role = $user->roles->first()->name;
                 }
                 
-                // Determine which email and phone to use
-                $email = $employeeProfile && $employeeProfile->personal_email 
-                    ? $employeeProfile->personal_email 
-                    : ($user ? $user->email : $employee->email);
-                
-                $phone = $employeeProfile && $employeeProfile->personal_phone 
-                    ? $employeeProfile->personal_phone 
-                    : ($user ? $user->phone : $employee->phone);
-                
                 return [
+                    // User account information
+                    'user_id' => $user->id,
+                    'username' => $user->email, // Assuming email is username
+                    'role' => $role,
+                    'user_name' => $user->name,
+                    'user_location' => $user->location,
+                    'user_about_me' => $user->about_me,
+                    'user_company_id' => $user->company_id,
+                    'user_email' => $user->email,
+                    'user_phone' => $user->phone,
+                    
                     // Employee core information
                     'employee_id' => $employee->id,
                     'employee_number' => $employee->employee_number,
@@ -47,30 +51,24 @@ class UserSyncController extends Controller
                     'official_email' => $employee->email,
                     'official_phone' => $employee->phone,
                     
-                    // User account information (if exists)
-                    'user_id' => $user ? $user->id : null,
-                    'user_exists' => !is_null($user),
-                    'username' => $user ? $user->email : null,
-                    'role' => $role,
-                    
                     // Employee Profile information
-                    'profile_picture' => $employeeProfile && $employeeProfile->photo
+                    'profile_picture' => $employeeProfile->photo
                         ? asset('storage/' . $employeeProfile->photo)
                         : null,
-                    'middle_name' => $employeeProfile ? $employeeProfile->middle_name : null,
-                    'preferred_name' => $employeeProfile ? $employeeProfile->preferred_name : null,
-                    'personal_email' => $employeeProfile ? $employeeProfile->personal_email : null,
-                    'personal_phone' => $employeeProfile ? $employeeProfile->personal_phone : null,
-                    'work_phone' => $employeeProfile ? $employeeProfile->work_phone : null,
-                    'emergency_contact_name' => $employeeProfile ? $employeeProfile->emergency_contact_name : null,
-                    'emergency_contact_phone' => $employeeProfile ? $employeeProfile->emergency_contact_phone : null,
-                    'emergency_contact_relationship' => $employeeProfile ? $employeeProfile->emergency_contact_relationship : null,
-                    'passport_number' => $employeeProfile ? $employeeProfile->passport_number : null,
-                    'passport_expiry_date' => $employeeProfile ? $employeeProfile->passport_expiry_date : null,
-                    'national_id_number' => $employeeProfile ? $employeeProfile->national_id_number : null,
-                    'bio' => $employeeProfile ? $employeeProfile->bio : null,
+                    'middle_name' => $employeeProfile->middle_name,
+                    'preferred_name' => $employeeProfile->preferred_name,
+                    'personal_email' => $employeeProfile->personal_email,
+                    'personal_phone' => $employeeProfile->personal_phone,
+                    'work_phone' => $employeeProfile->work_phone,
+                    'emergency_contact_name' => $employeeProfile->emergency_contact_name,
+                    'emergency_contact_phone' => $employeeProfile->emergency_contact_phone,
+                    'emergency_contact_relationship' => $employeeProfile->emergency_contact_relationship,
+                    'passport_number' => $employeeProfile->passport_number,
+                    'passport_expiry_date' => $employeeProfile->passport_expiry_date,
+                    'national_id_number' => $employeeProfile->national_id_number,
+                    'bio' => $employeeProfile->bio,
                     
-                    // Contact information from employee
+                    // Employee personal details
                     'gender' => $employee->gender,
                     'date_of_birth' => $employee->date_of_birth,
                     'nationality' => $employee->nationality,
@@ -97,17 +95,92 @@ class UserSyncController extends Controller
                     'status' => $employee->status,
                     'hire_date' => $employee->hire_date,
                     
-                    // User information if exists (optional)
-                    'user_name' => $user ? $user->name : null,
-                    'user_location' => $user ? $user->location : null,
-                    'user_about_me' => $user ? $user->about_me : null,
-                    'user_company_id' => $user ? $user->company_id : null
+                    // Additional computed fields for mobile app convenience
+                    'display_name' => $employeeProfile->preferred_name 
+                        ?: $employee->first_name . ' ' . $employee->last_name,
+                    'primary_email' => $employeeProfile->personal_email 
+                        ?: $employee->email 
+                        ?: $user->email,
+                    'primary_phone' => $employeeProfile->personal_phone 
+                        ?: $employeeProfile->work_phone 
+                        ?: $employee->phone 
+                        ?: $user->phone,
+                    'is_active' => $employee->status === 'active',
+                    
+                    // Timestamps
+                    'created_at' => $employee->created_at,
+                    'updated_at' => $employee->updated_at,
+                    'user_created_at' => $user->created_at,
+                    'user_updated_at' => $user->updated_at
                 ];
             });
 
         return response()->json([
             'status' => true,
-            'message' => 'Employee data synced successfully.',
+            'message' => 'Employee data with user accounts synced successfully.',
+            'count' => $employees->count(),
+            'data' => $employees,
+        ]);
+    }
+    
+    /**
+     * Alternative: Get employees with profiles, including those without user accounts
+     */
+    public function syncAllEmployeesWithProfiles()
+    {
+        $employees = Employee::with([
+                'user.roles',
+                'department',
+                'employeeProfile',
+                'employeePosition'
+            ])
+            ->whereHas('employeeProfile')
+            ->get()
+            ->map(function ($employee) {
+                $user = $employee->user;
+                $employeeProfile = $employee->employeeProfile;
+                
+                $role = '';
+                $userData = null;
+                
+                if ($user) {
+                    if ($user->roles->isNotEmpty()) {
+                        $role = $user->roles->first()->name;
+                    }
+                    
+                    $userData = [
+                        'user_id' => $user->id,
+                        'username' => $user->email,
+                        'role' => $role,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'phone' => $user->phone,
+                        'has_account' => true
+                    ];
+                }
+                
+                return [
+                    'employee_id' => $employee->id,
+                    'employee_number' => $employee->employee_number,
+                    'first_name' => $employee->first_name,
+                    'last_name' => $employee->last_name,
+                    'email' => $employee->email,
+                    'phone' => $employee->phone,
+                    'department' => $employee->department ? $employee->department->name : null,
+                    'status' => $employee->status,
+                    'has_user_account' => !is_null($user),
+                    'user' => $userData,
+                    'profile' => [
+                        'photo' => $employeeProfile->photo ? asset('storage/' . $employeeProfile->photo) : null,
+                        'personal_email' => $employeeProfile->personal_email,
+                        'personal_phone' => $employeeProfile->personal_phone
+                    ]
+                ];
+            });
+
+        return response()->json([
+            'status' => true,
+            'message' => 'All employees with profiles synced successfully.',
             'count' => $employees->count(),
             'data' => $employees,
         ]);
