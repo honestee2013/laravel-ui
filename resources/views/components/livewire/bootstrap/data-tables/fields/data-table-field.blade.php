@@ -42,7 +42,7 @@
                     
     
     $fieldBindingPath = $fieldBindingPath?? $field;
-    //$binding = $fieldBindingPath ?? 'fields.' . $field;
+    $binding = $binding ?? 'fields.' . $field;
 @endphp
 
 

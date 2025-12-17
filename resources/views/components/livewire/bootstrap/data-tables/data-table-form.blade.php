@@ -60,7 +60,12 @@
 
                 @foreach ($groupedfields as $field)
                     @if ($this->shouldDisplayField($field, $hiddenFields, $isEditMode))
-                        <x-qf::livewire.bootstrap.data-tables.fields.data-table-field :field="$field"
+
+                        @php
+                            $binding = $fieldBindingPath ?? 'fields.' . $field;
+                        @endphp
+
+                        <x-qf::livewire.bootstrap.data-tables.fields.data-table-field :field="$field" :binding="$binding"
                             :fieldDefinitions="$fieldDefinitions" :isEditMode="$isEditMode" :multiSelectFormFields="$multiSelectFormFields" :singleSelectFormFields="$singleSelectFormFields" :readOnlyFields="$readOnlyFields"
                             :fields="$fields" :model="$model" :modelName="$modelName" :reactivity="$fieldDefinitions[$field]['reactivity'] ?? 'defer'"
                             :autoGenerate="$fieldDefinitions[$field]['autoGenerate'] ?? false" />
