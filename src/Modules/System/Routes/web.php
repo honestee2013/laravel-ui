@@ -58,7 +58,7 @@ Route::get('/{module}/{view}/{id?}', function ($module, $view, $id = null) {
     }
 
     abort(404, 'View not found');
-});
+})->middleware(['web', 'auth']);
 
 
 

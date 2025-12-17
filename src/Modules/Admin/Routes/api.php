@@ -11,8 +11,8 @@ use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 
 
 Route::middleware([
-    InitializeTenancyByDomain::class,
-    PreventAccessFromCentralDomains::class,
+    // InitializeTenancyByDomain::class,
+    // PreventAccessFromCentralDomains::class,
 ])->group(function () {
 
     Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -22,10 +22,10 @@ Route::middleware([
     Route::post('admin/login', [AuthController::class, 'login']);
     Route::post('admin/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
-    Route::post('/test', function () {
+    /*Route::post('/test', function () {
         //return $controller->store($request);
         return json_encode('api route test');
-    });
+    });*/
 
 });
 
