@@ -43,6 +43,7 @@ class UserSyncController extends Controller
                     'user_phone' => $user->phone,
                     
                     // Employee core information
+                    'status' => "Active",
                     'employee_id' => $employee->id,
                     'employee_number' => $employee->employee_number,
                     'first_name' => $employee->first_name,
