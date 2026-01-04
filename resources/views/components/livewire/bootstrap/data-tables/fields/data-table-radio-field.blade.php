@@ -4,7 +4,7 @@
     'options',
     'display',
     'reactivity' => 'defer',
-    'singleSelectFormFields',
+    // 'singleSelectFormFields',
     'readOnlyFields',
     'binding', 
     'type',
@@ -13,17 +13,19 @@
 ])
 
 @php
-    $isSingleSelect = $singleSelectFormFields && in_array($field, array_keys($singleSelectFormFields));
+    //$isSingleSelect = $singleSelectFormFields && in_array($field, array_keys($singleSelectFormFields));
     $inlineStyle = isset($display) && $display == 'inline' ? "display:inline-flex;" : "";
+    $binding = $binding ?? 'fields.' . $field;
+
 @endphp
 
 @if(isset($display) && $display == 'inline')<div>@endif
 
 @foreach ($options as $key => $value)
     {{--@if($isSingleSelect)--}}
-        <div class="form-check" style="{{ $inlineStyle }}">
-            <input wire:key="radio-{{ $key }}" class="form-check-input" type="radio"
-                id="{{ $key }}" wire:model.{{ $reactivity }}="singleSelectFormFields.{{ $field }}"
+        <div class="form-check" style="{{ $inlineStyle }}" wire:key="radio-{{ $key }}">
+            <input  class="form-check-input" type="radio"
+                id="{{ $key }}" wire:model.{{ $reactivity }}="{{ $binding }}"
                 value="{{ $key }}"
                 @if(in_array($field, $readOnlyFields)) disabled @endif>
 

@@ -41,8 +41,8 @@ class DataTableForm extends Component
     public $readOnlyFields;
     public $columns;
     public $fields = [];
-    public $multiSelectFormFields = [];
-    public $singleSelectFormFields = [];
+    public $multiSelectFormFields = []; // To be removed later
+    public $singleSelectFormFields = []; // To be removed later
     public $selectedItemId;
     public $isEditMode = false;
     public $uploads = [];
@@ -85,17 +85,43 @@ class DataTableForm extends Component
         ]);
 
         // Initialize fields with default values
+        $this->initializeFieldsWithDefaults();
+
+    
+    }
+
+
+    // Initialize fields with default values 
+    function initializeFieldsWithDefaults()
+    {
         foreach ($this->fieldDefinitions as $field => $definition) {
-            $this->fields[$field] = $definition['default'] ?? null;
+            // Make the multiselect field array by default
+            if (isset($this->fieldDefinitions[$field]['multiSelect'])) {
+                $this->fields[$field] = [$definition['default']?? null];
+            } else if (is_array($definition) && isset($definition['field_type']) ){
+                // For integer, string, boolradio, boolcheckbox, date, datetime, time, etc.
+                if ($definition['field_type'] == 'boolradio' || $definition['field_type'] == 'boolcheckbox') {
+                    $this->fields[$field] = $definition['default'] ?? false;
+                } 
+                // Interger field default to 0
+                else if ($definition['field_type'] == 'integer' || $definition['field_type'] == 'number') {
+                    $this->fields[$field] = $definition['default'] ?? 0;
+                }
+                else {
+                    $this->fields[$field] = $definition['default'] ?? null;
+                }
+
+            }
+
             // Add options for boolcheckbox & boolradio 
             if (isset($definition['field_type'])) {
-                if (!isset($this->fieldDefinitions[$field]["options"]) && $definition['field_type'] == 'boolradio')
+                if (!isset($this->fieldDefinitions[$field]["options"]) && $definition['field_type'] == 'boolradio') {
                     $this->fieldDefinitions[$field]["options"] = [1 => 'Yes', 0 => 'No'];
-                else if (!isset($this->fieldDefinitions[$field]["options"]) && $definition['field_type'] == 'boolcheckbox')
+                } else if (!isset($this->fieldDefinitions[$field]["options"]) && $definition['field_type'] == 'boolcheckbox') {
                     $this->fieldDefinitions[$field]["options"] = [1 => 'Yes'];
+                } 
             }
         }
-
     }
 
 
@@ -106,6 +132,8 @@ class DataTableForm extends Component
 
 
         try {
+
+            // $this->authorizeAction();
 
             // Validate inputs
             $rules = $this->validationService->getDynamicValidationRules(
@@ -119,6 +147,9 @@ class DataTableForm extends Component
             $validator = Validator::make($this->fields, $rules, $this->messages);
 
             if ($validator->fails()) {
+                
+                // Clear previous errors
+                $this->resetErrorBag();
                 // Map errors back without the fields prefix
                 $errors = new \Illuminate\Support\MessageBag();
                 foreach ($validator->errors()->messages() as $key => $messages) {
@@ -193,6 +224,15 @@ class DataTableForm extends Component
             ARRAY_FILTER_USE_KEY
         );
 
+
+        // Loop and convert the multiSelect fields to comma separated string
+        foreach ($this->fieldDefinitions as $field => $definition) {
+            if (isset($definition['multiSelect']) && isset($data[$field]) && is_array($data[$field])) {
+                $data[$field] = implode(',', $data[$field]);
+            }
+        }
+
+
         // Hash passwords
         $data = $this->formService->hashPasswordFields(
             $data,
@@ -204,7 +244,7 @@ class DataTableForm extends Component
         $action = $this->isEditMode ? 'updated' : 'created';
         $data = $this->formService->addAuditTrailFields($data, $action, $this->config);
 
-        $data = $this->addSelectedSingleFieldsToData($data);
+        // $data = $this->addSelectedSingleFieldsToData($data);
 
         return $data;
     }
@@ -352,7 +392,11 @@ class DataTableForm extends Component
 
         // Populate fields
         foreach ($this->fieldDefinitions as $field => $definition) {
-            if (!str_contains($field, 'password')) {
+            // Multiselect fields should be converted to array from comma separated string
+            if (isset($this->fieldDefinitions[$field]['multiSelect'])) {
+                $this->fields[$field] = $record->$field ? explode(',', $record->$field) : [];
+                
+            } else if (!str_contains($field, 'password')) {
                 $this->fields[$field] = $record->$field;
             }
         }
@@ -360,7 +404,7 @@ class DataTableForm extends Component
         // Populate relationship fields
         $this->populateRelationshipFields($record);
         // Populate single select fields
-        $this->populateSingleSelectFields($record);
+        // $this->populateSingleSelectFields($record);
 
 
         $this->dispatch('open-modal-event', ['isEditMode' => $this->isEditMode, 'editModalTitle' => 'Newwww', 'modalId' => $modalId]); // browser event
@@ -375,6 +419,11 @@ class DataTableForm extends Component
             if (isset($definition['options']) && !isset($definition['relationship'])) {
                 $this->singleSelectFormFields[$field] = $record->$field;
 
+            } else {
+                // For boolradio and boolcheckbox fields
+                if (in_array($definition['field_type'], ['boolradio', 'boolcheckbox'])) {
+                    $this->singleSelectFormFields[$field] = $record->$field;
+                }
             }
         }
     }
@@ -442,10 +491,11 @@ class DataTableForm extends Component
         $this->selectedItemId = null;
         $this->isEditMode = false;
 
-        // Reset to default values
-        foreach ($this->fieldDefinitions as $field => $definition) {
-            $this->fields[$field] = $definition['default'] ?? null;
-        }
+        // Re-initialize fields with default values
+        $this->initializeFieldsWithDefaults();
+
+
+        
 
 
     }

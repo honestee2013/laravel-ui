@@ -32,6 +32,10 @@
     }
 
 
+    // Flag multi-select fields
+    $multiSelect = $fieldDefinitions[$field]['multiSelect'] ?? false;
+            
+
 
     $display = $fieldDefinitions[$field]['display'] ?? null;
     $selected = $fieldDefinitions[$field]['selected'] ?? null;
@@ -43,6 +47,8 @@
     
     $fieldBindingPath = $fieldBindingPath?? $field;
     $binding = $binding ?? 'fields.' . $field;
+
+    
 @endphp
 
 
@@ -75,6 +81,8 @@
                     :readOnlyFields="$readOnlyFields"
                     :label="$label"
                     :binding="$binding"
+                    :multiSelect="$multiSelect"
+                    
                 />
                 @break
 

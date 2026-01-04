@@ -111,17 +111,17 @@
             <div class="input-group col-12 w-100 col-sm-auto w-sm-auto" x-show="$wire.selectedRows.length">
                 <select wire:model="bulkAction" class="form-select p-1 ps-3 pe-sm-5 px-sm-4 m-0"
                     style = "height: 2.6em;
-                                    border-top-left-radius: 1.3em;
-                                    border-bottom-left-radius: 1.3em;
+                    border-radius: 1.3em;"
+                    wire:change.live="applyBulkAction"
 
-                                ">
+                >
                     <option value="" style="display: none"> Action... </option>
                     @if (array_key_exists('updateModelFields', $controls['bulkActions']) && is_array($controls['bulkActions']['updateModelFields']))
 
-                            @foreach ($controls['bulkActions']["updateModelFields"] as $command => $options)
-                                @if (isset($options['fieldName']) && isset($options['fieldValue']))
-                                    <option value="{{$options['fieldName']}}:{{$options['fieldValue']}}">
-                                            {{ ucfirst($command) }}
+                            @foreach ($controls['bulkActions']["updateModelFields"] as $field => $options)
+                                @if (isset($options['label']) && isset($options['value']))
+                                    <option value="{{ $field }}:{{$options['value']}}">
+                                            {{ ucfirst($options['label']) }}
                                     </option>
                                 @endif
                             @endforeach
@@ -141,14 +141,14 @@
                         <option value="delete">Delete</option>
                     @endif
                 </select>
-                <button wire:click="applyBulkAction" class="btn btn-sm btn-outline-primary p-0"
+                {{-- <button wire:click="applyBulkAction" class="btn btn-sm btn-outline-primary p-0"
                     style="height: 3em;
                                     width: 4.7em;
                                         border-top-right-radius: 1.3em;
                                         border-bottom-right-radius: 1.3em;
                                     "
                     type="button" id="button-addon2">OK
-                </button>
+                </button> --}}
             </div>
         @endif
 

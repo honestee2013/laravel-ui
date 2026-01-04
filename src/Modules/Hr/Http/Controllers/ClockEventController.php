@@ -130,9 +130,9 @@ class ClockEventController extends Controller
             'timestamp' => $timestamp,
             'method' => 'device',
             'device_id' => $internalData['device_id'],
-            // 'device_name' => $internalData['device_name'],
-            // 'location_name' => $internalData['location_name'],
-            // 'timezone' => $internalData['timezone'],
+            'device_name' => $internalData['device_name'],
+            'location_name' => $internalData['location_name'],
+            'timezone' => $internalData['timezone'],
             // 'notes' => $internalData['notes'],
             'latitude' => $lat,
             'longitude' => $lng,
@@ -264,6 +264,12 @@ class ClockEventController extends Controller
                         'event_data' => $androidEvent
                     ];
                     $results['failed']++;
+
+
+                    \Log::error('Failed to process batch clock event at index ' . $index, [
+                        'event' => $androidEvent,
+                        'error' => $e->getMessage()
+                    ]);
 
                 } catch (\Exception $e) {
                     $results['events'][$index] = [

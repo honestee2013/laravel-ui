@@ -14,7 +14,7 @@ class DailyEarningsSeeder extends Seeder
     public function run()
     {
         // Truncate existing records
-        DB::table('daily_earnings')->truncate();
+        /*DB::table('daily_earnings')->truncate();
 
         // Get all attendance records with both check-in and check-out
         $attendanceRecords = DB::table('daily_attendances')
@@ -58,7 +58,7 @@ class DailyEarningsSeeder extends Seeder
                     'updated_at' => now(),
                 ];
             }
-        }
+        }*/
 
         // Insert records in chunks
         /*foreach (array_chunk($earnings, 500) as $chunk) {

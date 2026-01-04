@@ -12,6 +12,7 @@ use QuickerFaster\LaravelUI\Services\Analytics\BatchAggregator;
 class DashboardManager extends Component
 {
     public $moduleName;
+    public $viewName;
     public $timeDuration = "this_month";
     public $filters = [];
     public $widgets = [];
@@ -26,9 +27,10 @@ class DashboardManager extends Component
         'refreshDashboard' => 'refreshData'
     ];
 
-    public function mount($moduleName)
+    public function mount($moduleName, $viewName)
     {
         $this->moduleName = $moduleName;
+        $this->viewName = $viewName;
         $this->loadWidgetsConfiguration();
         $this->refreshData();
     }
@@ -36,10 +38,11 @@ class DashboardManager extends Component
 protected function loadWidgetsConfiguration()
 {
     $dashboardsPath = app_path("Modules/".ucfirst($this->moduleName). '/Data/dashboards');
-
+    // Config view file name normalization (uses underscores instead of dashes)
+    $viewName = str_replace('-', '_', strtolower($this->viewName));
     // If specific dashboard requested
-    if ($this->dashboardId && $this->dashboardId !== 'default') {
-        $specificConfigPath = "{$dashboardsPath}/{$this->dashboardId}.php";
+    if ($viewName && $viewName !== 'default') {
+        $specificConfigPath = "{$dashboardsPath}/{$viewName}.php";
 
         if (file_exists($specificConfigPath)) {
             $this->widgets = require $specificConfigPath;
@@ -259,7 +262,8 @@ protected function loadWidgetsConfiguration()
 
     public function render()
     {
-        $view = "{$this->moduleName}.views::dashboard-manager";
+        $view = strtolower($this->moduleName).".views::dashboard-managers.{$this->viewName}";
+        
         if (!view()->exists($view))
             $view = "system.views::dashboard-manager";
 

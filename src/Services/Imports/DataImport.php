@@ -71,7 +71,7 @@ class DataImport implements ToModel, WithHeadingRow
             //dd( $e->getMessage(), "duplicate");
 
             //session()->flash('error', 'There was a database error during the import. Please check... It seems like some rows where already imported from the file to the database!');
-            $feedbackMessage = "It seems like some rows where already imported from the file to the database!";
+            $feedbackMessage = "Duplicate error! You are trying to import records that already exist in the database. Please check and try again.";
 
         } catch (QueryException $e) {
             //dd(vars: $e->getMessage());

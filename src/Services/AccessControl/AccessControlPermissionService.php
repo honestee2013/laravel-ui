@@ -21,6 +21,12 @@ class AccessControlPermissionService
 
     public static function checkPermission($action, $modelName): bool
     {
+
+        // If not logged in return false
+        if (!auth()->check()) {
+            return false;
+        }
+
         $permissionName = $action . "_" . Str::snake($modelName);
         return auth()->user()->hasPermissionTo($permissionName);
     }

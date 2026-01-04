@@ -31,18 +31,16 @@ Route::get('/{module}/{view}/{id?}', function ($module, $view, $id = null) {
         if (!auth()->check() || !auth()->user()->hasRole(['admin', 'super_admin'])) {
             abort(403, 'Unauthorized');
         }
-
     // If user is  not admin, check if the user has the permission
     } else if (auth()->check() && !auth()->user()->hasRole(['admin', 'super_admin'])) {
         // Build a dynamic permission name
         $permission = "view_".AccessControlManager::getViewPerminsionModelName(($view));
 
         // Check permission or role
-        if (!auth()->check() || !auth()->user()->can($permission)) {
-            if ($view !=="my-profile") {
+        if (!auth()->user()->can($permission) && $view !=="dashboard" && $view !=="my-profile") {
                 abort(403, 'Unauthorized');
-            }
         }
+        
     }
 
 

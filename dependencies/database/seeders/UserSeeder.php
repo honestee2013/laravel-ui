@@ -20,16 +20,16 @@ class UserSeeder extends Seeder
 
         $superAdmin = User::create([
             'id' => 1,
-            'name' => 'super admin',
+            'name' => 'admin',
             'email' => 'admin@softui.com',
             'password' => Hash::make('secret'),
         ]);
 
         $dmin = User::create([
             'id' => 2,
-            'name' => 'admin',
-            'email' => 'hrhead@agriwatts.ng',
-            'password' => Hash::make('HRHead@2025'),
+            'name' => 'super admin',
+            'email' => 'testing@agriwatts.ng',
+            'password' => Hash::make('Test@12345'),
         ]);
 
 
@@ -38,17 +38,19 @@ class UserSeeder extends Seeder
         $adminRole = Role::findByName('admin', 'web'); // 'web' is the default guard
         
         if ($superAdminRole) {
-            $superAdmin->assignRole($superAdminRole);
+            $superAdmin->assignRole($superAdminRole); // For clocking purposes
+            $dmin->assignRole($adminRole); // For testing purposes
+
         } else {
             // Optional: throw an exception or log a warning
             throw new \Exception('Role "super_admin" not found. Did you run RoleSeeder?');
         }
 
         if ($adminRole) {
-            $dmin->assignRole($adminRole);
+            // $dmin->assignRole($adminRole);
         } else {
             // Optional: throw an exception or log a warning
-            throw new \Exception('Role "super_admin" not found. Did you run RoleSeeder?');
+            // throw new \Exception('Role "admin" not found. Did you run RoleSeeder?');
         }
 
     }

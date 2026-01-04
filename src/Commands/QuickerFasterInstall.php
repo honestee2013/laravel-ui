@@ -210,11 +210,28 @@ class QuickerFasterInstall extends Command
         $this->overrideDatabaseMigrationFiles();
         $this->overrideDatabaseSeederFiles();
         $this->overrideModelFiles();
+        $this->overrideRouteFiles();
         // $this->overrideAssetFiles();
         // $this->overridMiddlewareFiles();
         // $this->overridProviderFiles();
 
         // $this->copyCpanelDeploymentFile();
+    }
+
+
+
+    private function overrideRouteFiles()
+    {
+        $source = __DIR__ . '/../../dependencies/routes';
+        $destination = base_path('routes');
+
+        if ($this->copyDirectory($source, $destination)) {
+            $this->info("✅ Routes copied successfully");
+            return 0;
+        } else {
+            $this->error("❌ Routes Copy failed");
+            return 1;
+        }
     }
 
 

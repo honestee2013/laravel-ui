@@ -14,7 +14,7 @@ class OnboardingTaskSeeder extends Seeder
 {
     public function run()
     {
-        $tasks = [
+        /*$tasks = [
             ['name' => 'Employment Contract Signing', 'description' => 'Sign and return employment contract', 'editable' => 'No'],
             ['name' => 'Tax Forms Submission', 'description' => 'Complete W-4 and state tax forms', 'editable' => 'No'],
             ['name' => 'Employee Handbook Review', 'description' => 'Review and acknowledge company policies', 'editable' => 'No'],
@@ -35,6 +35,6 @@ class OnboardingTaskSeeder extends Seeder
 
         foreach ($tasks as $task) {
             DB::table('onboarding_tasks')->insert($task);
-        }
+        }*/
     }
 }

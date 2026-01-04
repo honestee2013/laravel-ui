@@ -3,31 +3,29 @@
     'field',
     'options',
     'reactivity' => 'defer',
-    'multiSelectFormFields',
-    'singleSelectFormFields',
+    // 'multiSelectFormFields',
+    // 'singleSelectFormFields',
     'readOnlyFields',
     'label',
     'binding', 
+    'multiSelect' => false,
 
 ])
 
 @php
-    $isMultiSelect = $multiSelectFormFields && in_array($field, array_keys($multiSelectFormFields));
-    $isSingleSelect = $singleSelectFormFields && in_array($field, array_keys($singleSelectFormFields));
+    // $isMultiSelect = $multiSelectFormFields && in_array($field, array_keys($multiSelectFormFields));
+    // $isSingleSelect = $singleSelectFormFields && in_array($field, array_keys($singleSelectFormFields));
 @endphp
 
 <select
-    @if($isMultiSelect)
-        wire:key="multi-select-{{ $field }}" multiple
-        wire:model.{{ $reactivity }}="multiSelectFormFields.{{ $field }}"
-    @elseif($isSingleSelect)
-        wire:key="single-select-{{ $field }}"
-        wire:model.{{ $reactivity }}="singleSelectFormFields.{{ $field }}"
-    @else
-        wire:key="select-{{ $field }}"
-        wire:model.{{ $reactivity }}="{{ $binding }}"
-    @endif
-    name="{{ $field }}" id="{{ $field }}" class="form-control"
+
+    
+    wire:model.{{ $reactivity }}="{{ $binding }}"
+    wire:key="select-{{ $field }}" 
+    id="{{ $field }}" 
+    class="form-control"
+
+    @if($multiSelect) multiple @endif
     @if(in_array($field, $readOnlyFields)) disabled @endif
 >
     <option style="display:none" value="">

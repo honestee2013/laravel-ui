@@ -12,7 +12,7 @@ class WorkDaySeeder extends Seeder
 {
     public function run()
     {
-        $days = [
+        /*$days = [
             ['name' => 'Monday', 'short_name' => 'Mon', 'editable' => 'No'],
             ['name' => 'Tuesday', 'short_name' => 'Tue', 'editable' => 'No'],
             ['name' => 'Wednesday', 'short_name' => 'Wed', 'editable' => 'No'],
@@ -25,6 +25,6 @@ class WorkDaySeeder extends Seeder
 
         foreach ($days as $day) {
             DB::table('day_of_weeks')->insert($day);
-        }
+        }*/
     }
 }

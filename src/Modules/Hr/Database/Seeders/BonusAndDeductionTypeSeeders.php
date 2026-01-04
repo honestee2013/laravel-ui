@@ -17,7 +17,7 @@ class BonusAndDeductionTypeSeeders extends Seeder
     public function run()
     {
         // 1. Allowance Types (Recurring non-discretionary additions)
-        $allowanceTypes = [
+        /*$allowanceTypes = [
             ['name' => 'Housing Allowance', 'description' => 'Regular payment for accommodation expenses', 'editable' => 'No'],
             ['name' => 'Transportation Allowance', 'description' => 'Compensation for commute/travel costs', 'editable' => 'No'],
             ['name' => 'Meal Allowance', 'description' => 'Daily food expense reimbursement', 'editable' => 'No'],
@@ -63,7 +63,7 @@ class BonusAndDeductionTypeSeeders extends Seeder
             ['name' => 'Wage Garnishment', 'description' => 'Court-ordered earnings withholding', 'editable' => 'No'],
             ['name' => 'Charitable Donation', 'description' => 'Workplace giving program deductions', 'editable' => 'No'],
         ];
-        DB::table('deduction_types')->insert($otherDeductionTypes);
+        DB::table('deduction_types')->insert($otherDeductionTypes);*/
     }
 
 

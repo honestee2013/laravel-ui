@@ -43,10 +43,15 @@ Route::group([
     'middleware' => 'auth:sanctum',
 ], function () {
 
-    Route::post('attendance/store', [ClockEventController::class, 'store'])
-        ->name('hr.attendance.store');
+    Route::post('attendance/store', [ClockEventController::class, 'store'])->name('hr.attendance.store');
     Route::post('attendance/batch-store', [\App\Modules\Hr\Http\Controllers\ClockEventController::class, 'batchStore']);
     Route::get('employee/sync', [\App\Modules\Hr\Http\Controllers\UserSyncController::class, 'syncUser']);
+    Route::get('employee/sync-all', [\App\Modules\Hr\Http\Controllers\UserSyncController::class, 'syncAllEmployees']);
+    Route::get('employee/sync-all-with-profiles', [\App\Modules\Hr\Http\Controllers\UserSyncController::class, 'syncAllEmployeesWithProfiles']);
+    Route::get('employee/sync-all-with-users-and-profiles', [\App\Modules\Hr\Http\Controllers\UserSyncController::class, 'syncAllEmployeesWithUserAndProfiles']);
+
+    
+    
 
 
 

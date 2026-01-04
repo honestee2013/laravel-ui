@@ -14,7 +14,7 @@ class DailyAttendanceSeeder extends Seeder
 
   public function run()
 {
-    $records = [];
+    /*$records = [];
     $devices = ['DEVICE001', 'DEVICE002', 'DEVICE003'];
     $locations = [
         ['lat' => 1203, 'lon' => 8843],
@@ -160,7 +160,7 @@ class DailyAttendanceSeeder extends Seeder
             'created_at' => now(),
             'updated_at' => now()
         ]);
-    }
+    }*/
 
     // Generate data for 30 days
     /*
