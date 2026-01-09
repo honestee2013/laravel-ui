@@ -6,12 +6,12 @@ use Illuminate\Validation\Rule;
 
 class DataTableValidationService
 {
-    public function getDynamicValidationRules($fieldDefinitions, $isEditMode = false, $recordId = null, $hiddenFields = [])
+    public function getDynamicValidationRules($fields, $fieldDefinitions, $isEditMode = false, $model = null,  $recordId = null, $hiddenFields = [])
     {
         $rules = [];
         
         foreach ($fieldDefinitions as $field => $definition) {
-            if ($this->shouldValidateField($field, $isEditMode, $hiddenFields)) {
+            if ($this->shouldValidateField($fields, $fieldDefinitions, $field, $isEditMode, $model, $recordId, $hiddenFields)) {
                 if (isset($definition['validation'])) {
                     $ruleKey = "{$field}"; // "fields.{$field}"
                     $rules[$ruleKey] = $this->adjustUniqueRule(
@@ -49,13 +49,23 @@ class DataTableValidationService
     }
 
 
-    
-    protected function shouldValidateField($field, $isEditMode, $hiddenFields)
+
+    protected function shouldValidateField($fields, $fieldDefinitions, $field, $isEditMode, $modelClass = null,  $recordId = null, $hiddenFields = [])
     {
+
         // Always validate file fields if they exist in request
-        if (isset($this->fieldDefinitions[$field]['type']) && $this->fieldDefinitions[$field]['type'] === 'file') {
+        if (isset($fieldDefinitions[$field]['type']) && $fieldDefinitions[$field]['type'] === 'file') {
             return true;
         }
+
+       // If password fiied is changed on edit form validate
+        if ($field === 'password' || $field === 'password_confirmation') {
+            // $modelClass eg. App\Modules\Admin\Models\User
+            return $isEditMode && isset($fields['password']);
+                
+        }
+
+
         
         $formType = $isEditMode ? 'onEditForm' : 'onNewForm';
         return !in_array($field, $hiddenFields[$formType] ?? []);

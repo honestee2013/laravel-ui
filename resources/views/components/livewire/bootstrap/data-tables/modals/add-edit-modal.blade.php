@@ -5,7 +5,9 @@
     'modelName', 'recordName', 'multiSelectFormFields', 'singleSelectFormFields', 
     'hiddenFields', 'columns'
 ])
-
+@php
+//dd($isEditMode);
+@endphp
 
 @include('qf::components.livewire.bootstrap.data-tables.modals.modal-header', [
     'modalId' => $modalId,

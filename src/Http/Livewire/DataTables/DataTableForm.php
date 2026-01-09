@@ -137,8 +137,10 @@ class DataTableForm extends Component
 
             // Validate inputs
             $rules = $this->validationService->getDynamicValidationRules(
+                $this->fields,
                 $this->fieldDefinitions,
                 $this->isEditMode,
+                $this->model,
                 $this->selectedItemId,
                 $this->hiddenFields
             );
@@ -216,6 +218,12 @@ class DataTableForm extends Component
         $allowedFields = array_diff(
             $this->columns, // remove hidden fields from allowed fields
             $this->hiddenFields[$formType] ?? []
+        );
+
+        // Remove hidden in query
+        $allowedFields = array_diff(
+            $allowedFields,
+            $this->hiddenFields['onQuery'] ?? []
         );
 
         $data = array_filter(
@@ -379,14 +387,12 @@ class DataTableForm extends Component
 
     public function openEditModal($id, $model, $modalId = 'addEditModal')
     {
-
         if ($this->model !== $model)
             return;
 
         ///$this->authorize('update', $model::findOrFail($id));
 
         $this->selectedItemId = $id;
-        $this->isEditMode = true;
 
         $record = $model::findOrFail($id);
 
@@ -398,7 +404,10 @@ class DataTableForm extends Component
                 
             } else if (!str_contains($field, 'password')) {
                 $this->fields[$field] = $record->$field;
-            }
+            } /*else if (str_contains($field, 'password')) {
+                $this->fields[$field] = $record->$field;
+                $this->fields["password_confirmation"] = $record->$field;
+            }*/
         }
 
         // Populate relationship fields
@@ -406,8 +415,9 @@ class DataTableForm extends Component
         // Populate single select fields
         // $this->populateSingleSelectFields($record);
 
-
-        $this->dispatch('open-modal-event', ['isEditMode' => $this->isEditMode, 'editModalTitle' => 'Newwww', 'modalId' => $modalId]); // browser event
+        $this->isEditMode = true;
+        $this->dispatch('changeFormModeEvent', ['mode' => 'edit']);
+        $this->dispatch('open-modal-event', ['isEditMode' => $this->isEditMode, 'editModalTitle' => '', 'modalId' => $modalId]); // browser event
     }
 
 
