@@ -7,14 +7,17 @@ use Livewire\WithFileUploads;
 use App\Modules\Log\Models\UserActivityLog;
 
 use QuickerFaster\LaravelUI\Services\Exports\DataExportExcel;
+use QuickerFaster\LaravelUI\Services\Exports\DataExportExcelTemplate;
 use QuickerFaster\LaravelUI\Services\Exports\DataTableExportCSV;
 use QuickerFaster\LaravelUI\Services\Imports\DataImport;
 use Maatwebsite\Excel\Excel;
+use Illuminate\Support\Facades\Schema;
 
 
 use QuickerFaster\LaravelUI\Services\AccessControl\AccessControlPermissionService;
 
 use QuickerFaster\LaravelUI\Services\GUI\SweetAlertService;
+use QuickerFaster\LaravelUI\Services\DataTables\DataTableValidationService;
 
 
 class DataTableControl extends Component
@@ -79,10 +82,11 @@ class DataTableControl extends Component
 
     }
 
-public function updatedViewType($viewType) {
-    $this->viewType = $viewType;
-    $this->dispatch('$refresh');
-}
+    public function updatedViewType($viewType)
+    {
+        $this->viewType = $viewType;
+        $this->dispatch('$refresh');
+    }
 
 
     // Update visibleColumns with the selectedColumns
@@ -96,7 +100,7 @@ public function updatedViewType($viewType) {
 
 
 
-    
+
 
 
 
@@ -150,20 +154,20 @@ public function updatedViewType($viewType) {
     public function export($fileType, $fileName = "", $rows = "table")
     {
         // Check if the user has permission to perform the action
-        if (!AccessControlPermissionService::checkPermission( 'export', $this->modelName)) {
+        if (!AccessControlPermissionService::checkPermission('export', $this->modelName)) {
             SweetAlertService::showError($this, "Error!", AccessControlPermissionService::MSG_PERMISSION_DENIED);
             return;
         }
 
 
         //if (!$fileName && $this->model)
-            //$fileName = class_basename($this->model);
+        //$fileName = class_basename($this->model);
         if (!$fileName && $this->modelName) {
             $timestamp = now()->format('Y-m-d_H-i'); // 2024-06-15_14-30
-            $fileName = $this->moduleName."_".\Str::kebab($this->modelName)."_export_{$timestamp}.xlsx";
+            $fileName = $this->moduleName . "_" . \Str::kebab($this->modelName) . "_export_{$timestamp}.xlsx";
 
         }
-    
+
         if ($fileType === "xlsx") {
             return $this->exportToExcel($fileName, $rows);
         } elseif ($fileType === "csv") {
@@ -174,12 +178,12 @@ public function updatedViewType($viewType) {
             //return $this->printPreview($rows); // 👈 Here it is integrated
         }
     }
-    
+
 
 
     private function exportToExcel($fileName = "", $rows = "table")
     {
-        
+
         $modelClass = '\\' . ltrim($this->model, '\\');
         $query = (new $modelClass)->newQuery();
         $hiddenFields = $this->hiddenFields["onQuery"];
@@ -341,29 +345,123 @@ public function updatedViewType($viewType) {
     }
 
 
-    public function import()
-    {
-
-        // Check if the user has permission to perform the action
-        if (!AccessControlPermissionService::checkPermission( 'import', $this->modelName)) {
-            SweetAlertService::showError($this, "Error!", AccessControlPermissionService::MSG_PERMISSION_DENIED);
-            return;
-        }
-
-        return (new DataImport($this->model, $this->columns))->import($this->file->path(), $this);
-    }
 
 
     public function printTable()
     {
         // Check if the user has permission to perform the action
-        if (!AccessControlPermissionService::checkPermission( 'print', $this->modelName)) {
+        if (!AccessControlPermissionService::checkPermission('print', $this->modelName)) {
             SweetAlertService::showError($this, "Error!", AccessControlPermissionService::MSG_PERMISSION_DENIED);
             return;
         }
-        
+
         $this->dispatch('print-table-event');
     }
+
+
+
+
+
+public function import()
+{
+    // 1. Permission Check
+    if (!AccessControlPermissionService::checkPermission('import', $this->modelName)) {
+        SweetAlertService::showError($this, "Error!", AccessControlPermissionService::MSG_PERMISSION_DENIED);
+        return;
+    }
+
+
+    // Validate inputs
+    $validationRules = (new DataTableValidationService())->getDynamicValidationRules(
+        $this->fieldDefinitions,
+        false, // treat as new
+        null, // No any selected field
+        $this->hiddenFields
+    );
+
+
+    // 2. Resolve Table Name and Columns
+    $tableName = $this->getTableName();
+    $columns = $this->getColumnsForImportAndExport($tableName);
+    
+    $result =  (new DataImport($this->model, $columns, $validationRules, $this->fieldDefinitions))->import($this->file->path(), $this);
+    $this->dispatch('refreshDataTable');
+    return $result;
+
+}
+
+public function downloadTemplate($withData = false)
+{
+    $modelClass = $this->resolveModelClass();
+
+    if ($modelClass && class_exists($modelClass)) {
+        $tableName = (new $modelClass)->getTable();
+        $columns = $this->getColumnsForImportAndExport($tableName);
+        
+        // Use query() to avoid "all() on null" issues
+        $data = $modelClass::query()->get();
+
+        $excel = app(Excel::class);
+        return $excel->download(
+            new DataExportExcelTemplate($data, $this->fieldDefinitions, $columns, $withData),
+            $this->modelName . "-template.xlsx"
+        );
+    }
+    
+    // Optional: Handle case where model class doesn't exist
+    return null;
+}
+
+/**
+ * Helper to resolve the full model class name
+ */
+private function resolveModelClass(): string
+{
+    return '\\' . ltrim($this->model, '\\');
+}
+
+/**
+ * Helper to get table name from the model property
+ */
+private function getTableName(): ?string
+{
+    $class = $this->resolveModelClass();
+    return class_exists($class) ? (new $class)->getTable() : null;
+}
+
+private function getColumnsForImportAndExport(?string $tableName): array
+{
+    if (!$tableName) {
+        return [];
+    }
+
+    // 1. Get all fields defined in the component
+    $allColumns = array_keys($this->fieldDefinitions);
+
+    // 2. Identify exclusions (Hidden fields + Relationships)
+    $hiddenFields = $this->hiddenFields["onNewForm"] ?? [];
+    $relationshipFields = [];
+
+    // Remove hasMany & belogsToMany
+    foreach ($this->fieldDefinitions as $fieldName => $definition) {
+        if (isset($definition['relationship']) && $definition['relationship']['type'] != "belongsTo") {
+            $relationshipFields[] = $fieldName;
+        }
+    }
+
+    // 3. Subtract exclusions from defined columns
+    $toExclude = array_merge($hiddenFields, $relationshipFields);
+    $definedVisible = array_diff($allColumns, $toExclude);
+
+    // 4. Cross-reference with physical database columns
+    $actualTableColumns = Schema::getColumnListing($tableName);
+    
+    // Only return columns that exist in BOTH the definitions and the DB
+    $result =  array_values(array_intersect($definedVisible, $actualTableColumns));
+  
+    return $result;
+}
+
 
 
 
@@ -372,9 +470,9 @@ public function updatedViewType($viewType) {
     {
         $UIFramework = config('qf_laravel_ui.ui_framework', 'bootstrap'); // default to bootstrap
 
-        $viewPath =  "qf::components.livewire.$UIFramework";
+        $viewPath = "qf::components.livewire.$UIFramework";
         return view("$viewPath.data-tables.data-table-control", [])
-            ;//->layout("$viewPath.layouts.app"); // 👈 important   
+        ;//->layout("$viewPath.layouts.app"); // 👈 important   
     }
 
 

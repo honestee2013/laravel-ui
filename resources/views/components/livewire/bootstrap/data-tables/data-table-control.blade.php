@@ -84,6 +84,13 @@
                         <div class="mt-4"></div>
                         <pan class="m-2 text-uppercase text-xs fw-bolder">Import</pan>
                         <hr class="m-2 p-0 bg-gray-500" />
+                        
+                        <i class="fas fa-file-text text-sm me-1 text-info"></i>
+                        <span class="btn-inner--icon me-1 text-xs text-info" wire:click="downloadTemplate()" > Download an empty template
+                        </span> <br />
+                        <i class="fas fa-download text-sm me-1 text-info"></i>
+                        <span class="btn-inner--icon me-1 text-xs text-info" wire:click="downloadTemplate(true)" > Download template with data 
+                        </span>
                         <li class="mb-2">
                             <form wire:submit.prevent="import">
                                 <input type="file" wire:model="file" class="p-4 pb-4 mb-1" />
