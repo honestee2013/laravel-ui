@@ -4,8 +4,8 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
-use Spatie\Permission\Models\Role;
+use App\Modules\Admin\Models\User;
+use App\Modules\Admin\Models\Role;
 
 
 class UserSeeder extends Seeder

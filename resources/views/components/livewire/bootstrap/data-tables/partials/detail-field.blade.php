@@ -23,7 +23,8 @@
         @elseif($isRelationshipField)
             @if (isset($fieldDefinitions[$column]['relationship']['type']) && 
                  ($fieldDefinitions[$column]['relationship']['type'] == 'hasMany' || 
-                  $fieldDefinitions[$column]['relationship']['type'] == 'belongsToMany'))
+                 $fieldDefinitions[$column]['relationship']['type'] == 'belongsToMany' || 
+                  $fieldDefinitions[$column]['relationship']['type'] == 'morphToMany'))
                 <div class="relationship-values">
                     @php
                         $relatedItems = $selectedItem->{$fieldDefinitions[$column]['relationship']['dynamic_property']}->pluck($fieldDefinitions[$column]['relationship']['display_field'])->toArray();

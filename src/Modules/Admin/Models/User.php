@@ -1,73 +1,60 @@
 <?php
 
-namespace App\Models;
+namespace App\Modules\Admin\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
-use Spatie\Permission\Models\Role;
+use App\Modules\Admin\Role;
 use App\Modules\Hr\Models\Employee;
-use Spatie\Permission\Traits\HasRoles;
-use Illuminate\Database\Eloquent\Model;
+
+use App\Models\User As DefaultUser;
 
 
-
-use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
-
-
-
-
-
-class User extends Authenticatable implements MustVerifyEmail
+class User extends DefaultUser
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles;
     use HasFactory;
-    
 
-    
+
+
+
 
     protected $table = 'users';
-    
-    
-    
-    
-    
+
+
+
+
+
 
     protected $fillable = [
         'name', 'email', 'email_verified_at', 'password', 'status'
     ];
 
+    protected $guarded = [
 
-    protected $guard_name = 'web';
-
-    /*protected $guarded = [
-        'web'
-    ];*/
+    ];
 
     protected $casts = [
         'email_verified_at' => 'datetime'
     ];
 
     protected $dispatchesEvents = [
-        
+
     ];
 
     /**
      * Validation rules for the model.
      */
     protected static $rules = [
-        
+
     ];
 
     /**
      * Custom validation messages.
      */
     protected static $messages = [
-        
+
     ];
 
     /**
@@ -76,7 +63,7 @@ class User extends Authenticatable implements MustVerifyEmail
     protected static function boot()
     {
         parent::boot();
-        
+
     }
 
     /**
@@ -85,11 +72,11 @@ class User extends Authenticatable implements MustVerifyEmail
     public function validate()
     {
         $validator = Validator::make($this->attributesToArray(), static::$rules, static::$messages);
-        
+
         if ($validator->fails()) {
             throw new ValidationException($validator);
         }
-        
+
         return true;
     }
 
@@ -114,4 +101,13 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return \App\Modules\Admin\Database\Factories\UserFactory::new();
     }
+
+
+    // ✅ CORRECT: Tell Spatie "I'm the same as parent for permissions"
+    public function getMorphClass()
+    {
+        return DefaultUser::class;
+    }
+
+
 }
