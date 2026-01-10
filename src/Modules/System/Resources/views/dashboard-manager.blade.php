@@ -4,6 +4,6 @@
     </x-slot>
 
 
-    <h3>In Progress</h3>
+    <h3> This page is coming soon...</h3>
 
 </x-qf::livewire.bootstrap.layouts.dashboards.default-dashboard>

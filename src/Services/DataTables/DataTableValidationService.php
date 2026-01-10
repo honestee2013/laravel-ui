@@ -9,7 +9,7 @@ class DataTableValidationService
     public function getDynamicValidationRules($fields, $fieldDefinitions, $isEditMode = false, $model = null,  $recordId = null, $hiddenFields = [])
     {
         $rules = [];
-        
+       
         foreach ($fieldDefinitions as $field => $definition) {
             if ($this->shouldValidateField($fields, $fieldDefinitions, $field, $isEditMode, $model, $recordId, $hiddenFields)) {
                 if (isset($definition['validation'])) {

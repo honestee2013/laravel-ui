@@ -15,8 +15,8 @@ class WizardConfigService
         if (!File::exists($configPath)) {
             throw new \Exception("Wizard config not found: {$configPath}");
         }
-        
-        return include $configPath;
+        $conf =  include $configPath;
+        return $conf;
     }
 
     public function loadModelConfig(string $fqcn)

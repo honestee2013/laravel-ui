@@ -422,7 +422,8 @@ class WizardManager extends Component
         }
 
         $rules = $this->validationService->getDynamicValidationRules(
-            $stepFieldDefinitions,
+             $this->formData,
+             $stepFieldDefinitions,
             false,
             null,
             []
