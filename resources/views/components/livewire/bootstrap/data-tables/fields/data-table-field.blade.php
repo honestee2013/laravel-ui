@@ -31,10 +31,10 @@
         }
     }
 
-
     // Flag multi-select fields
     $multiSelect = $fieldDefinitions[$field]['multiSelect'] ?? false;
-            
+    if ($type == "morphToMany")
+        $type = "checkbox"; 
 
 
     $display = $fieldDefinitions[$field]['display'] ?? null;
@@ -48,7 +48,7 @@
     $fieldBindingPath = $fieldBindingPath?? $field;
     $binding = $binding ?? 'fields.' . $field;
 
-    
+
 @endphp
 
 

@@ -94,10 +94,11 @@ class DataTableForm extends Component
     // Initialize fields with default values 
     function initializeFieldsWithDefaults()
     {
+        
         foreach ($this->fieldDefinitions as $field => $definition) {
             // Make the multiselect field array by default
             if (isset($this->fieldDefinitions[$field]['multiSelect'])) {
-                $this->fields[$field] = [$definition['default']?? null];
+                $this->fields[$field] = [];//[$definition['default']?? []];
             } else if (is_array($definition) && isset($definition['field_type']) ){
                 // For integer, string, boolradio, boolcheckbox, date, datetime, time, etc.
                 if ($definition['field_type'] == 'boolradio' || $definition['field_type'] == 'boolcheckbox') {
@@ -122,6 +123,7 @@ class DataTableForm extends Component
                 } 
             }
         }
+        
     }
 
 
@@ -400,8 +402,9 @@ class DataTableForm extends Component
         foreach ($this->fieldDefinitions as $field => $definition) {
             // Multiselect fields should be converted to array from comma separated string
             if (isset($this->fieldDefinitions[$field]['multiSelect'])) {
-                $this->fields[$field] = $record->$field ? explode(',', $record->$field) : [];
-                
+                if ($this->fieldDefinitions[$field]['field_type'] == 'morphToMany');
+                    $this->fields[$field] = $record->$field ? $record->$field->pluck('id')->toArray() : [];
+                    
             } else if (!str_contains($field, 'password')) {
                 $this->fields[$field] = $record->$field;
             } /*else if (str_contains($field, 'password')) {

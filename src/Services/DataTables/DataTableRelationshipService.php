@@ -10,6 +10,7 @@ class DataTableRelationshipService
 {
     public function handleRelationships($record, $fieldDefinitions, $multiSelectFields, $singleSelectFields, $fields)
     {
+        
         foreach ($fieldDefinitions as $fieldName => $definition) {
             if (isset($definition['relationship'])) {
                 $this->processRelationship(
@@ -26,6 +27,7 @@ class DataTableRelationshipService
     
     protected function processRelationship($record, $relationship, $multiSelectValue, $singleSelectValue, $fieldValue, $fieldName)
     {
+        
         $type = $relationship['type'] ?? null;
         $dynamicProperty = $relationship['dynamic_property'] ?? null;
         
@@ -44,7 +46,7 @@ class DataTableRelationshipService
                     break;
                     
                 case 'belongsToMany':
-                    $this->handleBelongsToMany($record, $relationship, $multiSelectValue, $dynamicProperty);
+                    $this->handleBelongsToMany($record, $relationship, $fieldValue, $dynamicProperty);
                     break;
                     
                 case 'morphTo':
@@ -52,11 +54,11 @@ class DataTableRelationshipService
                     break;
                     
                 case 'morphMany':
-                    $this->handleMorphMany($record, $relationship, $multiSelectValue, $dynamicProperty);
+                    $this->handleMorphMany($record, $relationship, $fieldValue, $dynamicProperty);
                     break;
                     
                 case 'morphToMany':
-                    $this->handleMorphToMany($record, $relationship, $multiSelectValue, $dynamicProperty);
+                    $this->handleMorphToMany($record, $relationship, $fieldValue, $dynamicProperty);
                     break;
                     
                 default:
@@ -101,7 +103,6 @@ class DataTableRelationshipService
         if (!$values || !is_array($values)) {
             return;
         }
-        
         $record->{$dynamicProperty}()->sync($values);
     }
     
@@ -145,12 +146,73 @@ class DataTableRelationshipService
         }
     }
     
-    protected function handleMorphToMany($record, $relationship, $values, $dynamicProperty)
-    {
-        if (!$values || !is_array($values)) {
-            return;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+protected function handleMorphToMany($record, $relationship, $values, $dynamicProperty)
+{
+    
+    if (!is_array($values)) {
+        return;
+    }
+    
+    // Check if this is a Spatie Permission relationship
+    /*if (in_array($dynamicProperty, ['roles', 'permissions'])) {
+        // Use Spatie's built-in methods
+        if ($dynamicProperty === 'roles' && method_exists($record, 'syncRoles')) {
+            $record->syncRoles($values);
+        } elseif ($dynamicProperty === 'permissions' && method_exists($record, 'syncPermissions')) {
+            $record->syncPermissions($values);
+        } else {
+            // Fallback: Handle manually with proper polymorphic data
+            $this->syncPolymorphicRelationship($record, $dynamicProperty, $values);
+        }
+    } else {*/
+        // Handle other polymorphic relationships
+        $this->syncPolymorphicRelationship($record, $dynamicProperty, $values);
+    //}
+}
+
+protected function syncPolymorphicRelationship($record, $relationshipName, $values)
+{
+    $relation = $record->{$relationshipName}();
+    
+    // Build sync data with polymorphic type if needed
+    if ($relation instanceof \Illuminate\Database\Eloquent\Relations\MorphToMany) {
+        $syncData = [];
+        $modelClass = get_class($record);
+        
+        // Check what columns the pivot table expects
+        $morphType = $relation->getMorphType();
+        $foreignPivotKey = $relation->getForeignPivotKeyName();
+        
+        foreach ($values as $value) {
+            $syncData[$value] = [
+                $morphType => $modelClass,
+                // Add any other required pivot columns here
+            ];
         }
         
-        $record->{$dynamicProperty}()->sync($values);
+        $relation->sync($syncData);
+    } else {
+        // Regular belongsToMany
+        $record->{$relationshipName}()->sync($values);
     }
+}
+
+
+
+
+
 }

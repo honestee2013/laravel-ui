@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use App\Modules\System\Models\Plan;
-use App\Modules\Admin\Models\User;
+// use App\Modules\Admin\Models\User;
 
 
 class Company extends Model

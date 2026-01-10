@@ -75,13 +75,21 @@
         {{ implode(', ', $row->{$fieldDefinitions[$column]['relationship']['dynamic_property']}?->pluck($fieldDefinitions[$column]['relationship']['display_field'])->toArray() ?? []) }}
     @elseif ($fieldDefinitions[$column]['relationship']['type'] == 'belongsToMany')
         {{ implode(', ', $row->{$fieldDefinitions[$column]['relationship']['dynamic_property']}?->pluck($fieldDefinitions[$column]['relationship']['display_field'])->toArray() ?? []) }}
+    @elseif ($fieldDefinitions[$column]['relationship']['type'] == 'morphToMany')
+        @php
+            $dynamic_property = $fieldDefinitions[$column]['relationship']['dynamic_property'];
+            $displayField = explode(".", $fieldDefinitions[$column]['relationship']['display_field']);
+            $displayField = count($displayField) > 1 ? $displayField[1] : $displayField[0];
+        @endphp
+        {{ $row->$dynamic_property->implode($displayField, ', ') }} 
     @else
         @php
             $dynamic_property = $fieldDefinitions[$column]['relationship']['dynamic_property'];
             $displayField = explode(".", $fieldDefinitions[$column]['relationship']['display_field']);
             $displayField = count($displayField) > 1 ? $displayField[1] : $displayField[0];
         @endphp
-        {{ optional($row->{$dynamic_property})->$displayField }}
+        {{-- optional($row->{$dynamic_property})->$displayField --}}
+        Unknown
     @endif
 @elseif ($column && $multiSelectFormFields && in_array($column, array_keys($multiSelectFormFields)))
     {{ str_replace(',', ', ', str_replace(['[', ']', '"'], '', $row->$column)) }}
