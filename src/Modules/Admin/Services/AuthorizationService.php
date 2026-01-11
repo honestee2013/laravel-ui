@@ -2,7 +2,7 @@
 
 namespace App\Modules\Admin\Services;
 
-use App\Modules\Admin\Models\User;
+use App\Models\User;
 use App\Modules\Hr\Models\Employee;
 
 class AuthorizationService

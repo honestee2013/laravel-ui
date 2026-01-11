@@ -168,9 +168,11 @@ protected function handleMorphToMany($record, $relationship, $values, $dynamicPr
     }
     
     // Check if this is a Spatie Permission relationship
-    /*if (in_array($dynamicProperty, ['roles', 'permissions'])) {
+    if (in_array($dynamicProperty, ['roles', 'permissions'])) {
         // Use Spatie's built-in methods
         if ($dynamicProperty === 'roles' && method_exists($record, 'syncRoles')) {
+            // convert numeric strings into interger e. ["2", "11"] to [2, 11]
+            $values = collect($values)->map(fn($id) => (int) $id)->toArray();
             $record->syncRoles($values);
         } elseif ($dynamicProperty === 'permissions' && method_exists($record, 'syncPermissions')) {
             $record->syncPermissions($values);
@@ -178,10 +180,10 @@ protected function handleMorphToMany($record, $relationship, $values, $dynamicPr
             // Fallback: Handle manually with proper polymorphic data
             $this->syncPolymorphicRelationship($record, $dynamicProperty, $values);
         }
-    } else {*/
+    } else {
         // Handle other polymorphic relationships
         $this->syncPolymorphicRelationship($record, $dynamicProperty, $values);
-    //}
+    }
 }
 
 protected function syncPolymorphicRelationship($record, $relationshipName, $values)
