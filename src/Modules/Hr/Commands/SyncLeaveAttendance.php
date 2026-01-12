@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands\Hr;
+namespace App\Modules\Hr\Commands;
 
 use Illuminate\Console\Command;
 use App\Modules\Hr\Services\LeaveAttendanceSync;
