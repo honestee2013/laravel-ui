@@ -92,6 +92,7 @@
 
                 @foreach ($actions as $action)
                     @php
+                    
                         // Check if user can perform this action on this specific row
                         if (!$authHelper->canPerformAction($user, $action, $row)) {
                             continue; // Skip this action
@@ -101,25 +102,58 @@
                         $action['params'] = array_map(function($param) use ($row) {
                             return $param === '{id}' ? $row->id : $param;
                         }, $action['params'] ?? []);
+
+
                     @endphp
 
-                    <li class="mb-2">
-                        @if(isset($action['route']))
-                            <a class="dropdown-item border-radius-md" wire:click="openLink('{{ $action['route'] }}', {{ json_encode($action['params'] ?? []) }})">
-                        @elseif(isset($action['updateModelField']) && isset($action['fieldName']) && isset($action['fieldValue']) && isset($action['actionName']))
-                            <a class="dropdown-item border-radius-md" onclick="Livewire.dispatch('updateModelFieldEvent',['{{$row->id}}', '{{$action['fieldName']}}', '{{$action['fieldValue']}}', '{{$action['actionName']}}', '{{$action['handleByEventHandlerOnly']?? false}}'])">
-                        @elseif(isset($action['dispatchEvent']) && isset($action['eventName']) && isset($action['params']))
-                            <a class="dropdown-item border-radius-md" onclick="Livewire.dispatch('{{$action['eventName']}}', [{{ json_encode($action['params']) }}] )">
-                        @else
-                            <a class="dropdown-item border-radius-md" href="javascript:void(0)">
-                        @endif
+<li class="mb-2">
+    @if(isset($action['route']))
+        @php 
+            $fullRoute = route($action['route'], $action['params'] ?? []); 
+        @endphp
+        
+        @if(isset($action['newTab']) && $action['newTab'])
+            {{-- Frontend only: Open route in new tab --}}
+            <a class="dropdown-item border-radius-md" href="{{ $fullRoute }}" target="_blank">
+        @else
+            {{-- Backend: Process via Livewire --}}
+            <a class="dropdown-item border-radius-md" wire:click="openRoute('{{ $action['route'] }}', {{ json_encode($action['params'] ?? []) }})">
+        @endif
 
-                            @if(isset($action['icon']))
-                                <i class="{{ $action['icon'] }}" style="margin-right: 1em"></i>
-                            @endif
-                            <span class="btn-inner--text">{{ $action['title'] ?? '' }}</span>
-                            </a>
-                    </li>
+    @elseif(isset($action['url']))
+        @php 
+            $queryParams = !empty($action['params']) ? '?' . http_build_query($action['params']) : '';
+            $fullUrl = $action['url'] . $queryParams;
+        @endphp
+
+        @if(isset($action['newTab']) && $action['newTab'])
+            {{-- Frontend only: Open URL in new tab --}}
+            <a class="dropdown-item border-radius-md" href="{{ $fullUrl }}" target="_blank">
+        @else
+            {{-- Backend: Process via Livewire --}}
+            <a class="dropdown-item border-radius-md" wire:click="openUrl('{{ $action['url'] }}', {{ json_encode($action['params'] ?? []) }})">
+        @endif
+
+    @elseif(isset($action['updateModelField']) && isset($action['fieldName']) && isset($action['fieldValue']) && isset($action['actionName']))
+        @php
+            $fieldVal = is_bool($action['fieldValue']) ? (int) $action['fieldValue'] : $action['fieldValue'];
+        @endphp
+        <a class="dropdown-item border-radius-md" onclick="Livewire.dispatch('updateModelFieldEvent',['{{$row->id}}', '{{$action['fieldName']}}', '{{$fieldVal}}', '{{$action['actionName']}}', '{{$action['handleByEventHandlerOnly'] ?? false}}'])">
+    
+    @elseif(isset($action['dispatchEvent']) && isset($action['eventName']) && isset($action['params']))
+        <a class="dropdown-item border-radius-md" onclick="Livewire.dispatch('{{$action['eventName']}}', [{{ json_encode($action['params']) }}] )">
+    
+    @else
+        <a class="dropdown-item border-radius-md" href="javascript:void(0)">
+    @endif
+
+        @if(isset($action['icon']))
+            <i class="{{ $action['icon'] }}" style="margin-right: 1em"></i>
+        @endif
+        <span class="btn-inner--text">{{ $action['title'] ?? '' }}</span>
+    </a>
+</li>
+
 
                     @if(isset($action['hr']))
                         <hr class="m-2 p-0 bg-gray-500" />

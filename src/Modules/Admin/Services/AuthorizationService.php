@@ -3,7 +3,7 @@
 namespace App\Modules\Admin\Services;
 
 use App\Models\User;
-use App\Modules\Hr\Models\Employee;
+use App\Models\Employee;
 
 class AuthorizationService
 {

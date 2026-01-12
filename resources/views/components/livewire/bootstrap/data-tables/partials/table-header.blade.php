@@ -2,6 +2,7 @@
     // Ensure $data is defined
     use Illuminate\Support\Str;
     $pageTitle = $pageTitle ?? '';
+    $subPageTitle = $subPageTitle ?? '';
     $modelName = $modelName ?? '';
     $config = $config ?? [];
     $controls = $controls ?? [];
@@ -41,7 +42,11 @@
                 }
             @endphp
 
-            <h5 class="mb-4">{{ $pageTitle }} </h5>
+            @if (isset($subPageTitle))
+                <h5 class="mb-1">{{ $pageTitle }} </h5>
+                <p class="mb-4 ms-2 text-gradient text-info">{{ $subPageTitle }} </p>
+            @endif
+
 
         </div>
         <div>

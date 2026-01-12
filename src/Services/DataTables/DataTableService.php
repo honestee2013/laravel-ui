@@ -7,7 +7,7 @@ use App\Modules\System\Contracts\DataTable\CellFormatterInterface;
 
 class DataTableService
 {
-    public function buildQuery($model, $columns, $fieldDefinitions, $search, $queryFilters, $sortField, $sortDirection, $hiddenFields,)
+    public function buildQuery($model, $columns, $fieldDefinitions, $search, $queryFilters, $pageQueryFilters, $sortField, $sortDirection, $hiddenFields,)
     {
         $modelClass = '\\' . ltrim($model, '\\');
         $query = (new $modelClass)->newQuery();
@@ -18,8 +18,8 @@ class DataTableService
         }
 
         // Apply query filters
-        if (is_array($queryFilters) && !empty($queryFilters)) {
-            $query = $this->applyQueryFilters($query, $queryFilters, $fieldDefinitions);
+        if ((is_array($queryFilters) && !empty($queryFilters)) || (is_array($pageQueryFilters) && !empty($pageQueryFilters))) {
+            $query = $this->applyQueryFilters($query, $queryFilters, $pageQueryFilters, $fieldDefinitions);
         }
 
         // Apply sorting
@@ -70,7 +70,7 @@ class DataTableService
         }
     }
 
-    protected function applyQueryFilters(Builder $query, $queryFilters, $fieldDefinitions)
+    protected function applyQueryFilters(Builder $query, $queryFilters, $pageQueryFilters, $fieldDefinitions)
     {
         foreach ($queryFilters as $filter) {
             if (!is_array($filter) || count($filter) !== 3) {
@@ -92,6 +92,15 @@ class DataTableService
             }
         }
 
+        // Add page filter query
+        foreach ($pageQueryFilters as $filter) {
+            if (!is_array($filter) || count($filter) !== 3) {
+                continue;
+            }
+
+            [$field, $operator, $value] = $filter;
+            $query->where($field, $operator, $value);
+        }
         return $query;
     }
 

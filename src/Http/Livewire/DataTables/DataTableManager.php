@@ -42,6 +42,9 @@ class DataTableManager extends Component
     public $modalCache = [];
     public $feedbackMessages = "";
     public $pageTitle;
+    public $subPageTitle;
+    
+    public $pageQueryFilters = [];
     public $queryFilters = [];
     public $modalId = 'addEditModal';
 

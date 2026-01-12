@@ -32,6 +32,7 @@ class DataTable extends Component
     public $selectAll = false;
     public $search = '';
     public $queryFilters = [];
+    public $pageQueryFilters = [];
 
     public $viewType;
 
@@ -161,10 +162,20 @@ class DataTable extends Component
         $this->dispatch("confirmDeleteEvent", $id);
     }
 
-    public function openLink($routeName, $params = [])
+    public function openRoute($routeName, $params = [])
     {
         return redirect()->route($routeName, $params);
     }
+
+    public function openUrl($url, $params = [])
+    {
+        $url = $url . (empty($params) ? '' : '?' . http_build_query($params));
+        // dd($url);
+        return redirect($url);
+    }
+
+    
+
 
     public function downloadFile($path) {
         // Check permissions, existence, etc. as needed
@@ -368,13 +379,16 @@ public function getRelationDisplayValue($relationData)
 
     public function render()
     {
-        $hiddenOnQuery = $this->hiddenFields['onQuery'] ?? [];
         // Filter if record is selected
-        $this->queryFilters['id'] = $this->selectedItemId;
+        if ($this->selectedItemId)
+            $this->queryFilters[] = ['id', '=', $this->selectedItemId];
+
+        // Remove hidden fields in query
+        $hiddenOnQuery = $this->hiddenFields['onQuery'] ?? [];
+
         if ($this->selectedItemId) {
             $this->viewType = "detail";
         }
-
 
         $query = $this->dataTableService->buildQuery(
             $this->model,
@@ -382,6 +396,7 @@ public function getRelationDisplayValue($relationData)
             $this->fieldDefinitions,
             $this->search,
             $this->queryFilters,
+            $this->pageQueryFilters,
             $this->sortField,
             $this->sortDirection,
             $hiddenOnQuery,

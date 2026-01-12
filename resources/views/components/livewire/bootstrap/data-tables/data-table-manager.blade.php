@@ -8,6 +8,7 @@
         :isEditMode="$isEditMode"
         :pageTitle="$pageTitle"
         :queryFilters="$queryFilters"
+        :pageQueryFilters="$pageQueryFilters"
         :configFileName="$configFileName"
         :config="$config"
         :readOnlyFields="$readOnlyFields"
@@ -29,6 +30,7 @@
         <x-qf::livewire.bootstrap.data-tables.partials.table-header
             :config="$config"
             :pageTitle="$pageTitle"
+            :subPageTitle="$subPageTitle"
             :modelName="$modelName"
             :config="$config"
             :controls="$controls"
@@ -69,6 +71,7 @@
             :hiddenFields="$hiddenFields"
             :multiSelectFormFields="$multiSelectFormFields"
             :queryFilters="$queryFilters"
+            :pageQueryFilters="$pageQueryFilters"
             :columns="$columns"
             :model="$model"
             :simpleActions="$simpleActions"
