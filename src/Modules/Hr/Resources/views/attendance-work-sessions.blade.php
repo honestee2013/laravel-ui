@@ -4,7 +4,7 @@
     @php
         $attensance_id = request()->get('attendance_id') ?? null;
         $employeeId = \App\Modules\Hr\Models\Attendance::where('id', $attensance_id)->first()?->employee_id;
-        $employee = \App\Modules\Hr\Models\Employee::where('employee_number', $employeeId)->first();
+        $employee = \App\Modules\Hr\Models\Employee::findOrFail($employeeId);
         $subPageTitle = 'For ' . $employee->first_name . ' ' . $employee->last_name . ' (' . $employeeId . ')';
     @endphp
 

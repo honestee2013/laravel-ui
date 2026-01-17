@@ -11,7 +11,7 @@ use App\Modules\Hr\Http\Controllers\PayslipController;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 
-
+use App\Modules\Hr\Http\Livewire\AdjustAttendanceMvp;
 
 
 
@@ -21,6 +21,17 @@ Route::middleware([
     // PreventAccessFromCentralDomains::class,
 
 ])->group(function () {
+
+
+
+
+
+// In your web.php or hr module routes
+
+/*Route::get('/hr/attendance/{attendanceId}/adjust', function ($attendanceId) {
+    return view('hr.views::adjust-attendance', ['attendanceId' => $attendanceId]);
+} )->name('attendance.adjust');*/
+
 
 
 

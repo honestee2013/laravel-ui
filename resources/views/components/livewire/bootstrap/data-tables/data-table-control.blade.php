@@ -9,6 +9,7 @@
 {{-- Export, Import & Print Data --}}
 
 <div class="row" id="{{$viewType}}">
+
     @if ($viewType !== 'detail')
         <!-- Files -->
         @if (isset($controls['files']) && $viewType == 'table')

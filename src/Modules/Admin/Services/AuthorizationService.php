@@ -12,6 +12,13 @@ class AuthorizationService
      */
     public function canPerformAction(User $user, array $action, $row): bool
     {
+
+
+        
+        if ($user->hasAnyRole(["super_admin"]))
+            return true;
+
+
         // 1. Check required role
         if (isset($action['requiredRole'])) {
             $requiredRoles = (array) $action['requiredRole'];

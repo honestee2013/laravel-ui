@@ -62,8 +62,9 @@ class DataTableForm extends Component
         'refreshFieldsEvent' => 'refreshFields',
         'updateModelFieldEvent' => 'updateModelField',
 
-        'openCropImageModalEvent' => 'openCropImageModal'
+        'openCropImageModalEvent' => 'openCropImageModal',
 
+        'dispatchStandardEvent' => 'handleStandardEvent'
     ];
 
     public function boot(
@@ -697,6 +698,22 @@ class DataTableForm extends Component
                     'temp_url_method' => method_exists($value, 'temporaryUrl'),
                 ]);
             }
+        }
+    }
+
+
+
+
+
+    public function handleStandardEvent($payload) {
+        $eventClass = $payload['eventClass']?? null;
+        $payload['component'] = $this; 
+        // Forward the event 
+        if (class_exists($eventClass)) {
+            // Temporarily borrow DataTableFormEvent structure
+            // DataTableFormEvent::dispatch($oldRecord, $newData, $eventName, $this->model);
+            $eventClass::dispatch($payload, $payload, $eventClass, $this->model);
+            
         }
     }
 

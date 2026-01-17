@@ -15,7 +15,6 @@
    
     // Check if this is a name column (adjust based on your fields)
     $isNameColumn = in_array($column, ['first_name', 'last_name', 'name']);
-    
     // Get photo URL
     $photoUrl = null;
     if ($isNameColumn) {
@@ -157,7 +156,7 @@
         </span>
         <span class="d-md-none">{{ $value }}</span>
     @else
-        {{ $value }}
+        {{ ($fieldDefinitions[$column]["field_type"] == "textarea")? Str::words($value, 8) : $value }}
     @endif
 @endif  
 

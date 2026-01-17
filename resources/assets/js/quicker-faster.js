@@ -209,6 +209,25 @@ document.addEventListener('livewire:initialized', function () {
 
     });
 
+        // We define a global function or attach it to the window
+        window.confirmAndDispatch = (eventClass, params) => {
+            Swal.fire({
+                title: 'Confirm Operation',
+                text: "Do you want to proceed with this action?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Confirm',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Using the Livewire JS dispatch method
+                    Livewire.dispatch('dispatchStandardEvent', { 
+                        eventClass: eventClass, 
+                        params: params 
+                    });
+                }
+            });
+        }
+
 
 
 

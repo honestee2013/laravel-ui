@@ -140,7 +140,7 @@ class ClockEventController extends Controller
             'sync_status' => 'synced',
         ]);
 
-        // Trigger daily aggregation
+        // Trigger daily aggregation CLIENT SEND employee_id AS A STRING EG EMP-2006-001
         $this->aggregator->recalculateForDay($internalData['employee_id'], $internalData['attendance_date']);
 
         return [

@@ -170,8 +170,8 @@ class DataTable extends Component
     public function openUrl($url, $params = [])
     {
         $url = $url . (empty($params) ? '' : '?' . http_build_query($params));
-        // dd($url);
-        return redirect($url);
+
+        return redirect(strtolower($this->moduleName)."/".$url);
     }
 
     

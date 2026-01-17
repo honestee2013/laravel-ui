@@ -37,15 +37,16 @@ class AttendanceAggregator
                 ->whereDate('end_date', '>=', $dateOnly)
                 ->exists();
 
-            // 4. Get or create attendance record
-            $attendance = Attendance::where('employee_id', $employeeNumber)
+            // 4. Get or create attendance record NOTE THAT Attendance HAS BEEN REFACTORED TO USE employee_number INSTEAD OF employee_id
+            $attendance = Attendance::where('employee_number', $employeeNumber)
                 ->where('date', $normalizedDate)
                 ->first();
 
             if (!$attendance) {
                 $employee = Employee::where("employee_number", $employeeNumber)->first();
                 $attendance = Attendance::create([
-                    'employee_id' => $employeeNumber,
+                    'employee_id' => $employee->id,
+                    'employee_number' => $employeeNumber,
                     'company' => $employee? $employee->department->company->name : "N/A",
                     'department' => $employee? $employee->department->name : "N/A",
                     'date' => $normalizedDate,

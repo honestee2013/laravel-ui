@@ -21,7 +21,7 @@
 
         @endphp
         
-        @if ($user->can($permissionName))
+        @if ($user->can($permissionName) || $user->hasAnyRole(['super_admin']))
             @if (strtolower($action) == 'edit')
                 <span wire:click="editRecord({{ $row->id }}, '{{ addslashes($model) }}')"
                     class="mx-2" style="cursor: pointer"
@@ -70,6 +70,7 @@
                 @php
                     $isGrouped = is_string($key) && is_array($value);
                     $actions = $isGrouped ? $value : [$value];
+                    
                 @endphp
 
                 @if($isGrouped)
@@ -140,9 +141,26 @@
         @endphp
         <a class="dropdown-item border-radius-md" onclick="Livewire.dispatch('updateModelFieldEvent',['{{$row->id}}', '{{$action['fieldName']}}', '{{$fieldVal}}', '{{$action['actionName']}}', '{{$action['handleByEventHandlerOnly'] ?? false}}'])">
     
-    @elseif(isset($action['dispatchEvent']) && isset($action['eventName']) && isset($action['params']))
+    @elseif(isset($action['dispatchBrowserEvent']) && isset($action['eventName']) && isset($action['params']))
         <a class="dropdown-item border-radius-md" onclick="Livewire.dispatch('{{$action['eventName']}}', [{{ json_encode($action['params']) }}] )">
+
+
+    @elseif(isset($action['dispatchStandardEvent']) && isset($action['eventClass']) && isset($action['params']))
+
+        @if (isset($action['confirm']))
+         <a class="dropdown-item border-radius-md" 
+   style="cursor:pointer;"
+   onclick="confirmAndDispatch({{ json_encode($action) }})">
+   
+                
+
+        @else
+            <a class="dropdown-item border-radius-md" 
+                style="cursor:pointer;"
+                onclick="Livewire.dispatch('dispatchStandardEvent', ['{{ addslashes($action['eventClass']) }}', {{ json_encode($action['params']) }}] )">
+        @endif
     
+               
     @else
         <a class="dropdown-item border-radius-md" href="javascript:void(0)">
     @endif
