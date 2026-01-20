@@ -7,10 +7,11 @@ use Livewire\Component;
 use Illuminate\Support\Facades\Log;
 use QuickerFaster\LaravelUI\Services\DataTables\DataTableManagerService;
 use QuickerFaster\LaravelUI\Traits\DataTable\DataTableControlsTrait;
+use QuickerFaster\LaravelUI\Traits\GUI\HasViewConfigurationTrait;
 
 class DataTableManager extends Component
 {
-    use DataTableControlsTrait;
+    use DataTableControlsTrait, HasViewConfigurationTrait;
 
     // Component properties
     public $configFileName;
@@ -122,8 +123,14 @@ public function openEditModalFromUrl($id)
             $this->readOnlyFields = [];
         }
 
+        $defaultView = "table";
         // Set default view from config, fallback to 'table'****** NEED TO BE FIXED *********
-        $defaultView = $this->config['views']['list'] ?? 'table';
+        if (isset($this->config["switchViews"]) && isset($this->config["switchViews"]["default"]) )
+            $defaultView = $this->config["switchViews"]["default"];
+
+        if (!isset($this->config["switchViews"][$defaultView]))
+            $defaultView = "table"; // Result the table view in case the $defaultView is not available
+
         $this->viewType = session("view_preference.{$this->moduleName}.{$this->modelName}", $defaultView);
         if ($this->selectedItemId) { // Route that passes id should show the detail view
             $this->viewType = "detail";
@@ -215,7 +222,7 @@ public function openEditModalFromUrl($id)
 
 /// BELOW SHOULD BE MOVED TO TRAIT EXIST IN BOTH DATA TABLE AND DATA TABLE MANAGER
 // Format field value (dates, booleans, etc.)
-public function formatFieldValue($record, $field)
+/*public function formatFieldValue($record, $field)
 {
     
     
@@ -240,7 +247,7 @@ public function formatFieldValue($record, $field)
     }
     
     return $value;
-}
+}*/
 /// ABOVE SHOULD BE MOVED TO TRAIT EXIST IN BOTH DATA TABLE AND DATA TABLE MANAGER
 
 

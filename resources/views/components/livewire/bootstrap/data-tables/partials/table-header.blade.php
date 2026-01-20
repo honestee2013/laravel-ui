@@ -56,80 +56,76 @@
 
 
 
+                @php
+                    $addActions = $controls['addButton'] ?? [];
+                    $primaryAction = collect($addActions)->firstWhere('primary', true) ?? ($addActions[0] ?? null);
+                @endphp
 
-
-
-@php
-    $addActions = $controls['addButton'] ?? [];
-    $primaryAction = collect($addActions)->firstWhere('primary', true) ?? ($addActions[0] ?? null);
-@endphp
-
-@if (!empty($addActions))
-    {{-- @if (count($addActions) === 1 && $primaryAction['type'] === 'quick_add')--}}
-    @if (!is_array($controls['addButton']) && $controls['addButton']) {{-- addButton == true --}}
-        {{-- Single quick-add button --}}
-        <button wire:click="$dispatch('openAddModalEvent')" class="btn bg-gradient-primary btn-sm">
-            <i class="{{ $primaryAction['icon'] ?? 'fa-solid fa-plus' }} text-white"></i>
-            {{ $primaryAction['label'] ?? 'Add ' . \Str::singular($pageTitle) }}
-        </button>
-    @else
-
-
-
-
-
-
-
-
-    
-        {{-- Dropdown with multiple options --}}
-        <div class="dropdown">
-            
-            <div class="btn-group" role="group">
-                {{-- Primary action --}}
-                @if ($primaryAction)
-                    @if ($primaryAction['type'] === 'quick_add')
+                @if (!empty($addActions))
+                    {{-- @if (count($addActions) === 1 && $primaryAction['type'] === 'quick_add') --}}
+                    @if (!is_array($controls['addButton']) && $controls['addButton']) {{-- addButton == true --}}
+                        {{-- Single quick-add button --}}
                         <button wire:click="$dispatch('openAddModalEvent')" class="btn bg-gradient-primary btn-sm">
                             <i class="{{ $primaryAction['icon'] ?? 'fa-solid fa-plus' }} text-white"></i>
-                            {{ $primaryAction['label'] }}
+                            {{ $primaryAction['label'] ?? 'Add ' . \Str::singular($pageTitle) }}
                         </button>
-                    @elseif ($primaryAction['type'] === 'wizard')
-                        <a href="{{ $primaryAction['url']?? '/' }}" class="btn bg-gradient-primary btn-sm" wire:navigate>
-                            <i class="{{ $primaryAction['icon'] ?? 'fa-solid fa-plus' }} text-white"></i>
-                            {{ $primaryAction['label'] }}
-                        </a>
+                    @else
+                        {{-- Dropdown with multiple options --}}
+                        <div class="dropdown">
+
+                            <div class="btn-group" role="group">
+                                {{-- Primary action --}}
+                                @if ($primaryAction)
+                                    @if ($primaryAction['type'] === 'quick_add')
+                                        <button wire:click="$dispatch('openAddModalEvent')"
+                                            class="btn bg-gradient-primary btn-sm">
+                                            <i
+                                                class="{{ $primaryAction['icon'] ?? 'fa-solid fa-plus' }} text-white"></i>
+                                            {{ $primaryAction['label'] }}
+                                        </button>
+                                    @elseif ($primaryAction['type'] === 'wizard')
+                                        <a href="{{ $primaryAction['url'] ?? '/' }}"
+                                            class="btn bg-gradient-primary btn-sm" wire:navigate>
+                                            <i
+                                                class="{{ $primaryAction['icon'] ?? 'fa-solid fa-plus' }} text-white"></i>
+                                            {{ $primaryAction['label'] }}
+                                        </a>
+                                    @endif
+                                @endif
+
+                                {{-- Dropdown toggle --}}
+                                <button type="button"
+                                    class="btn bg-gradient-primary btn-sm dropdown-toggle dropdown-toggle-split"
+                                    data-bs-toggle="dropdown">
+                                    <span class="visually-hidden">Toggle Dropdown</span>
+                                </button>
+
+                                {{-- Dropdown menu --}}
+                                <ul class="dropdown-menu me-sm-n4 dropdown-menu-end p-3 pt-4">
+                                    @foreach ($addActions as $action)
+                                        @if (empty($action['primary']))
+                                            <li class="mb-2">
+                                                @if ($action['type'] === 'wizard')
+                                                    <a class="dropdown-item border-radius-md"
+                                                        href="{{ $action['url'] ?? '/' }}" wire:navigate>
+                                                        <i class="{{ $action['icon'] ?? 'fas fa-edit' }} me-2"></i>
+                                                        {{ $action['label'] }}
+                                                    </a>
+                                                @elseif ($action['type'] === 'quick_add')
+                                                    <button class="dropdown-item border-radius-md"
+                                                        wire:click="$dispatch('openAddModalEvent')">
+                                                        <i class="{{ $action['icon'] ?? 'fas fa-edit' }} me-2"></i>
+                                                        {{ $action['label'] }}
+                                                    </button>
+                                                @endif
+                                            </li>
+                                        @endif
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
                     @endif
                 @endif
-
-                {{-- Dropdown toggle --}}
-                <button type="button" class="btn bg-gradient-primary btn-sm dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown">
-                    <span class="visually-hidden">Toggle Dropdown</span>
-                </button>
-
-                {{-- Dropdown menu --}}
-                <ul class="dropdown-menu me-sm-n4 dropdown-menu-end p-3 pt-4">
-                    @foreach ($addActions as $action)
-                        @if (empty($action['primary']))
-                            <li class="mb-2">
-                                @if ($action['type'] === 'wizard')
-                                    <a class="dropdown-item border-radius-md" href="{{ $action['url']?? '/' }}" wire:navigate>
-                                        <i class="{{ $action['icon'] ?? 'fas fa-edit' }} me-2"></i>
-                                        {{ $action['label'] }}
-                                    </a>
-                                @elseif ($action['type'] === 'quick_add')
-                                    <button class="dropdown-item border-radius-md" wire:click="$dispatch('openAddModalEvent')">
-                                        <i class="{{ $action['icon'] ?? 'fas fa-edit' }} me-2"></i>
-                                        {{ $action['label'] }}
-                                    </button>
-                                @endif
-                            </li>
-                        @endif
-                    @endforeach
-                </ul>
-            </div>
-        </div>
-    @endif
-@endif
 
 
 

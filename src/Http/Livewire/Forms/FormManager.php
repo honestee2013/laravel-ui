@@ -27,7 +27,10 @@ class FormManager extends DataTableManager
 
     public function render()
     {
-        return view('system.views::forms.form-manager', []);
+
+        $UIFramework = config('qf_laravel_ui.ui_framework', 'bootstrap'); // default to bootstrap
+        $viewPath =  "qf::components.livewire.$UIFramework";
+        return view("$viewPath.forms.form-manager");
     }
 
 

@@ -7,10 +7,11 @@ use Livewire\WithPagination;
 use QuickerFaster\LaravelUI\Services\DataTables\DataTableService;
 
 use Illuminate\Support\Facades\Storage;
+use QuickerFaster\LaravelUI\Traits\GUI\HasViewConfigurationTrait;
 
 class DataTable extends Component
 {
-    use WithPagination;
+    use WithPagination, HasViewConfigurationTrait;
 
     // Component properties
     public $model;
@@ -258,7 +259,7 @@ public function getRelationValue($relationData)
 }
 
 // Format field value (dates, booleans, etc.)
-public function formatFieldValue($record, $field)
+/*public function formatFieldValue($record, $field)
 {
     
     
@@ -280,10 +281,10 @@ public function formatFieldValue($record, $field)
         if (is_array($options) && isset($options[$value])) {
             return $options[$value];
         }
-    }*/
+    }* /
     
     return $value;
-}
+}*/
 
 
 

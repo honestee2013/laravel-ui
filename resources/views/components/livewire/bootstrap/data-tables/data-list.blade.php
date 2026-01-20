@@ -1,239 +1,222 @@
-{{-- resources/views/components/livewire/bootstrap/data-tables/data-list.blade.php --}}
-@props(['data', 'columns', 'simpleActions', 'model', 'moduleName', 'modelName', 'moreActions'])
+{{-- resources/views/components/livewire/bootstrap/data-tables/enhanced-data-list.blade.php --}}
+@props([
+    'data' => [],
+    'config' => [],
+    'modelName' => '',
+    'moduleName' => '',
+    'simpleActions' => ['edit', 'delete'],
+    'viewType' => 'list',
+    'emptyState' => [
+        'icon' => 'fas fa-inbox',
+        'title' => 'No records found',
+        'description' => 'Get started by adding your first record.',
+        'action' => null,
+    ]
+])
 
-<div class="py-4">
+@php
+    $viewConfig = $config['switchViews'][$viewType] ?? $config['switchViews']['list'] ?? [];
+    $titleFields = $viewConfig['titleFields'] ?? [];
+    $subtitleFields = $viewConfig['subtitleFields'] ?? [];
+    $contentFields = $viewConfig['contentFields'] ?? [];
+    $badgeField = $viewConfig['badgeField'] ?? null;
+    $badgeColors = $viewConfig['badgeColors'] ?? [];
+    $imageField = $viewConfig['imageField'] ?? null;
+    $statusField = $viewConfig['statusField'] ?? 'status';
+    
+    // Modern color palette
+    $statusColors = [
+        'active' => 'bg-success-subtle text-success',
+        'approved' => 'bg-success-subtle text-success',
+        'confirmed' => 'bg-success-subtle text-success',
+        'success' => 'bg-success-subtle text-success',
+        'pending' => 'bg-warning-subtle text-warning',
+        'needs_review' => 'bg-danger-subtle text-danger',
+        'cancelled' => 'bg-danger-subtle text-danger',
+        'rejected' => 'bg-danger-subtle text-danger',
+        'draft' => 'bg-secondary-subtle text-secondary',
+        'inactive' => 'bg-secondary-subtle text-secondary',
+    ];
+@endphp
 
-  @if (!empty($config['switchViews']) && isset($config['switchViews']['list']))
-    @include('qf::components.livewire.bootstrap.widgets.spinner')
-
-    <div class="list-group">
-      @forelse($data as $record)
+<div class="space-y-3">
+    @forelse($data as $record)
         @php
-          $title = '';
-          if (!empty($config['switchViews']['list']['titleFields'])) {
-            foreach ($config['switchViews']['list']['titleFields'] as $titleField) {
-              $s = $record->$titleField ?? '';
-              $title .= ' ' . $s;
+            // Extract title
+            $title = '';
+            foreach ($titleFields as $field) {
+                $value = data_get($record, $field);
+                if ($value) {
+                    $title .= ($title ? ' ' : '') . $value;
+                }
             }
             $title = trim($title);
-          }
-          
-          // Get photo URL
-          $photoUrl = null;
-          if (isset($record->photo) && $record->photo) {
-            $photoUrl = asset('storage/' . $record->photo);
-          } elseif (isset($record->employeeProfile?->photo) && $record->employeeProfile?->photo) {
-            $photoUrl = asset('storage/' . $record->employeeProfile->photo);
-          } elseif (isset($record->user?->photo) && $record->user?->photo) {
-            $photoUrl = asset('storage/' . $record->user->photo);
-          } else {
-            // Fallback avatar
-            $photoUrl = 'https://ui-avatars.com/api/?name=' . urlencode($title) . '&background=4e73df&color=fff&size=80';
-          }
-          
-          // Get employee details for tooltip
-          $fullName = e($title);
-          $jobTitle = isset($record->job_title) ? e($record->job_title) : (isset($record->employeePosition?->jobTitle?->title) ? e($record->employeePosition->jobTitle->title) : 'N/A');
-          $department = isset($record->department?->name) ? e($record->department->name) : 'N/A';
-          $status = isset($record->status) ? e($record->status) : 'Active';
+            
+            // Extract subtitle
+            $subtitle = '';
+            foreach ($subtitleFields as $field) {
+                //dd($this->formatFieldValue($record, $field), $field);
+                //$value = data_get($record, $field);
+                //if ($value) {
+                    $subtitle .= ($subtitle ? ' • ' : '') . $this->formatFieldValue($record, $field);
+                //}
+            }
 
-
-            // Show email instead of department
-            // $email = isset($record->email) ? e($record->email) : 'N/A';
-            // Replace department line with:
-            // <div class='text-muted small mb-2'>{$email}</div>
-
-            // $hireDate = isset($record->hire_date) ? e($record->hire_date->format('M Y')) : 'N/A';
-            // Add to tooltip:
-            // <div class='text-muted small'>Hired: {$hireDate}</div>
-
-          
-          // Status badge color
-          $statusColor = match(strtolower($status)) {
-            'active' => 'success',
-            'terminated', 'inactive' => 'danger',
-            default => 'warning'
-          };
-          
-          // Enhanced tooltip HTML
-          $tooltipHtml = "<div class='text-center p-2' style='min-width: 200px;'>
-              <img src='{$photoUrl}' loading='lazy' class='rounded mb-2' style='width: 80px; height: 80px; object-fit: cover;'>
-              <div class='fw-bold mb-1'>{$fullName}</div>
-              <div class='text-muted small mb-1'>{$jobTitle}</div>
-              <div class='text-muted small mb-2'>{$department}</div>
-              <span class='badge bg-{$statusColor}'>{$status}</span>
-          </div>";
+            // Get badge value and color
+            $badgeValue = $badgeField ? data_get($record, $badgeField) : null;
+            $badgeClass = '';
+            if ($badgeValue !== null) {
+                $lookupKey = is_bool($badgeValue) ? ($badgeValue ? 'true' : 'false') : (string) $badgeValue;
+                $color = $badgeColors[$lookupKey] ?? 
+                        $statusColors[strtolower($lookupKey)] ?? 
+                        'bg-secondary-subtle text-secondary';
+                $badgeClass = 'bg-' . $color . '-subtle text-' . $color;
+            }
+            
+            // Get photo/avatar
+            $avatarUrl = $this->getAvatarUrl($record, $imageField);
         @endphp
 
-        <div class="list-group-item border-0 d-flex p-4 m-2 bg-gray-100 border-radius-lg">
-          <div class="d-flex flex-column">
-            {{-- Title with enhanced hover tooltip --}}
-            <h6 class="mb-3 text-sm">
-              {{-- Desktop: Hover tooltip with enhanced details --}}
-              <span class="d-none d-md-inline position-relative">
-                <a href="/{{$moduleName}}/{{ Str::lower(Str::plural($modelName)) }}/{{ $record->id }}" 
-                   class="text-reset text-decoration-none employee-name"
-                   data-bs-toggle="tooltip"
-                   data-bs-html="true"
-                   data-bs-title="{{ $tooltipHtml }}"
-                   data-bs-placement="right">
-                  {{ $title }}
-                </a>
-              </span>
-              
-              {{-- Mobile: Just the link (no tooltip) --}}
-              <span class="d-md-none">
-                <a href="/{{$moduleName}}/{{ Str::lower(Str::plural($modelName)) }}/{{ $record->id }}" 
-                   class="text-reset text-decoration-none">
-                  {{ $title }}
-                </a>
-              </span>
-            </h6>
-            
-            @if (!empty($config['switchViews']['list']['contentFields']))
-              @foreach ($config['switchViews']['list']['contentFields'] as $contentField)
-                <span class="mb-2 text-xs">
-                  {{ Str::title(str_replace('_', ' ', $contentField)) }}:
-                  <span class="text-dark font-weight-bold ms-sm-2">
-                    {{ $record->$contentField ?? '' }}
-                  </span>
-                </span>
-              @endforeach
-            @endif
-          </div>
+        <div class="card card-hover border-1 p-2  mt-4 mb-4 bg-gray-100 ">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center">
+                    {{-- Avatar --}}
+                    @if($avatarUrl)
+                        <div class="avatar avatar-lg me-3">
+                            <img src="{{ $avatarUrl }}" 
+                                 class="rounded-circle" 
+                                 alt="{{ $title }}"
+                                 onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($title) }}&background=4e73df&color=fff'">
+                        </div>
+                    @endif
 
-          {{-- Responsive Actions --}}
-          <div class="ms-auto text-end">
-            @if ($simpleActions)
-              {{-- Desktop: Inline Buttons --}}
-              <div class="d-none d-md-flex gap-2">
-                @foreach ($simpleActions as $action)
-                  @if (strtolower($action) == 'edit')
-                    <button type="button" 
-                            wire:click="editRecord({{ $record->id }}, '{{ addslashes($model) }}')"
-                            wire:click.stop
-                            class="btn btn-sm btn-outline-secondary"
-                            data-bs-toggle="tooltip"
-                            data-bs-original-title="Edit">
-                      <i class="fas fa-pencil-alt"></i>
-                    </button>
-                  @elseif(strtolower($action) == 'delete')
-                    <button type="button"
-                            wire:click="deleteRecord({{ $record->id }})"
-                            wire:click.stop
-                            class="btn btn-sm btn-outline-danger"
-                            data-bs-toggle="tooltip"
-                            data-bs-original-title="Delete">
-                      <i class="far fa-trash-alt"></i>
-                    </button>
-                  @endif
-                @endforeach
-              </div>
+                    <div class="flex-grow-1">
+                        {{-- Title and Badge --}}
+                        <div class="d-flex align-items-center mb-1">
+                            <h6 class="mb-0 me-2">
+                                <a href="{{ url($moduleName . '/' . Str::plural($modelName) . '/' . $record->id) }}" 
+                                   class="text-reset text-decoration-none">
+                                    {{ $title }}
+                                </a>
+                            </h6>
+                            @if($badgeClass && $badgeValue !== null)
+                             : <span class="text-sm mx-2">{{ ucfirst(string: str_replace("_", " ", $badgeField)) }}? </span>
+                                <span class="badge {{ $badgeClass }} rounded-pill">
+                                    {{ is_bool($badgeValue) ? ($badgeValue ? 'Yes' : 'No') : ucfirst($badgeValue) }}
+                                </span>
+                            @endif
+                        </div>
+                        
+                        {{-- Subtitle --}}
+                        @if($subtitle)
+                            <p class="text-muted small mb-2">{{ $subtitle }}</p>
+                        @endif
+                        
+                        {{-- Content Fields --}}
+                        @if(!empty($contentFields))
+                            <div class="d-flex flex-wrap gap-3 mt-2">
+                                @foreach($contentFields as $field)
+                                    @php
+                                        $label = str_replace('_', ' ', ucfirst($field));
+                                        $value = $this->formatFieldValue($record, $field);
+                                    @endphp
+                                    @if($value)
+                                        <div class="d-flex align-items-center">
+                                            <span class="text-muted small me-1">{{ $label }}:</span>
+                                            <span class="small fw-semibold">{{ $value }}</span>
+                                        </div>
+                                    @endif
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
 
-              {{-- Mobile: Dropdown --}}
-              <div class="d-md-none">
-                <div class="dropdown">
-                  <button class="btn btn-sm btn-outline-secondary" 
-                          type="button" 
-                          data-bs-toggle="dropdown" 
-                          aria-expanded="false">
-                    <i class="fas fa-ellipsis-v"></i>
-                  </button>
-                  <ul class="dropdown-menu dropdown-menu-end">
-                    @foreach ($simpleActions as $action)
-                      @if (strtolower($action) == 'edit')
-                        <li>
-                          <a class="dropdown-item" 
-                             href="#" 
-                             wire:click="editRecord({{ $record->id }}, '{{ addslashes($model) }}')"
-                             wire:click.stop>
-                            <i class="fas fa-pencil-alt me-2"></i> Edit
-                          </a>
-                        </li>
-                      @elseif(strtolower($action) == 'delete')
-                        <li>
-                          <a class="dropdown-item text-danger" 
-                             href="#" 
-                             wire:click="deleteRecord({{ $record->id }})"
-                             wire:click.stop>
-                            <i class="far fa-trash-alt me-2"></i> Delete
-                          </a>
-                        </li>
-                      @endif
-                    @endforeach
-                  </ul>
+                    {{-- Actions --}}
+                    @if(!empty($simpleActions))
+                        <div class="dropdown">
+                            <button class="btn btn-link text-muted" 
+                                    type="button" 
+                                    data-bs-toggle="dropdown" 
+                                    aria-expanded="false">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end px-2 py-3">
+                                <li class="mb-2">
+                                    <a class="dropdown-item border-radius-md" 
+                                       href="{{ strtolower( url($moduleName . '/' . Str::plural($modelName) . '/' . $record->id) ) }}">
+                                        <i class="fas fa-eye me-2"></i> View Details
+                                    </a>
+                                </li>
+                                @if(in_array('edit', $simpleActions))
+                                  <li class="mb-2">
+                                    <a class="dropdown-item border-radius-md" 
+                                           href="#" 
+                                           wire:click="editRecord({{ $record->id }}, '{{ addslashes($model) }}')">
+                                            <i class="fas fa-edit me-2"></i> Edit
+                                        </a>
+                                    </li>
+                                @endif
+                                @if(in_array('delete', $simpleActions))
+                                    <li><hr class="dropdown-divider"></li>
+                                  <li class="mb-2">
+                                        <a class="dropdown-item border-radius-md text-danger" 
+                                           href="#" 
+                                           wire:click="deleteRecord({{ $record->id }})">
+                                            <i class="fas fa-trash me-2"></i> Delete
+                                        </a>
+                                    </li>
+                                @endif
+                            </ul>
+                        </div>
+                    @endif
                 </div>
-              </div>
+            </div>
+        </div>
+    @empty
+        {{-- Empty State --}}
+        <div class="text-center py-8">
+            <div class="mb-4">
+                <i class="{{ $emptyState['icon'] ?? 'fas fa-inbox' }} fa-3x text-muted"></i>
+            </div>
+            <h5 class="text-muted mb-2">{{ $emptyState['title'] }}</h5>
+            <p class="text-muted mb-4">{{ $emptyState['description'] }}</p>
+            @if($emptyState['action'] ?? false)
+                <button class="btn btn-primary" wire:click="{{ $emptyState['action'] }}">
+                    <i class="fas fa-plus me-2"></i> Add New Record
+                </button>
             @endif
-          </div>
         </div>
-
-      @empty
-        <div class="text-center py-5">
-          <i class="fas fa-inbox fa-2x text-muted mb-3"></i>
-          <p class="text-muted">No records available.</p>
-        </div>
-      @endforelse
-    </div>
-
-    @include('qf::components.livewire.bootstrap.data-tables.partials.table-footer', ['data' => $data])
-  @endif
+    @endforelse
 
 
 
 
 
 
-{{-- Enhanced Tooltip Initialization --}}
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    if (window.innerWidth >= 768) {
-      Livewire.hook('message.processed', (message, component) => {
-        initializeEnhancedListTooltips();
-      });
-      initializeEnhancedListTooltips();
-    }
-  });
-
-  function initializeEnhancedListTooltips() {
-    const tooltipTriggerList = [].slice.call(
-      document.querySelectorAll('.employee-name[data-bs-toggle="tooltip"]')
-    );
-    
-    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
-      const existingTooltip = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
-      if (existingTooltip) {
-        existingTooltip.dispose();
-      }
-      
-      new bootstrap.Tooltip(tooltipTriggerEl, {
-        html: true,
-        trigger: 'hover',
-        placement: 'right',
-        delay: { show: 250, hide: 150 },
-        container: 'body',
-        customClass: 'employee-tooltip'
-      });
-    });
-  }
-</script>
 
 <style>
-  /* Enhanced tooltip styling (same as datatable) */
-  .employee-tooltip .tooltip-inner {
-    background: white !important;
-    color: #333 !important;
-    border: 1px solid #dee2e6;
-    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
-    border-radius: 0.5rem;
-    padding: 0 !important;
-    min-width: 200px;
-  }
-  
-  .employee-tooltip {
-    z-index: 1080 !important;
-  }
+    .card-hover:hover {
+        transform: translateY(-2px);
+        transition: transform 0.2s ease;
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+    }
+    
+    .bg-success-subtle { background-color: rgba(25, 135, 84, 0.1); }
+    .bg-warning-subtle { background-color: rgba(255, 193, 7, 0.1); }
+    .bg-danger-subtle { background-color: rgba(220, 53, 69, 0.1); }
+    .bg-secondary-subtle { background-color: rgba(108, 117, 125, 0.1); }
+    .bg-info-subtle { background-color: rgba(13, 202, 240, 0.1); }
+    
+    .avatar {
+        width: 48px;
+        height: 48px;
+        flex-shrink: 0;
+    }
+    .avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
 </style>
-
 
 </div>
