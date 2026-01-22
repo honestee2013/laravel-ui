@@ -9,7 +9,8 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use QuickerFaster\CodeGen\Events\DataTableFormEvent;
+use App\Modules\System\Events\DataTableFormEvent;
+
 
 class PayrollRunEvent extends DataTableFormEvent
 {

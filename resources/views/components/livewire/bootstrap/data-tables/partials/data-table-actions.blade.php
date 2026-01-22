@@ -23,7 +23,7 @@
 
         @if ($user->can($permissionName) || $user->hasAnyRole(['super_admin']))
             @if (strtolower($action) == 'edit')
-                <span wire:click="editRecord({{ $row->id }}, '{{ addslashes($model) }}')" class="mx-2"
+                <span wire:click="editRecord({{ $row->id }}, '{{ addslashes($model) }}')" class="mx-0"
                     style="cursor: pointer" data-bs-toggle="tooltip" data-bs-original-title="Edit">
                     <i class="fas fa-edit text-primary"></i>
                 </span>
@@ -33,7 +33,7 @@
                     <i class="fas fa-eye text-info"></i>
                 </span>
             @elseif(strtolower($action) == 'delete')
-                <span wire:click="deleteRecord({{ $row->id }})" class="mx-2" style="cursor: pointer"
+                <span wire:click="deleteRecord({{ $row->id }})" class="mx-1" style="cursor: pointer"
                     data-bs-toggle="tooltip" data-bs-original-title="Delete">
                     <i class="fas fa-trash text-danger"></i>
                 </span>
