@@ -130,6 +130,7 @@ class DataTable extends Component
                 $this->fieldDefinitions,
                 $this->search,
                 $this->queryFilters,
+                $this->pageQueryFilters,
                 $this->sortField,
                 $this->sortDirection,
                 $this->hiddenFields['onQuery'] ?? []
