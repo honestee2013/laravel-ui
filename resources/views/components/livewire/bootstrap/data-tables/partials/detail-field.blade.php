@@ -19,16 +19,32 @@
     $isBooleanField = isset($selectedItem->$column) && is_bool($selectedItem->$column);
     
     // Get badge color for status/boolean fields
+    $columnValue = is_bool($selectedItem->$column) ? ($selectedItem->$column ? 'true' : 'false') : strtolower($selectedItem->$column);
+
+    // Get color for badge/status
     $badgeColor = 'secondary';
-    if ($isStatusField || $isBooleanField) {
-        $value = $selectedItem->$column;
-        $badgeColor = match(strtolower($value)) {
-            'active', 'approved', 'published', 'success', true => 'success',
-            'pending', 'warning', 'needs_review' => 'warning',
-            'inactive', 'rejected', 'cancelled', 'danger', false => 'danger',
-            default => 'secondary'
+if ($isStatusField || $isBooleanField) {
+
+        $badgeColor = match ($columnValue) {
+            'planned_leave', 'leave', 'auto' => 'primary',
+            'sick_leave', 'holiday', 'adjusted' => 'info',
+            'active', 'approved', 'published', 'success', 'excused', 'present', 'true' => 'success',
+            'pending', 'warning', 'needs_review', 'late' => 'warning',
+            'inactive', 'rejected', 'cancelled', 'danger', 'unplanned_absent', 'absent', 'false' => 'danger',
+            default => 'secondary',
         };
     }
+
+
+
+
+
+
+
+
+
+
+
 
     $label = $fieldDefinitions[$column]['label']?? 'Unknown';
 

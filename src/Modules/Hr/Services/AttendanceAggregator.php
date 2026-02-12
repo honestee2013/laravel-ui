@@ -2,13 +2,11 @@
 
 namespace App\Modules\Hr\Services;
 
-use App\Modules\Hr\Models\ClockEvent;
-use App\Modules\Hr\Models\Attendance;
-use App\Modules\Hr\Models\AttendanceSession;
-use App\Modules\Hr\Models\LeaveRequest;
-use App\Modules\Hr\Models\Holiday;
-use App\Modules\Hr\Models\Employee;
-use App\Modules\Hr\Models\ShiftSchedule;
+use App\Modules\Hr\Models\{
+    ClockEvent, Attendance, AttendanceSession, AttendancePolicy,
+    WorkPattern, Shift, ShiftSchedule, Employee, EmployeePosition,
+    LeaveRequest, Holiday
+};
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\DB;
@@ -16,106 +14,113 @@ use Illuminate\Support\Facades\Log;
 
 class AttendanceAggregator
 {
+    protected AttendanceCalculator $calculator;
+
+    public function __construct(AttendanceCalculator $calculator)
+    {
+        $this->calculator = $calculator;
+    }
+
     /**
      * Recalculate attendance for a specific employee and day
-     * Now includes leave detection and unplanned absence handling
+     * Now uses AttendanceCalculator for normal days, handles special cases separately
      */
     public function recalculateForDay(string $employeeNumber, string $date): void
     {
         DB::transaction(function () use ($employeeNumber, $date) {
-            // 1. Normalize date
-            $normalizedDate = Carbon::parse($date)->format("Y-m-d H:i:s");
-            $dateOnly = Carbon::parse($date)->toDateString();
+            $dateObj = Carbon::parse($date);
+            $dateOnly = $dateObj->toDateString();
 
-            // 2. Check if it's a company holiday
+            // Get employee
+            $employee = Employee::where('employee_number', $employeeNumber)->first();
+            if (!$employee) {
+                Log::error("Employee not found: {$employeeNumber}");
+                return;
+            }
+
+            // Check for holiday
             $isHoliday = $this->isCompanyHoliday($dateOnly);
 
-            // 3. Check for approved leave
+            // Check for approved leave
             $hasApprovedLeave = LeaveRequest::where('employee_id', $employeeNumber)
                 ->where('status', 'Approved')
                 ->whereDate('start_date', '<=', $dateOnly)
                 ->whereDate('end_date', '>=', $dateOnly)
                 ->exists();
 
-            // 4. Get or create attendance record NOTE THAT Attendance HAS BEEN REFACTORED TO USE employee_number INSTEAD OF employee_id
-            $attendance = Attendance::where('employee_number', $employeeNumber)
-                ->where('date', $normalizedDate)
-                ->first();
-
-            if (!$attendance) {
-                $employee = Employee::where("employee_number", $employeeNumber)->first();
-                $attendance = Attendance::create([
-                    'employee_id' => $employee->id,
-                    'employee_number' => $employeeNumber,
-                    'company' => $employee? $employee->department->company->name : "N/A",
-                    'department' => $employee? $employee->department->name : "N/A",
-                    'date' => $normalizedDate,
-                    'status' => 'pending',
-                    'is_approved' => false,
-                    'net_hours' => 0.00,
-                ]);
-            } else {
-                // Clear existing sessions for fresh calculation
-                AttendanceSession::where('attendance_id', $attendance->id)->delete();
-            }
-
-            // 5. Get all clock events for the day
-            $events = ClockEvent::where('employee_id', $employeeNumber)
-                ->whereDate('timestamp', $normalizedDate)
-                ->orderBy('timestamp')
-                ->orderBy('id')
-                ->get();
-
-            // ============================================
-            // SCENARIO 1: HOLIDAY
-            // ============================================
+            // SPECIAL CASE 1: Holiday
             if ($isHoliday) {
-                $this->handleHolidayAttendance($attendance, $dateOnly);
+                $this->handleHolidayAttendance($employee, $dateOnly);
                 return;
             }
 
-            // ============================================
-            // SCENARIO 2: APPROVED LEAVE
-            // ============================================
+            // SPECIAL CASE 2: Approved Leave
             if ($hasApprovedLeave) {
-                $this->handleLeaveAttendance($attendance, $employeeNumber, $dateOnly);
+                $this->handleLeaveAttendance($employee, $dateOnly);
                 return;
             }
 
-            // ============================================
-            // SCENARIO 3: NO CLOCK EVENTS (UNPLANNED ABSENCE)
-            // ============================================
-            if ($events->isEmpty()) {
-                $this->handleUnplannedAbsence($attendance, $dateOnly);
+            // SPECIAL CASE 3: No clock events (unplanned absence)
+            $hasClockEvents = ClockEvent::where('employee_id', $employeeNumber)
+                ->whereDate('timestamp', $dateOnly)
+                ->exists();
+
+            if (!$hasClockEvents) {
+                $this->handleUnplannedAbsence($employee, $dateOnly);
                 return;
             }
 
-            // ============================================
-            // SCENARIO 4: NORMAL WORK DAY WITH CLOCK EVENTS
-            // ============================================
-            $this->processClockEvents($attendance, $events, $dateOnly);
+            // NORMAL CASE: Use AttendanceCalculator for full processing
+            try {
+                $result = $this->calculator->calculateForDay($employeeNumber, $dateObj);
+
+                Log::info("Attendance calculated successfully via calculator", [
+                    'employee' => $employeeNumber,
+                    'date' => $dateOnly,
+                    'attendance_id' => $result['attendance_id'],
+                    'sessions' => $result['sessions_created']
+                ]);
+            } catch (\Exception $e) {
+                Log::error("Calculator failed, using fallback", [
+                    'employee' => $employeeNumber,
+                    'date' => $dateOnly,
+                    'error' => $e->getMessage()
+                ]);
+
+                // Fallback to legacy processing
+                $this->fallbackCalculation($employee, $dateOnly);
+            }
         });
     }
 
     /**
      * Handle company holiday attendance
      */
-    private function handleHolidayAttendance(Attendance $attendance, string $date): void
+    private function handleHolidayAttendance(Employee $employee, string $date): void
     {
         $holiday = Holiday::whereDate('date', $date)->first();
+
+        $attendance = $this->getOrCreateAttendanceRecord($employee, $date);
+
+        // Delete any existing sessions (shouldn't exist, but clean up)
+        AttendanceSession::where('attendance_id', $attendance->id)->delete();
 
         $attendance->update([
             'status' => 'holiday',
             'net_hours' => 0.00,
+            'regular_hours' => 0.00,
+            'overtime_hours' => 0.00,
             'is_approved' => true,
             'notes' => $holiday ? "Company Holiday: {$holiday->name}" : "Company Holiday",
             'needs_review' => false,
             'is_unplanned' => false,
             'absence_type' => null,
+            'calculation_method' => 'auto',
+            'sessions' => null,
         ]);
 
         Log::info("Marked attendance as holiday", [
-            'employee_id' => $attendance->employee_id,
+            'employee_id' => $employee->employee_number,
             'date' => $date,
             'attendance_id' => $attendance->id
         ]);
@@ -124,9 +129,9 @@ class AttendanceAggregator
     /**
      * Handle approved leave attendance
      */
-    private function handleLeaveAttendance(Attendance $attendance, string $employeeNumber, string $date): void
+    private function handleLeaveAttendance(Employee $employee, string $date): void
     {
-        $leaveRequest = LeaveRequest::where('employee_id', $employeeNumber)
+        $leaveRequest = LeaveRequest::where('employee_id', $employee->employee_number)
             ->where('status', 'Approved')
             ->whereDate('start_date', '<=', $date)
             ->whereDate('end_date', '>=', $date)
@@ -136,24 +141,36 @@ class AttendanceAggregator
             return;
         }
 
-        // Get shift info for standard hours (could be from ShiftSchedule)
-        $standardHours = 8.00; // Default, should come from employee's shift
+        $attendance = $this->getOrCreateAttendanceRecord($employee, $date);
+
+        // Delete any existing sessions
+        AttendanceSession::where('attendance_id', $attendance->id)->delete();
+
+        // Get standard hours from employee's shift if available
+        $standardHours = 8.00;
+        if ($employee->position && $employee->position->shift) {
+            $standardHours = $employee->position->shift->duration_hours ?? 8.00;
+        }
 
         $attendance->update([
             'status' => 'leave',
             'leave_request_id' => $leaveRequest->id,
             'net_hours' => $standardHours,
+            'regular_hours' => $standardHours,
+            'overtime_hours' => 0.00,
             'is_approved' => true,
-            'notes' => "On Leave: {$leaveRequest->leaveType->name}",
+            'notes' => "On Leave: " . ($leaveRequest->leaveType->name ?? 'Approved Leave'),
             'needs_review' => false,
             'is_unplanned' => false,
             'absence_type' => 'planned_leave',
-            'hours_deducted' => $leaveRequest->leaveType->deducts_from_balance ? $standardHours : 0,
+            'hours_deducted' => ($leaveRequest->leaveType->deducts_from_balance ?? true) ? $standardHours : 0,
             'is_paid_absence' => $leaveRequest->leaveType->is_paid ?? true,
+            'calculation_method' => 'auto',
+            'sessions' => null,
         ]);
 
         Log::info("Marked attendance as leave", [
-            'employee_id' => $attendance->employee_id,
+            'employee_id' => $employee->employee_number,
             'date' => $date,
             'leave_request_id' => $leaveRequest->id,
             'attendance_id' => $attendance->id
@@ -161,36 +178,64 @@ class AttendanceAggregator
     }
 
     /**
-     * Handle unplanned absence (no clock events, no approved leave)
+     * Handle unplanned absence (no clock events, no approved leave, not holiday)
      */
-    private function handleUnplannedAbsence(Attendance $attendance, string $date): void
+    private function handleUnplannedAbsence(Employee $employee, string $date): void
     {
+        $attendance = $this->getOrCreateAttendanceRecord($employee, $date);
+
+        // Delete any existing sessions
+        AttendanceSession::where('attendance_id', $attendance->id)->delete();
+
+        // Get standard hours for deduction
+        $standardHours = 8.00;
+        if ($employee->position && $employee->position->shift) {
+            $standardHours = $employee->position->shift->duration_hours ?? 8.00;
+        }
+
         $attendance->update([
             'status' => 'absent',
             'net_hours' => 0.00,
-            'is_approved' => false, // Needs manager approval
+            'regular_hours' => 0.00,
+            'overtime_hours' => 0.00,
+            'is_approved' => false,
             'notes' => 'No show - unplanned absence',
             'needs_review' => true,
             'is_unplanned' => true,
             'absence_type' => 'unplanned_absent',
-            'hours_deducted' => 8.00, // Full day deduction
-            'is_paid_absence' => false, // Typically unpaid
+            'hours_deducted' => $standardHours,
+            'is_paid_absence' => false,
+            'calculation_method' => 'auto',
+            'sessions' => null,
         ]);
 
         Log::warning("Detected unplanned absence", [
-            'employee_id' => $attendance->employee_id,
+            'employee_id' => $employee->employee_number,
             'date' => $date,
             'attendance_id' => $attendance->id
         ]);
-
-        // Trigger notification (to be implemented)
-        // event(new UnplannedAbsenceDetected($attendance));
     }
 
     /**
-     * Process normal clock events and create sessions
+     * Fallback to original processing logic (kept for backward compatibility)
      */
-    private function processClockEvents(Attendance $attendance, $events, string $date): void
+    private function fallbackCalculation(Employee $employee, string $date): void
+    {
+        $attendance = $this->getOrCreateAttendanceRecord($employee, Carbon::parse($date));
+
+        $events = ClockEvent::where('employee_id', $employee->employee_number)
+            ->whereDate('timestamp', $date)
+            ->orderBy('timestamp')
+            ->get();
+
+        // Original session processing logic (extracted from your old code)
+        $this->legacyProcessClockEvents($attendance, $events, $date);
+    }
+
+    /**
+     * Legacy session processing - kept from original code
+     */
+    private function legacyProcessClockEvents(Attendance $attendance, $events, string $date): void
     {
         $sessions = [];
         $totalHours = 0.0;
@@ -297,18 +342,50 @@ class AttendanceAggregator
         ]);
     }
 
+
+
+
+
+
+
+
+
+    /**
+     * Get or create attendance record helper
+     */
+    private function getOrCreateAttendanceRecord(Employee $employee, Carbon $date): Attendance
+    {
+        $attendance = Attendance::where('employee_number', $employee->employee_number)
+            ->whereDate('date', $date)
+            ->first();
+
+        if (!$attendance) {
+            $attendance = Attendance::create([
+                'employee_id' => $employee->id,
+                'employee_number' => $employee->employee_number,
+                'company' => $employee->department->company->name ?? 'N/A',
+                'department' => $employee->department->name ?? 'N/A',
+                'date' => $date,
+                'status' => 'pending',
+                'is_approved' => false,
+                'net_hours' => 0.00,
+            ]);
+        }
+
+        return $attendance;
+    }
+
     /**
      * Check if date is a company holiday
      */
-    // Update the isCompanyHoliday method in AttendanceAggregator
     private function isCompanyHoliday(string $date): bool
     {
+        // Your existing implementation
         $dateObj = Carbon::parse($date);
 
-        // Check for exact date match
         $exactMatch = Holiday::whereDate('date', $date)
             ->where('is_active', true)
-            ->where(function ($query) use ($dateObj) {
+            ->where(function ($query) {
                 $query->where('business_impact', 'office_closed')
                     ->orWhere('business_impact', 'reduced_staff');
             })
@@ -318,11 +395,10 @@ class AttendanceAggregator
             return true;
         }
 
-        // Check for observed date (if holiday falls on weekend)
         $observedMatch = Holiday::whereDate('observed_date', $date)
             ->where('is_active', true)
             ->whereNotNull('observed_date')
-            ->where(function ($query) use ($dateObj) {
+            ->where(function ($query) {
                 $query->where('business_impact', 'office_closed')
                     ->orWhere('business_impact', 'reduced_staff');
             })
@@ -331,50 +407,8 @@ class AttendanceAggregator
         return $observedMatch;
     }
 
-    // New method to get holiday details
-    private function getHolidayDetails(string $date): ?array
-    {
-        $holiday = Holiday::whereDate('date', $date)
-            ->orWhereDate('observed_date', $date)
-            ->where('is_active', true)
-            ->first();
-
-        if (!$holiday) {
-            return null;
-        }
-
-        return [
-            'id' => $holiday->id,
-            'name' => $holiday->name,
-            'type' => $holiday->holiday_type,
-            'is_paid' => $holiday->is_paid_holiday,
-            'business_impact' => $holiday->business_impact,
-            'calendar_id' => $holiday->calendar_id,
-        ];
-    }
-
     /**
-     * Check for tardiness against shift schedule
-     */
-    private function checkForTardiness(string $employeeNumber, string $date, $events): bool
-    {
-        // Get employee's shift for the day
-        // This requires ShiftSchedule model implementation
-        // For now, using a simple rule: clock-in after 9:00 AM is late
-
-        $firstClockIn = $events->where('event_type', 'clock_in')->first();
-        if (!$firstClockIn) {
-            return false;
-        }
-
-        $clockInTime = Carbon::parse($firstClockIn->timestamp);
-        $lateThreshold = Carbon::parse($date . ' 09:00:00');
-
-        return $clockInTime->greaterThan($lateThreshold);
-    }
-
-    /**
-     * Batch recalculate for date range (for payroll processing)
+     * Batch recalculate for date range
      */
     public function recalculateDateRange(string $employeeNumber, string $startDate, string $endDate): void
     {

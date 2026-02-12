@@ -20,15 +20,21 @@
     $isStatusField = in_array($column, ['status', 'is_approved', 'is_active', 'is_published', 'needs_review']);
     $isBooleanField = is_bool($row->$column);
 
+
+    $columnValue = is_bool($row->$column) ? ($row->$column ? 'true' : 'false') : strtolower($row->$column);
+
     // Get color for badge/status
     $badgeColor = 'secondary';
-    if ($isBadgeField && isset($badgeColors[$row->$column])) {
-        $badgeColor = $badgeColors[$row->$column];
+    if ($isBadgeField && isset($badgeColors[$columnValue])) {
+        $badgeColor = $badgeColors[$columnValue];
     } elseif ($isStatusField || $isBooleanField) {
-        $badgeColor = match (strtolower($row->$column)) {
-            'active', 'approved', 'published', 'success', true => 'success',
-            'pending', 'warning', 'needs_review' => 'warning',
-            'inactive', 'rejected', 'cancelled', 'danger', false => 'danger',
+
+        $badgeColor = match ($columnValue) {
+            'planned_leave', 'leave', 'auto' => 'primary',
+            'sick_leave', 'holiday', 'adjusted' => 'info',
+            'active', 'approved', 'published', 'success', 'excused', 'present', 'true' => 'success',
+            'pending', 'warning', 'needs_review', 'late' => 'warning',
+            'inactive', 'rejected', 'cancelled', 'danger', 'unplanned_absent', 'absent', 'false' => 'danger',
             default => 'secondary',
         };
     }
