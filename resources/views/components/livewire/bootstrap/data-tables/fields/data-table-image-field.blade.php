@@ -37,7 +37,7 @@
         <input 
             type="file" 
             wire:model.{{ $reactivity }}="{{ $binding }}" 
-            accept="{{ implode(',', array_map(fn($ext) => '.' . $ext, $fieldDefinitions[$field]['fileTypes'] ?? ['jpg', 'jpeg', 'png', 'webp'])) }}"
+            {{-- accept="{{ implode(',', array_map(fn($ext) => '.' . $ext, $fieldDefinitions[$field]['fileTypes'] ?? ['jpg', 'jpeg', 'png', 'webp'])) }}" --}}
             id="{{ $field }}" 
             class="form-control rounded-pill"
             @if(in_array($field, $readOnlyFields)) disabled @endif
