@@ -7,8 +7,16 @@ use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use App\Modules\Hr\Models\{
-    Employee, EmployeePosition, Shift, WorkPattern, AttendancePolicy,
-    ClockEvent, Attendance, AttendanceSession
+    Employee,
+    EmployeePosition,
+    Shift,
+    WorkPattern,
+    AttendancePolicy,
+    ClockEvent,
+    Attendance,
+    AttendanceSession,
+    Location,
+    ShiftSchedule
 };
 use App\Modules\Hr\Services\AttendanceCalculator;
 
@@ -31,7 +39,8 @@ class AttendanceCalculatorTest extends TestCase
             'name' => 'Standard 8-5',
             'start_time' => '08:00:00',
             'end_time' => '17:00:00',
-            'duration_hours' => 9.0,
+            'duration_hours' => 8.0,
+            //'break_duration' => 1,
             'is_overnight' => false,
 
             'code' => 'Code123',
@@ -76,7 +85,7 @@ class AttendanceCalculatorTest extends TestCase
 
         EmployeePosition::factory()->create([
             'employee_id' => $this->employee->id,
-            // 'shift_id' => $this->shift->id,
+            'shift_id' => $this->shift->id,
             'work_pattern_id' => $this->workPattern->id,
             'attendance_policy_id' => $this->defaultPolicy->id,
             'pay_type' => 'hourly',
@@ -86,6 +95,8 @@ class AttendanceCalculatorTest extends TestCase
 
         $this->calculator = new AttendanceCalculator();
     }
+
+
 
     /** @test */
     public function it_marks_present_with_on_time_clock_in_and_out()
@@ -100,8 +111,8 @@ class AttendanceCalculatorTest extends TestCase
 
         // Assert
         $attendance = Attendance::where('employee_number', $this->employee->employee_number)
-                                ->whereDate('date', $date)
-                                ->first();
+            ->whereDate('date', $date)
+            ->first();
 
         $this->assertEquals('present', $attendance->status);
         $this->assertEquals(9.0, $attendance->net_hours);
@@ -126,8 +137,8 @@ class AttendanceCalculatorTest extends TestCase
         $result = $this->calculator->calculateForDay($this->employee->employee_number, $date);
 
         $attendance = Attendance::where('employee_number', $this->employee->employee_number)
-                                ->whereDate('date', $date)
-                                ->first();
+            ->whereDate('date', $date)
+            ->first();
 
         $this->assertEquals('late', $attendance->status);
         $this->assertEquals(1, $attendance->minutes_late);
@@ -146,12 +157,13 @@ class AttendanceCalculatorTest extends TestCase
         $result = $this->calculator->calculateForDay($this->employee->employee_number, $date);
 
         $attendance = Attendance::where('employee_number', $this->employee->employee_number)
-                                ->whereDate('date', $date)
-                                ->first();
+            ->whereDate('date', $date)
+            ->first();
 
         $this->assertNotEquals('late', $attendance->status);
         $this->assertEquals(0, $attendance->minutes_late);
     }
+
 
     /** @test */
     public function it_marks_early_departure_when_clock_out_before_grace_period()
@@ -165,13 +177,14 @@ class AttendanceCalculatorTest extends TestCase
         $result = $this->calculator->calculateForDay($this->employee->employee_number, $date);
 
         $attendance = Attendance::where('employee_number', $this->employee->employee_number)
-                                ->whereDate('date', $date)
-                                ->first();
+            ->whereDate('date', $date)
+            ->first();
 
         $this->assertEquals('early_departure', $attendance->status);
         $this->assertEquals(1, $attendance->minutes_early_departure);
         $this->assertTrue((bool) $attendance->needs_review);
     }
+
 
     /** @test */
     public function it_does_not_mark_early_departure_when_clock_out_within_grace()
@@ -185,12 +198,13 @@ class AttendanceCalculatorTest extends TestCase
         $result = $this->calculator->calculateForDay($this->employee->employee_number, $date);
 
         $attendance = Attendance::where('employee_number', $this->employee->employee_number)
-                                ->whereDate('date', $date)
-                                ->first();
+            ->whereDate('date', $date)
+            ->first();
 
         $this->assertNotEquals('early_departure', $attendance->status);
         $this->assertEquals(0, $attendance->minutes_early_departure);
     }
+
 
     /** @test */
     public function it_calculates_overtime_according_to_daily_threshold()
@@ -204,8 +218,8 @@ class AttendanceCalculatorTest extends TestCase
         $result = $this->calculator->calculateForDay($this->employee->employee_number, $date);
 
         $attendance = Attendance::where('employee_number', $this->employee->employee_number)
-                                ->whereDate('date', $date)
-                                ->first();
+            ->whereDate('date', $date)
+            ->first();
 
         $this->assertEquals(10.0, $attendance->net_hours);
         $this->assertEquals(8.0, $attendance->regular_hours);
@@ -230,8 +244,8 @@ class AttendanceCalculatorTest extends TestCase
         $result = $this->calculator->calculateForDay($this->employee->employee_number, $date);
 
         $attendance = Attendance::where('employee_number', $this->employee->employee_number)
-                                ->whereDate('date', $date)
-                                ->first();
+            ->whereDate('date', $date)
+            ->first();
 
         $this->assertEquals(12.0, $attendance->net_hours);
         $this->assertEquals(8.0, $attendance->regular_hours);
@@ -256,8 +270,8 @@ class AttendanceCalculatorTest extends TestCase
         $result = $this->calculator->calculateForDay($this->employee->employee_number, $date);
 
         $attendance = Attendance::where('employee_number', $this->employee->employee_number)
-                                ->whereDate('date', $date)
-                                ->first();
+            ->whereDate('date', $date)
+            ->first();
 
         $this->assertEquals(12.0, $attendance->net_hours);
         $this->assertEquals(8.0, $attendance->regular_hours);
@@ -281,8 +295,8 @@ class AttendanceCalculatorTest extends TestCase
         $result = $this->calculator->calculateForDay($this->employee->employee_number, $date);
 
         $attendance = Attendance::where('employee_number', $this->employee->employee_number)
-                                ->whereDate('date', $date)
-                                ->first();
+            ->whereDate('date', $date)
+            ->first();
 
         $this->assertEquals('late', $attendance->status);
         $this->assertEquals(1, $attendance->minutes_late);
@@ -300,8 +314,8 @@ class AttendanceCalculatorTest extends TestCase
         $result = $this->calculator->calculateForDay($this->employee->employee_number, $date);
 
         $attendance = Attendance::where('employee_number', $this->employee->employee_number)
-                                ->whereDate('date', $date)
-                                ->first();
+            ->whereDate('date', $date)
+            ->first();
 
         // $this->assertEquals('incomplete', $attendance->status);
         $this->assertEquals('absent', $attendance->status); // 0.0 is absent
@@ -326,14 +340,349 @@ class AttendanceCalculatorTest extends TestCase
         $result = $this->calculator->calculateForDay($this->employee->employee_number, $date);
 
         $attendance = Attendance::where('employee_number', $this->employee->employee_number)
-                                ->whereDate('date', $date)
-                                ->first();
+            ->whereDate('date', $date)
+            ->first();
 
         // Should still calculate, but status may be 'unscheduled' or similar
         $this->assertEquals('unscheduled', $attendance->status);
         $this->assertEquals(9.0, $attendance->net_hours);
         $this->assertTrue((bool) $attendance->needs_review);
     }
+
+
+
+
+
+    /** @test */
+    public function it_uses_the_system_default_shift_if_user_shift_is_not_available()
+    {
+
+        $this->defaultPolicy->is_active = false;
+        $this->defaultPolicy->is_default = false;
+        $this->defaultPolicy->save();
+
+        $this->workPattern->is_active = false;
+        $this->workPattern->is_default = false;
+        $this->workPattern->save();
+
+
+        $date = Carbon::parse('2026-02-16');
+
+        // Shift without default policy
+        $shift = Shift::factory()->create([
+            'name' => 'Standard 8-5',
+            'start_time' => '08:00:00',
+            'end_time' => '17:00:00',
+            'duration_hours' => 8.0,
+
+            'default_attendance_policy_id' => null,
+            'is_active' => true,
+            'is_default' => true,
+        ]);
+
+
+        $employee = Employee::factory()->create([
+            'employee_number' => 'EMP-TEST-002',
+            'first_name' => 'John',
+            'last_name' => 'Doe',
+        ]);
+
+
+
+        EmployeePosition::factory()->create([
+            'employee_id' => $employee->id,
+            'shift_id' => null,
+            'work_pattern_id' => null,
+            'attendance_policy_id' => null,
+            'pay_type' => 'hourly',
+            'hourly_rate' => 20.00,
+            'start_date' => '2026-01-01',
+        ]);
+
+
+
+        $this->createClockEvent('clock_in', $date->copy()->setTime(8, 0));
+        $this->createClockEvent('clock_out', $date->copy()->setTime(17, 0));
+
+        $result = $this->calculator->calculateForDay($employee->employee_number, $date);
+
+        $attendance = Attendance::where('employee_number', $employee->employee_number)
+                                ->whereDate('date', $date)
+                                ->first();
+
+
+        $this->assertEquals($shift->id, $attendance->shift_id);
+
+    }
+
+
+
+
+
+    /** @test */
+    public function it_prioritise_the_user_default_shift_even_if_system_shift_is_available()
+    {
+
+        $this->defaultPolicy->is_active = false;
+        $this->defaultPolicy->is_default = false;
+        $this->defaultPolicy->save();
+
+        $this->workPattern->is_active = false;
+        $this->workPattern->is_default = false;
+        $this->workPattern->save();
+
+
+        $date = Carbon::parse('2026-02-16');
+
+        // System Shift without default policy
+        $shift = Shift::factory()->create([
+            'name' => 'Standard 8-5',
+            'start_time' => '08:00:00',
+            'end_time' => '17:00:00',
+            'duration_hours' => 8.0,
+
+            'default_attendance_policy_id' => null,
+            'is_active' => true,
+            'is_default' => true,
+        ]);
+
+
+        $employee = Employee::factory()->create([
+            'employee_number' => 'EMP-TEST-002',
+            'first_name' => 'John',
+            'last_name' => 'Doe',
+        ]);
+
+
+
+        EmployeePosition::factory()->create([
+            'employee_id' => $employee->id,
+            'shift_id' => $this->shift->id,
+            'work_pattern_id' => null,
+            'attendance_policy_id' => null,
+            'pay_type' => 'hourly',
+            'hourly_rate' => 20.00,
+            'start_date' => '2026-01-01',
+        ]);
+
+
+
+        $this->createClockEvent('clock_in', $date->copy()->setTime(8, 0));
+        $this->createClockEvent('clock_out', $date->copy()->setTime(17, 0));
+
+        $result = $this->calculator->calculateForDay($employee->employee_number, $date);
+
+        $attendance = Attendance::where('employee_number', $employee->employee_number)
+                                ->whereDate('date', $date)
+                                ->first();
+
+
+        $this->assertNotEquals($shift->id, $attendance->shift_id);
+        $this->assertEquals($this->shift->id, $attendance->shift_id);
+
+    }
+
+
+
+    /** @test */
+    public function it_prioritise_the_shift_scheduled_even_if_user_shift_is_available()
+    {
+
+        $this->defaultPolicy->is_active = false;
+        $this->defaultPolicy->is_default = false;
+        $this->defaultPolicy->save();
+
+        $this->workPattern->is_active = false;
+        $this->workPattern->is_default = false;
+        $this->workPattern->save();
+
+
+        $date = Carbon::parse('2026-02-16');
+
+        
+        //  Shift without default policy
+        $shift = Shift::factory()->create([
+            'name' => 'Standard 8-5',
+            'start_time' => '08:00:00',
+            'end_time' => '17:00:00',
+            'duration_hours' => 8.0,
+
+            'default_attendance_policy_id' => null,
+            'is_active' => true,
+            'is_default' => true,
+        ]);
+
+
+        $employee = Employee::factory()->create([
+            'employee_number' => 'EMP-TEST-002',
+            'first_name' => 'John',
+            'last_name' => 'Doe',
+        ]);
+
+        $shiftSchedule = ShiftSchedule::factory()->create([
+            'schedule_date' => '2026-02-16',
+            'published_at' => '2026-02-16',
+
+            'start_time_override' => '08:00:00',
+            'end_time_override' => '17:00:00',
+
+            'shift_id' => $this->shift->id,
+            'employee_id' => $employee->id,
+        ]);
+
+
+
+        EmployeePosition::factory()->create([
+            'employee_id' => $employee->id,
+            'shift_id' => null,
+            'work_pattern_id' => null,
+            'attendance_policy_id' => null,
+            'pay_type' => 'hourly',
+            'hourly_rate' => 20.00,
+            'start_date' => '2026-01-01',
+        ]);
+
+
+
+        $this->createClockEvent('clock_in', $date->copy()->setTime(8, 0));
+        $this->createClockEvent('clock_out', $date->copy()->setTime(17, 0));
+
+        $result = $this->calculator->calculateForDay($employee->employee_number, $date);
+
+        $attendance = Attendance::where('employee_number', $employee->employee_number)
+                                ->whereDate('date', $date)
+                                ->first();
+
+
+        $this->assertNotEquals($shift->id, $attendance->shift_id);
+        $this->assertEquals($this->shift->id, $attendance->shift_id);
+
+    }
+
+
+/** @test */
+public function it_falls_back_to_the_system_default_work_pattern_shift_when_scheduled_and_user_shift_are_not_available()
+{
+
+        $this->defaultPolicy->is_active = false;
+        $this->defaultPolicy->is_default = false;
+        $this->defaultPolicy->save();
+
+
+        $date = Carbon::parse('2026-02-16');
+
+
+        $employee = Employee::factory()->create([
+            'employee_number' => 'EMP-TEST-002',
+            'first_name' => 'John',
+            'last_name' => 'Doe',
+        ]);
+
+
+        EmployeePosition::factory()->create([
+            'employee_id' => $employee->id,
+            'shift_id' => null,
+            'work_pattern_id' => null,
+            'attendance_policy_id' => null,
+            'pay_type' => 'hourly',
+            'hourly_rate' => 20.00,
+            'start_date' => '2026-01-01',
+        ]);
+
+
+
+        $this->createClockEvent('clock_in', $date->copy()->setTime(8, 0));
+        $this->createClockEvent('clock_out', $date->copy()->setTime(17, 0));
+
+        $result = $this->calculator->calculateForDay($employee->employee_number, $date);
+
+        $attendance = Attendance::where('employee_number', $employee->employee_number)
+                                ->whereDate('date', $date)
+                                ->first();
+
+
+        $this->assertEquals($this->workPattern->shift->id, $attendance->shift_id);
+
+
+
+}
+
+
+/** @test */
+public function it_prioritise_the_user_schedule_work_pattern_shift_even_if_the_system_default_work_pattern_shift_is_available()
+{
+
+        $this->defaultPolicy->is_active = false;
+        $this->defaultPolicy->is_default = false;
+        $this->defaultPolicy->save();
+
+
+        $date = Carbon::parse('2026-02-16');
+
+
+        $shift = Shift::factory()->create([
+            'name' => 'Standard 8-5',
+            'start_time' => '08:00:00',
+            'end_time' => '17:00:00',
+            'duration_hours' => 8.0,
+
+            'default_attendance_policy_id' => null,
+            'is_active' => true,
+            'is_default' => true,
+        ]);
+
+        $workPattern = WorkPattern::factory()->create([
+            'name' => 'Mon-Fri',
+            'shift_id' => $shift->id,
+            'applicable_days' => "1,2,3,4,5", // Monday to Friday [1,2,3,4,5]
+            'pattern_type' => 'recurring',
+            'effective_date' => '2026-01-01',
+            'is_active' => true,
+            'is_default' => true,
+        ]);
+
+
+        $employee = Employee::factory()->create([
+            'employee_number' => 'EMP-TEST-002',
+            'first_name' => 'John',
+            'last_name' => 'Doe',
+        ]);
+
+
+
+        EmployeePosition::factory()->create([
+            'employee_id' => $employee->id,
+            'shift_id' => null,
+            'work_pattern_id' => $workPattern->id,
+            'attendance_policy_id' => null,
+            'pay_type' => 'hourly',
+            'hourly_rate' => 20.00,
+            'start_date' => '2026-01-01',
+        ]);
+
+
+
+        $this->createClockEvent('clock_in', $date->copy()->setTime(8, 0));
+        $this->createClockEvent('clock_out', $date->copy()->setTime(17, 0));
+
+        $result = $this->calculator->calculateForDay($employee->employee_number, $date);
+
+        $attendance = Attendance::where('employee_number', $employee->employee_number)
+                                ->whereDate('date', $date)
+                                ->first();
+
+
+        // General system is not used
+        $this->assertNotEquals($this->workPattern->shift->id, $attendance->shift_id);
+        // Only the user's position's work pattern shift is used
+        $this->assertEquals($shift->id, $attendance->shift_id);
+
+
+
+}
+
+
+
 
     /** @test */
     public function it_uses_employee_specific_policy_over_default()
@@ -359,8 +708,8 @@ class AttendanceCalculatorTest extends TestCase
         $result = $this->calculator->calculateForDay($this->employee->employee_number, $date);
 
         $attendance = Attendance::where('employee_number', $this->employee->employee_number)
-                                ->whereDate('date', $date)
-                                ->first();
+            ->whereDate('date', $date)
+            ->first();
 
         $this->assertNotEquals('late', $attendance->status);
         $this->assertEquals(0, $attendance->minutes_late);
@@ -384,8 +733,8 @@ class AttendanceCalculatorTest extends TestCase
         $result = $this->calculator->calculateForDay($this->employee->employee_number, $date);
 
         $attendance = Attendance::where('employee_number', $this->employee->employee_number)
-                                ->whereDate('date', $date)
-                                ->first();
+            ->whereDate('date', $date)
+            ->first();
 
         $this->assertEquals('absent', $attendance->status);
         $this->assertEquals(0.0, $attendance->net_hours);
@@ -408,8 +757,8 @@ class AttendanceCalculatorTest extends TestCase
         $result = $this->calculator->calculateForDay($this->employee->employee_number, $date);
 
         $attendance = Attendance::where('employee_number', $this->employee->employee_number)
-                                ->whereDate('date', $date)
-                                ->first();
+            ->whereDate('date', $date)
+            ->first();
 
         // Net hours should be reduced by unpaid break
         $this->assertEquals(8.5, $attendance->net_hours); // 9 - 0.5
@@ -434,13 +783,239 @@ class AttendanceCalculatorTest extends TestCase
         $result = $this->calculator->calculateForDay($this->employee->employee_number, $date);
 
         $attendance = Attendance::where('employee_number', $this->employee->employee_number)
-                                ->whereDate('date', $date)
-                                ->first();
+            ->whereDate('date', $date)
+            ->first();
 
         $this->assertEquals(30, $attendance->missed_break_minutes);
         $this->assertTrue((bool) $attendance->needs_review);
         $this->assertStringContainsString('missed_break', json_encode($attendance->calculation_metadata));
     }
+
+
+    
+
+
+    /** @test */
+    public function it_uses_employee_specific_policy()
+    {
+        $employeePolicy = AttendancePolicy::factory()->create([
+            'effective_date' => '2026-01-01',
+            'is_active' => true,
+        ]);
+
+        $this->employee->employeePosition->attendance_policy_id = $employeePolicy->id;
+        $this->employee->employeePosition->save();
+
+        $policy = $this->calculator->getApplicablePolicy(
+            $this->employee->employeePosition,
+            Carbon::parse('2026-02-16')
+        );
+
+        $this->assertEquals($employeePolicy->id, $policy->id);
+    }
+
+
+    /** @test */
+    public function it_falls_back_to_department_policy()
+    {
+        $departmentPolicy = AttendancePolicy::factory()->create([
+            'effective_date' => '2026-01-01',
+            'is_active' => true,
+        ]);
+
+        // Ensure that the attendance_policy_id = null, in case factory has set it
+        $this->employee->employeePosition->attendance_policy_id = null;
+
+        // Now make the default_attendance_policy_id available
+        $this->employee->employeePosition->department->default_attendance_policy_id = $departmentPolicy->id;
+        $this->employee->employeePosition->department->save();
+
+
+        $policy = $this->calculator->getApplicablePolicy(
+            $this->employee->employeePosition,
+            Carbon::parse('2026-02-16')
+        );
+
+        $this->assertEquals($departmentPolicy->id, $policy->id);
+    }
+
+
+    /** @test */
+    public function it_falls_back_to_location_policy()
+    {
+
+        // Ensure that the attendance_policy_id = null, in case factory has set it
+        $this->employee->employeePosition->attendance_policy_id = null;
+
+        $locationPolicy = AttendancePolicy::factory()->create([
+            'effective_date' => '2026-01-01',
+            'is_active' => true,
+        ]);
+
+        $location = Location::factory()->create([
+            'default_attendance_policy_id' => $locationPolicy->id
+        ]);
+
+        $this->employee->employeePosition->location_id = $location->id;
+        $this->employee->employeePosition->save();
+
+        $policy = $this->calculator->getApplicablePolicy(
+            $this->employee->employeePosition,
+            Carbon::parse('2026-02-16')
+        );
+
+        $this->assertEquals($locationPolicy->id, $policy->id);
+    }
+
+
+    /** @test */
+    public function location_policy_is_skipped_if_no_location_assigned()
+    {
+        // Ensure that the attendance_policy_id = null, in case factory has set it
+        $this->employee->employeePosition->attendance_policy_id = null;
+
+        $companyPolicy = AttendancePolicy::factory()->create([
+            'is_default' => true,
+            'effective_date' => '2026-01-01',
+            'is_active' => true,
+        ]);
+
+        $this->employee->employeePosition->department->company->default_attendance_policy_id = $companyPolicy->id;
+        $this->employee->employeePosition->department->company->save();
+
+        $this->employee->employeePosition->location_id = null; // No location
+        $this->employee->employeePosition->save();
+
+        $policy = $this->calculator->getApplicablePolicy(
+            $this->employee->employeePosition,
+            Carbon::parse('2026-02-16')
+        );
+
+        $this->assertEquals($companyPolicy->id, $policy->id);
+    }
+
+
+
+    /** @test */
+    public function it_falls_back_to_company_policy()
+    {
+        $companyPolicy = AttendancePolicy::factory()->create([
+            'effective_date' => '2026-01-01',
+            'is_active' => true,
+        ]);
+
+
+        // Ensure that the attendance_policy_id = null, in case factory has set it
+        $this->employee->employeePosition->attendance_policy_id = null;
+
+        $this->employee->employeePosition->department->company->default_attendance_policy_id = $companyPolicy->id;
+        $this->employee->employeePosition->department->company->save();
+
+        $policy = $this->calculator->getApplicablePolicy(
+            $this->employee->employeePosition,
+            Carbon::parse('2026-02-16')
+        );
+
+        $this->assertEquals($companyPolicy->id, $policy->id);
+    }
+
+
+    /** @test */
+    public function it_falls_back_to_system_default_policy()
+    {
+        // No employee, department, or company policy set
+        /*$systemDefault = AttendancePolicy::factory()->create([
+            'is_default' => true,
+            'is_active' => true,
+            'effective_date' => '2026-01-01',
+        ]);*/
+
+        // Ensure that the attendance_policy_id = null, in case factory has set it
+        $this->employee->employeePosition->attendance_policy_id = null;
+
+        $policy = $this->calculator->getApplicablePolicy(
+            $this->employee->employeePosition,
+            Carbon::parse('2026-02-16')
+        );
+
+        $this->assertEquals($this->defaultPolicy->id, $policy->id);
+    }
+
+
+    /** @test */
+    public function it_respects_policy_effective_dates()
+    {
+        $policy = AttendancePolicy::factory()->create([
+            'effective_date' => '2026-03-01', // Future date
+            'is_active' => true,
+        ]);
+
+        $this->employee->employeePosition->attendance_policy_id = $policy->id;
+        $this->employee->employeePosition->save();
+
+        $policy = $this->calculator->getApplicablePolicy(
+            $this->employee->employeePosition,
+            Carbon::parse('2026-02-16') // Before effective date
+        );
+
+        //$this->assertNull($policy); // Should skip to next level
+        $this->assertEquals($this->defaultPolicy->id, $policy->id);
+
+    }
+
+
+    /** @test */
+    public function it_respects_policy_expiration_dates()
+    {
+        $policy = AttendancePolicy::factory()->create([
+            'effective_date' => '2026-01-01',
+            'expiration_date' => '2026-02-01', // Expired
+            'is_active' => true,
+        ]);
+
+        $this->employee->employeePosition->attendance_policy_id = $policy->id;
+        $this->employee->employeePosition->save();
+
+        $policy = $this->calculator->getApplicablePolicy(
+            $this->employee->employeePosition,
+            Carbon::parse('2026-02-16') // After expiration
+        );
+
+        //$this->assertNull($policy); // Should skip to next level
+        $this->assertEquals($this->defaultPolicy->id, $policy->id);
+
+    }
+
+
+    /** @test */
+    public function it_skips_inactive_policies()
+    {
+        $policy = AttendancePolicy::factory()->create([
+            'effective_date' => '2026-01-01',
+            'is_active' => false,
+        ]);
+
+        $this->employee->employeePosition->attendance_policy_id = $policy->id;
+        $this->employee->employeePosition->save();
+
+        $policy = $this->calculator->getApplicablePolicy(
+            $this->employee->employeePosition,
+            Carbon::parse('2026-02-16')
+        );
+
+        // $this->assertNull($policy); // Should skip inactive
+        $this->assertEquals($this->defaultPolicy->id, $policy->id);
+
+    }
+
+
+
+
+
+
+
+
+
 
     // --- Helper Methods ---
 

@@ -160,22 +160,26 @@ if ($isStatusField || $isBooleanField) {
                 @else
                     <span class="fw-medium">{{ $relatedItem }}</span>
                 @endif --}}
+
+                <span class="fw-medium">{{ $relatedItem }}</span>
+
             @else
                 <span class="text-muted fst-italic">Not set</span>
             @endif
         @endif
         
-    @elseif($isMultiSelectField)
+    @elseif (isset($fieldDefinitions[$column]["options"]))
+
         <div class="multi-select-values">
             @php
-                $values = str_replace(['[', ']', '"'], '', $selectedItem->$column);
-                $valueArray = $values ? array_map('trim', explode(',', $values)) : [];
+                // Filter only the selected items from the option 
+                $valueArray = Arr::only($fieldDefinitions[$column]['options'], explode(",", $selectedItem->$column));
             @endphp
             
             @if(count($valueArray) > 0)
                 <div class="d-flex flex-wrap gap-2">
                     @foreach($valueArray as $value)
-                        <span class="badge bg-info bg-opacity-15 text-info border border-info border-opacity-25 rounded-pill px-3 py-1">
+                        <span class="badge bg-gradient-info bg-opacity-15 text-white border border-info border-opacity-25 rounded-pill px-3 py-1 ">
                             {{ $value }}
                         </span>
                     @endforeach

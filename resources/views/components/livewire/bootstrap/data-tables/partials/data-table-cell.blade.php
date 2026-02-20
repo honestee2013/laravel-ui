@@ -5,6 +5,7 @@
     use QuickerFaster\LaravelUI\Services\DataTables\DataTableService;
     use QuickerFaster\LaravelUI\Facades\DataTables\DataTableConfig;
     use QuickerFaster\LaravelUI\Services\Formatting\FieldFormattingService;
+    use Illuminate\Support\Arr;
 
     $dataFormatter = app(FieldFormattingService::class);
     $value = $dataFormatter->format($column, $row->$column, $fieldDefinitions, $row);
@@ -20,7 +21,6 @@
     $isStatusField = in_array($column, ['status', 'is_approved', 'is_active', 'is_published', 'needs_review']);
     $isBooleanField = is_bool($row->$column);
 
-
     $columnValue = is_bool($row->$column) ? ($row->$column ? 'true' : 'false') : strtolower($row->$column);
 
     // Get color for badge/status
@@ -28,16 +28,16 @@
     if ($isBadgeField && isset($badgeColors[$columnValue])) {
         $badgeColor = $badgeColors[$columnValue];
     } elseif ($isStatusField || $isBooleanField) {
-
         $badgeColor = match ($columnValue) {
             'planned_leave', 'leave', 'auto' => 'primary',
             'sick_leave', 'holiday', 'adjusted' => 'info',
             'active', 'approved', 'published', 'success', 'excused', 'present', 'true' => 'success',
-            'pending', 'warning', 'needs_review', 'late' => 'warning',
+            'pending', 'warning', 'needs_review', 'late', 'unscheduled' => 'warning',
             'inactive', 'rejected', 'cancelled', 'danger', 'unplanned_absent', 'absent', 'false' => 'danger',
             default => 'secondary',
         };
     }
+
 
     // Get photo URL for employee tooltip
     $photoUrl = null;
@@ -69,6 +69,12 @@
             <span class='badge bg-{$statusColor}'>{$status}</span>
         </div>";
     }
+
+
+
+
+       
+
 @endphp
 
 @if (isset($fieldDefinitions[$column]['relationship']))
@@ -100,9 +106,15 @@
             {{ optional($row->{$dynamic_property})->$displayField }}
         </div>
     @endif
-@elseif ($column && $multiSelectFormFields && in_array($column, array_keys($multiSelectFormFields)))
+@elseif (isset($fieldDefinitions[$column]['options']) && isset($fieldDefinitions[$column]['multiSelect']))
+
+    @php
+        // Filter only the selected items from the option
+        $selectedItems = Arr::only($fieldDefinitions[$column]['options'], explode(',', $row->$column));
+    @endphp
+
     <div class="multiselect-values">
-        {{ str_replace(',', ', ', str_replace(['[', ']', '"'], '', $row->$column)) }}
+        {{ Str::limit(implode(', ', $selectedItems), 30) }}
     </div>
 @elseif (in_array($column, DataTableConfig::getSupportedImageColumnNames()))
     @if ($row->$column)
@@ -165,15 +177,15 @@
                 data-bs-title="{{ $tooltipHtml }}" data-bs-placement="top">
                 {{ $value }}
             </span>
-@elseif ($isStatusField || $isBooleanField || $isBadgeField)
-    <span class="badge badge-sm {{ ($isBooleanField && !isset($badgeColor)) ? ($row->$column ? 'bg-gradient-success' : 'bg-gradient-secondary') : 'bg-gradient-' . $badgeColor }} rounded-pill">
-        @if($isBooleanField)
-            <i class="fas fa-{{ $row->$column ? 'check' : 'times' }} me-1"></i>
-        @endif
-        
-        {{ is_bool($row->$column) ? ($row->$column ? 'Yes' : 'No') : ucfirst($row->$column) }}
-    </span>
+        @elseif ($isStatusField || $isBooleanField || $isBadgeField)
+            <span
+                class="badge badge-sm {{ $isBooleanField && !isset($badgeColor) ? ($row->$column ? 'bg-gradient-success' : 'bg-gradient-secondary') : 'bg-gradient-' . $badgeColor }} rounded-pill">
+                @if ($isBooleanField)
+                    <i class="fas fa-{{ $row->$column ? 'check' : 'times' }} me-1"></i>
+                @endif
 
+                {{ is_bool($row->$column) ? ($row->$column ? 'Yes' : 'No') : ucfirst($row->$column) }}
+            </span>
         @elseif (is_numeric($value) && !in_array($column, ['id', 'phone', 'zip_code']))
             <span class="numeric-value">
                 {{ number_format($value, 2) }}
@@ -186,7 +198,8 @@
         @else
             <span
                 class="text-value {{ $fieldDefinitions[$column]['field_type'] == 'textarea' ? 'text-truncate' : '' }}">
-                {{ $fieldDefinitions[$column]['field_type'] == 'textarea' ? Str::words($value, 8) : $value }}
+                {{-- $fieldDefinitions[$column]['field_type'] == 'textarea' ? Str::words($value, 8) : $value --}}
+                {{ Str::limit($value, 40) }}
             </span>
         @endif
     </div>

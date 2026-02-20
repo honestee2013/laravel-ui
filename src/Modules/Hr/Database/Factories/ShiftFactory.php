@@ -15,7 +15,6 @@ class ShiftFactory extends Factory
             'code' => 'SHI-' . $this->faker->unique()->numberBetween(1000, 9999),
             'start_time' => '08:00:00',
             'end_time' => '17:00:00',
-            'break_duration' => 0.0,
             'is_active' => true,
         ];
     }

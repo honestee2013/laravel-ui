@@ -403,8 +403,28 @@ class DataTableForm extends Component
         foreach ($this->fieldDefinitions as $field => $definition) {
             // Multiselect fields should be converted to array from comma separated string
             if (isset($this->fieldDefinitions[$field]['multiSelect'])) {
-                if ($this->fieldDefinitions[$field]['field_type'] == 'morphToMany');
-                    $this->fields[$field] = $record->$field ? $record->$field->pluck('id')->toArray() : [];
+                //if ($this->fieldDefinitions[$field]['field_type'] == 'morphToMany');
+                    //$this->fields[$field] = $record->$field ? $record->$field->pluck('id')->toArray() : [];
+
+
+
+                if (isset($definition['relationship'])) {
+                    $relationshipType = $definition['relationship']['type'] ?? null;
+                    $dynamicProperty = $definition['relationship']['dynamic_property'] ?? null;
+                    if ($relationshipType && $dynamicProperty && $record->$dynamicProperty) {
+                        if (in_array($relationshipType, ['hasMany', 'belongsToMany', 'morphMany', 'morphToMany'])) {
+                            $this->fields[$field] = $record->$dynamicProperty ? $record->$dynamicProperty->pluck('id')->toArray() : [];
+
+                        } else if (in_array($relationshipType, ['belongsTo', 'morphTo'])) {
+                            $this->fields[$field] = $record->$dynamicProperty ? $record->$dynamicProperty->id : null;
+
+                        }
+                    }
+                } else {
+                        $this->fields[$field] = explode(",",  $record->$field);
+                }
+
+
                     
             } else if (!str_contains($field, 'password')) {
                 $this->fields[$field] = $record->$field;
@@ -415,7 +435,7 @@ class DataTableForm extends Component
         }
 
         // Populate relationship fields
-        $this->populateRelationshipFields($record);
+        // $this->populateRelationshipFields($record);
         // Populate single select fields
         // $this->populateSingleSelectFields($record);
 

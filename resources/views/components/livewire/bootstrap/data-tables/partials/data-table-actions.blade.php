@@ -91,9 +91,9 @@
                     @php
 
                         // Check if user can perform this action on this specific row
-                        if (!$authHelper->canPerformAction($user, $action, $row)) {
+                        /*if (!$authHelper->canPerformAction($user, $action, $row)) {
                             continue; // Skip this action
-                        }
+                        }*/
 
                         // Replace {id} in $action['params']
                         $action['params'] = array_map(function ($param) use ($row) {

@@ -88,7 +88,7 @@ class AttendanceAggregator
                 ]);
 
                 // Fallback to legacy processing
-                $this->fallbackCalculation($employee, $dateOnly);
+                // $this->fallbackCalculation($employee, $dateOnly);
             }
         });
     }
@@ -229,13 +229,13 @@ class AttendanceAggregator
             ->get();
 
         // Original session processing logic (extracted from your old code)
-        $this->legacyProcessClockEvents($attendance, $events, $date);
+        // $this->legacyProcessClockEvents($attendance, $events, $date);
     }
 
     /**
      * Legacy session processing - kept from original code
      */
-    private function legacyProcessClockEvents(Attendance $attendance, $events, string $date): void
+    /*private function legacyProcessClockEvents(Attendance $attendance, $events, string $date): void
     {
         $sessions = [];
         $totalHours = 0.0;
@@ -340,7 +340,7 @@ class AttendanceAggregator
             'is_unplanned' => false,
             'absence_type' => $status === 'half_day' ? 'half_day' : null,
         ]);
-    }
+    }*/
 
 
 
